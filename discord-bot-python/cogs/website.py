@@ -6,7 +6,7 @@ import os
 class Website(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.bio_path = r"C:\Users\ttayl\Downloads\Risk-Bio\index.html"
+        self.bio_path = r"https://risk-bio.onrender.com/"
 
     @commands.command(name="bio")
     async def bio(self, ctx):
