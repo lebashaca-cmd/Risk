@@ -11,6 +11,24 @@ from discord.ext import commands
 CONFIG_PATH = os.path.join(os.path.dirname(__file__), "..", "tickets_config.json")
 
 
+class OpenView(discord.ui.View):
+    def __init__(self):
+        super().__init__(timeout=None)
+
+    @discord.ui.button(
+        label="Open Ticket",
+        style=discord.ButtonStyle.primary,
+        emoji="🎫",
+        custom_id="ticket:open",
+    )
+    async def open(self, interaction: discord.Interaction, button: discord.ui.Button):
+        cog = interaction.client.get_cog("Tickets")
+        if cog is None:
+            await interaction.response.send_message("Tickets are unavailable right now.", ephemeral=True)
+            return
+        await cog.open_ticket(interaction)
+
+
 class CloseView(discord.ui.View):
     def __init__(self):
         super().__init__(timeout=None)
@@ -35,6 +53,7 @@ class Tickets(commands.Cog):
         self.config = self._load()
 
     async def cog_load(self):
+        self.bot.add_view(OpenView())
         self.bot.add_view(CloseView())
 
     def _load(self):
@@ -52,6 +71,7 @@ class Tickets(commands.Cog):
         data = self.config.setdefault(str(guild_id), {})
         data.setdefault("log_channel", None)
         data.setdefault("tickets", {})
+        data.setdefault("panels", {})
         return data
 
     async def send_log(self, guild, embed, file=None):
@@ -71,11 +91,64 @@ class Tickets(commands.Cog):
         self,
         ctx,
         category: discord.CategoryChannel,
-        creator: discord.Member,
         staff: Union[discord.Role, discord.Member],
     ):
-        """Opens a ticket. Usage: ,ticket "category_id" @creator @staff"""
-        guild = ctx.guild
+        """Posts the ticket panel. Usage: ,ticket "category_id" @staff"""
+        embed = discord.Embed(
+            title="🎫 Support Tickets",
+            description=(
+                "Need help? Press the button below to open a private ticket.\n"
+                f"{staff.mention} will be notified as soon as you open one."
+            ),
+            color=discord.Color.blurple(),
+        )
+        embed.set_footer(text="One open ticket per person.")
+        message = await ctx.send(embed=embed, view=OpenView())
+
+        data = self._guild(ctx.guild.id)
+        data["panels"][str(message.id)] = {
+            "category_id": category.id,
+            "staff_id": staff.id,
+            "staff_type": "role" if isinstance(staff, discord.Role) else "member",
+        }
+        self._save()
+
+    async def open_ticket(self, interaction: discord.Interaction):
+        guild = interaction.guild
+        creator = interaction.user
+        data = self._guild(guild.id)
+
+        panel = data["panels"].get(str(interaction.message.id))
+        if panel is None:
+            await interaction.response.send_message(
+                "This panel is no longer active. Ask staff to post a new one.", ephemeral=True
+            )
+            return
+
+        for channel_id, record in list(data["tickets"].items()):
+            if record["creator_id"] != creator.id:
+                continue
+            existing = guild.get_channel(int(channel_id))
+            if existing:
+                await interaction.response.send_message(
+                    f"You already have an open ticket: {existing.mention}", ephemeral=True
+                )
+                return
+            data["tickets"].pop(channel_id, None)
+
+        category = guild.get_channel(panel["category_id"])
+        if not isinstance(category, discord.CategoryChannel):
+            await interaction.response.send_message(
+                "The ticket category no longer exists. Tell staff.", ephemeral=True
+            )
+            return
+
+        if panel["staff_type"] == "role":
+            staff = guild.get_role(panel["staff_id"])
+        else:
+            staff = guild.get_member(panel["staff_id"])
+
+        await interaction.response.defer(ephemeral=True)
 
         access = discord.PermissionOverwrite(
             view_channel=True,
@@ -84,18 +157,9 @@ class Tickets(commands.Cog):
             attach_files=True,
             embed_links=True,
         )
-        staff_access = discord.PermissionOverwrite(
-            view_channel=True,
-            send_messages=True,
-            read_message_history=True,
-            attach_files=True,
-            embed_links=True,
-            manage_messages=True,
-        )
         overwrites = {
             guild.default_role: discord.PermissionOverwrite(view_channel=False),
             creator: access,
-            staff: staff_access,
             guild.me: discord.PermissionOverwrite(
                 view_channel=True,
                 send_messages=True,
@@ -104,51 +168,58 @@ class Tickets(commands.Cog):
                 embed_links=True,
             ),
         }
+        if staff is not None:
+            overwrites[staff] = discord.PermissionOverwrite(
+                view_channel=True,
+                send_messages=True,
+                read_message_history=True,
+                attach_files=True,
+                embed_links=True,
+                manage_messages=True,
+            )
 
-        name = f"ticket-{creator.name}"[:90]
         try:
             channel = await guild.create_text_channel(
-                name,
+                f"ticket-{creator.name}"[:90],
                 category=category,
                 overwrites=overwrites,
-                topic=f"Ticket for {creator} | opened by {ctx.author}",
-                reason=f"Ticket opened by {ctx.author}",
+                topic=f"Ticket for {creator}",
+                reason=f"Ticket opened by {creator}",
             )
         except discord.Forbidden:
-            await ctx.send("I don't have permission to create channels in that category.")
+            await interaction.followup.send("I don't have permission to create that channel.", ephemeral=True)
             return
 
-        data = self._guild(guild.id)
         data["tickets"][str(channel.id)] = {
             "creator_id": creator.id,
-            "staff_id": staff.id,
-            "staff_type": "role" if isinstance(staff, discord.Role) else "member",
-            "opened_by": ctx.author.id,
+            "staff_id": panel["staff_id"],
+            "staff_type": panel["staff_type"],
             "opened_at": datetime.now(timezone.utc).isoformat(),
         }
         self._save()
 
+        pings = creator.mention + (f" {staff.mention}" if staff is not None else "")
         embed = discord.Embed(
             title="🎫 Support Ticket",
             description=(
                 f"Welcome {creator.mention}!\n\n"
-                f"{staff.mention} will be with you shortly. "
-                "Please describe your issue in as much detail as you can.\n\n"
+                + (f"{staff.mention} will be with you shortly. " if staff is not None else "Staff will be with you shortly. ")
+                + "Please describe your issue in as much detail as you can.\n\n"
                 "When this is resolved, press the button below to close the ticket."
             ),
             color=discord.Color.blurple(),
             timestamp=datetime.now(timezone.utc),
         )
-        embed.set_footer(text=f"Opened by {ctx.author}")
-        await channel.send(content=f"{creator.mention} {staff.mention}", embed=embed, view=CloseView())
+        embed.set_footer(text=f"Opened by {creator}")
+        await channel.send(content=pings, embed=embed, view=CloseView())
 
-        await ctx.send(f"Ticket created: {channel.mention}")
+        await interaction.followup.send(f"Your ticket is open: {channel.mention}", ephemeral=True)
 
         log = discord.Embed(title="Ticket Opened", color=discord.Color.green(), timestamp=datetime.now(timezone.utc))
         log.add_field(name="Channel", value=channel.mention, inline=True)
-        log.add_field(name="Creator", value=creator.mention, inline=True)
-        log.add_field(name="Staff", value=staff.mention, inline=True)
-        log.add_field(name="Opened by", value=ctx.author.mention, inline=True)
+        log.add_field(name="Opened by", value=creator.mention, inline=True)
+        if staff is not None:
+            log.add_field(name="Staff", value=staff.mention, inline=True)
         await self.send_log(guild, log)
 
     async def close_ticket(self, interaction: discord.Interaction):
@@ -230,9 +301,16 @@ class Tickets(commands.Cog):
         if isinstance(error, commands.MissingPermissions):
             await ctx.send("You don't have permission to use that command.")
         elif isinstance(error, (commands.MissingRequiredArgument, commands.BadArgument, commands.BadUnionArgument)):
+            param = getattr(error, "param", None)
+            reason = f"Problem with `{param.name}`: " if param else ""
+            if isinstance(error, commands.MissingRequiredArgument):
+                reason += "it's missing."
+            else:
+                reason += "I couldn't find that. Use a real @mention, #channel mention, or ID."
             await ctx.send(
+                f"{reason}\n"
                 "Usage:\n"
-                "`,ticket \"category_id\" @creator @staff`\n"
+                "`,ticket \"category_id\" @staff`\n"
                 "`,setlogs #channel`"
             )
         elif isinstance(error, commands.NoPrivateMessage):
