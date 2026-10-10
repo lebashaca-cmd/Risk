@@ -1,39 +1,69 @@
 import discord
 import os
-import asyncio
+import math
+from aiohttp import web
 from discord.ext import commands
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
+STATUS_PORT = int(os.getenv('SERVER_PORT', 25239))
 
-# Define Bot Intents
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Initialize Bot (any of these prefixes work: !ping  ?ping  ,ping)
 bot = commands.Bot(command_prefix=('!', '?', ','), intents=intents)
+
+
+async def status_handler(request):
+    latency = bot.latency
+    online = bot.is_ready() and not math.isnan(latency) and not math.isinf(latency)
+    data = {
+        "online": online,
+        "name": bot.user.name if bot.user else None,
+        "latency_ms": round(latency * 1000) if online else None,
+    }
+    return web.json_response(data, headers={"Access-Control-Allow-Origin": "*"})
+
+
+async def start_status_server():
+    app = web.Application()
+    app.router.add_get('/', status_handler)
+    app.router.add_get('/status', status_handler)
+    runner = web.AppRunner(app)
+    await runner.setup()
+    await web.TCPSite(runner, '0.0.0.0', STATUS_PORT).start()
+    print(f'Status page listening on 0.0.0.0:{STATUS_PORT}')
+
+
+@bot.event
+async def setup_hook():
+    await start_status_server()
+
 
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} (ID: {bot.user.id})')
     print('------')
 
-    # Load Cogs
     for filename in os.listdir('./cogs'):
         if filename.endswith('.py'):
+            ext = f'cogs.{filename[:-3]}'
+            if ext in bot.extensions:
+                continue
             try:
-                await bot.load_extension(f'cogs.{filename[:-3]}')
+                await bot.load_extension(ext)
                 print(f'Loaded extension: {filename}')
             except Exception as e:
                 print(f'Failed to load extension {filename}: {e}')
+
 
 @bot.command()
 async def ping(ctx):
     """Check the bot's latency."""
     await ctx.send(f'Pong! 🏓 {round(bot.latency * 1000)}ms')
+
 
 if __name__ == "__main__":
     bot.run(TOKEN)
