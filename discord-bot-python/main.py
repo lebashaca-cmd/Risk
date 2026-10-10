@@ -13,8 +13,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Initialize Bot
-bot = commands.Bot(command_prefix='!', intents=intents)
+# Initialize Bot (both ! and ? work as prefixes)
+bot = commands.Bot(command_prefix=('!', '?'), intents=intents)
 
 @bot.event
 async def on_ready():
