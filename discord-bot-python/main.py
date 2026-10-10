@@ -13,7 +13,7 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-# Initialize Bot (both ! and ? work as prefixes)
+# Initialize Bot (any of these prefixes work: !ping  ?ping  ,ping)
 bot = commands.Bot(command_prefix=('!', '?', ','), intents=intents)
 
 @bot.event
