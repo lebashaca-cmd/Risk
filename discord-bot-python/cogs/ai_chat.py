@@ -6,8 +6,8 @@ import os
 class AIChat(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.api_key = os.getenv('AI_API_KEY')
-        self.api_url = "https://api.anthropic.com/v1/messages"
+        self.api_key = os.getenv('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')
+        self.api_url = "https://api.groq.com/openai/v1"
 
     @commands.command(name="ask")
     async def ask(self, ctx, *, question: str):
