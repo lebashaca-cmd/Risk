@@ -58,6 +58,14 @@ async def on_ready():
             except Exception as e:
                 print(f'Failed to load extension {filename}: {e}')
 
+    if not getattr(bot, 'commands_synced', False):
+        bot.commands_synced = True
+        try:
+            synced = await bot.tree.sync()
+            print(f'Synced {len(synced)} slash command(s)')
+        except Exception as e:
+            print(f'Slash command sync failed: {e}')
+
 
 @bot.command()
 async def ping(ctx):
