@@ -86,7 +86,7 @@ class DuskReset(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    async def call(self, method, path):
+    async def call(self, method, path, route=None):
         base = (os.getenv("DUSK_URL") or "").strip().rstrip("/")
         token = (os.getenv("DUSK_ADMIN_TOKEN") or "").strip()
         if not base.startswith("http") or not token:
@@ -113,6 +113,11 @@ class DuskReset(commands.Cog):
             return None, "The website rejected the admin token. Check `DUSK_ADMIN_TOKEN`."
         if status >= 400:
             message = body.get("error") if isinstance(body, dict) else None
+            if status == 404 and not (isinstance(message, str) and message.lower().startswith("no dusk account")):
+                return None, (
+                    f"The website doesn't have `{method} {route or path}` (it answered: {message or '404'}). "
+                    "Make sure the latest version of the website is deployed and `DUSK_URL` points to it."
+                )
             if isinstance(message, str) and message:
                 return None, message[:200]
             return None, f"The website returned an error ({status})."
@@ -125,7 +130,7 @@ class DuskReset(commands.Cog):
     async def duskreset(self, interaction: discord.Interaction):
         await interaction.response.defer(ephemeral=True)
 
-        data, error = await self.call("GET", f"/api/admin/accounts/{interaction.user.id}")
+        data, error = await self.call("GET", f"/api/admin/accounts/{interaction.user.id}", route="/api/admin/accounts/:id")
         if error:
             await interaction.followup.send(error, ephemeral=True)
             return
@@ -166,7 +171,7 @@ class DuskReset(commands.Cog):
 
     async def perform_reset(self, button_interaction: discord.Interaction, origin: discord.Interaction):
         user = origin.user
-        data, error = await self.call("POST", f"/api/admin/accounts/{user.id}/reset")
+        data, error = await self.call("POST", f"/api/admin/accounts/{user.id}/reset", route="/api/admin/accounts/:id/reset")
         if error:
             await button_interaction.edit_original_response(content=f"The reset didn't go through: {error}", embed=None, view=None)
             return
