@@ -115,8 +115,9 @@ class DuskReset(commands.Cog):
             message = body.get("error") if isinstance(body, dict) else None
             if status == 404 and not (isinstance(message, str) and message.lower().startswith("no dusk account")):
                 return None, (
-                    f"The website doesn't have `{method} {route or path}` (it answered: {message or '404'}). "
-                    "Make sure the latest version of the website is deployed and `DUSK_URL` points to it."
+                    f"The website answered 404 ({message or 'Not found'}) for `{method} {route or path}`. "
+                    "Either no dusk account is linked to your Discord ID (log in to dusk with Discord once, then try again), "
+                    "or the website doesn't have this endpoint set up yet."
                 )
             if isinstance(message, str) and message:
                 return None, message[:200]
