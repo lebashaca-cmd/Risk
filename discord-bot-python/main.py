@@ -1,9 +1,12 @@
 import discord
 import os
 import math
+import traceback
 from aiohttp import web
 from discord.ext import commands
 from dotenv import load_dotenv
+
+from utils.helpers import explain_error
 
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
@@ -65,6 +68,19 @@ async def on_ready():
             print(f'Synced {len(synced)} slash command(s)')
         except Exception as e:
             print(f'Slash command sync failed: {e}')
+
+
+@bot.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        return
+    if ctx.command is not None and ctx.command.has_error_handler():
+        return
+    if ctx.cog is not None and ctx.cog.has_error_handler():
+        return
+    if await explain_error(ctx, error):
+        return
+    traceback.print_exception(type(error), error, error.__traceback__)
 
 
 @bot.command()

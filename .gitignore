@@ -1,0 +1,5 @@
+__pycache__/
+*.pyc
+.env
+discord-bot-python/data/
+node_modules/
