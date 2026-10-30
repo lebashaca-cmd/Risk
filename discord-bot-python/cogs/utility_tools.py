@@ -115,6 +115,37 @@ class UtilityTools(commands.Cog):
             embed.add_field(name="Bots", value=f"{len(guild.members) - humans:,}")
         await ctx.send(embed=embed)
 
+    @commands.command(name="enlarge", aliases=["emoji"])
+    async def enlarge(self, ctx, emoji: discord.PartialEmoji):
+        """Shows a custom emoji at full size. Usage: !enlarge :custom_emoji:"""
+        if not emoji.is_custom_emoji():
+            await ctx.reply("Use a custom server emoji.", mention_author=False)
+            return
+        embed = discord.Embed(title=emoji.name, color=discord.Color.light_grey())
+        embed.set_image(url=emoji.url)
+        await ctx.send(embed=embed)
+
+    @commands.command(name="emojis")
+    @commands.guild_only()
+    async def emojis(self, ctx):
+        """Lists this server's custom emojis. Usage: !emojis"""
+        found = [str(e) for e in ctx.guild.emojis]
+        if not found:
+            await ctx.reply("This server has no custom emojis.", mention_author=False)
+            return
+        await ctx.send(embed=discord.Embed(title=f"Emojis ({len(found)})", description=" ".join(found)[:4000], color=discord.Color.light_grey()))
+
+    @commands.command(name="serverbanner")
+    @commands.guild_only()
+    async def serverbanner(self, ctx):
+        """Shows the server banner. Usage: !serverbanner"""
+        if ctx.guild.banner is None:
+            await ctx.reply("This server has no banner.", mention_author=False)
+            return
+        embed = discord.Embed(title=ctx.guild.name, color=discord.Color.light_grey())
+        embed.set_image(url=ctx.guild.banner.url)
+        await ctx.send(embed=embed)
+
     @commands.command(name="roleinfo")
     @commands.guild_only()
     async def roleinfo(self, ctx, *, role: discord.Role):

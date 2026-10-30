@@ -240,6 +240,43 @@ class ModerationTools(commands.Cog):
         await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f"Unlocked by {ctx.author}")
         await self.say(ctx, f"Unlocked {channel.mention}.")
 
+    @commands.command(name="hide")
+    @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def hide(self, ctx, channel: discord.TextChannel = None):
+        """Hides a channel from @everyone. Usage: !hide #channel"""
+        channel = channel or ctx.channel
+        overwrite = channel.overwrites_for(ctx.guild.default_role)
+        overwrite.view_channel = False
+        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f"Hidden by {ctx.author}")
+        await self.say(ctx, f"Hid #{channel.name}.")
+
+    @commands.command(name="unhide")
+    @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def unhide(self, ctx, channel: discord.TextChannel = None):
+        """Shows a hidden channel to @everyone again. Usage: !unhide #channel"""
+        channel = channel or ctx.channel
+        overwrite = channel.overwrites_for(ctx.guild.default_role)
+        overwrite.view_channel = None
+        await channel.set_permissions(ctx.guild.default_role, overwrite=overwrite, reason=f"Unhidden by {ctx.author}")
+        await self.say(ctx, f"{channel.mention} is visible again.")
+
+    @commands.command(name="nuke")
+    @commands.has_permissions(manage_channels=True)
+    @commands.bot_has_permissions(manage_channels=True)
+    async def nuke(self, ctx, confirm: str = ""):
+        """Clones this channel and deletes the old one to wipe all messages. Usage: !nuke confirm"""
+        if confirm.lower() != "confirm":
+            raise ModError(f"This deletes every message here. Run `{ctx.prefix}nuke confirm` to continue.")
+        old = ctx.channel
+        if old.id in (ctx.guild.rules_channel and ctx.guild.rules_channel.id, ctx.guild.public_updates_channel and ctx.guild.public_updates_channel.id):
+            raise ModError("I can't nuke a rules or community updates channel.")
+        new = await old.clone(reason=f"Nuked by {ctx.author}")
+        await new.edit(position=old.position)
+        await old.delete(reason=f"Nuked by {ctx.author}")
+        await new.send(f"Channel nuked by {ctx.author.mention}.", allowed_mentions=discord.AllowedMentions(users=True))
+
     @commands.command(name="purgeuser")
     @commands.has_permissions(manage_messages=True)
     @commands.bot_has_permissions(manage_messages=True, read_message_history=True)

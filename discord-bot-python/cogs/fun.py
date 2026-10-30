@@ -378,6 +378,30 @@ class Fun(commands.Cog):
                 out.append(ch)
         await ctx.reply(" ".join(out)[:1900], mention_author=False, allowed_mentions=NO_MENTIONS)
 
+    @commands.command(name="uwu")
+    async def uwu(self, ctx, *, text: str):
+        """Turns text into uwu speak. Usage: !uwu hello there"""
+        out = re.sub(r"[rl]", "w", text[:1900])
+        out = re.sub(r"[RL]", "W", out)
+        await ctx.reply(out, mention_author=False, allowed_mentions=NO_MENTIONS)
+
+    @commands.command(name="compliment")
+    async def compliment(self, ctx, member: discord.Member = None):
+        """Gives someone a nice compliment. Usage: !compliment @user"""
+        member = member or ctx.author
+        lines = [
+            "{n} makes every chat better.", "{n} has excellent taste.", "{n} is the kind of person people are glad to see.",
+            "{n} is quietly very good at things.", "{n} would win a kindness contest.",
+        ]
+        await ctx.send(random.choice(lines).format(n=member.display_name), allowed_mentions=NO_MENTIONS)
+
+    @commands.command(name="number", aliases=["rng"])
+    async def number(self, ctx, low: int = 1, high: int = 100):
+        """Picks a random number in a range. Usage: !number 1 100"""
+        if low > high:
+            low, high = high, low
+        await ctx.reply(f"🔢 {random.randint(low, high)}", mention_author=False)
+
     @commands.command(name="say", aliases=["echo"])
     @commands.has_permissions(manage_messages=True)
     async def say(self, ctx, *, text: str):
