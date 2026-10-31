@@ -8,6 +8,9 @@ from dotenv import load_dotenv
 
 from utils.helpers import explain_error
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+COGS_DIR = os.path.join(BASE_DIR, 'cogs')
+
 load_dotenv()
 TOKEN = os.getenv('DISCORD_TOKEN')
 STATUS_PORT = int(os.getenv('SERVER_PORT', 25239))
@@ -50,7 +53,11 @@ async def on_ready():
     print(f'Logged in as {bot.user.name} (ID: {bot.user.id})')
     print('------')
 
-    for filename in os.listdir('./cogs'):
+    if not os.path.isdir(COGS_DIR):
+        print(f'No cogs directory at {COGS_DIR}, skipping extension loading')
+        return
+
+    for filename in sorted(os.listdir(COGS_DIR)):
         if filename.endswith('.py'):
             ext = f'cogs.{filename[:-3]}'
             if ext in bot.extensions:
