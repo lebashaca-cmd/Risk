@@ -22,6 +22,21 @@ intents.members = True
 bot = commands.Bot(command_prefix=('!', '?', ','), intents=intents)
 
 
+def public_servers():
+    """Servers shown on the website. Set HIDE_SERVER_IDS=id1,id2 to leave some out."""
+    hidden = {s.strip() for s in os.getenv("HIDE_SERVER_IDS", "").split(",") if s.strip()}
+    guilds = [g for g in bot.guilds if str(g.id) not in hidden]
+    guilds.sort(key=lambda g: g.member_count or 0, reverse=True)
+    return [
+        {
+            "name": g.name,
+            "icon": g.icon.replace(size=128, format="png").url if g.icon else None,
+            "members": g.member_count,
+        }
+        for g in guilds[:30]
+    ]
+
+
 async def status_handler(request):
     latency = bot.latency
     online = bot.is_ready() and not math.isnan(latency) and not math.isinf(latency)
@@ -29,6 +44,8 @@ async def status_handler(request):
         "online": online,
         "name": bot.user.name if bot.user else None,
         "latency_ms": round(latency * 1000) if online else None,
+        "guilds": len(bot.guilds) if online else 0,
+        "servers": public_servers() if online else [],
     }
     return web.json_response(data, headers={"Access-Control-Allow-Origin": "*"})
 

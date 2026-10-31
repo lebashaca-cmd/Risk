@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: risk-site
+    rootDir: website
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: python server.py
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: BOT_STATUS_URL
+        value: https://uison65lds.apps.bot-hosting.cloud/status
+      - key: CLIENT_ID
+        value: "1557594467551412356"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: SITE_NAME
+        value: Risk
