@@ -1,5 +1,5 @@
 import { api } from "./api.js";
-import { initMotionFlag, prefersReduced } from "./anim.js";
+import { initMotionFlag, prefersReduced, smoothScroll } from "./anim.js";
 import { h, mount } from "./dom.js";
 import { renderCommands } from "./commands.js";
 import { renderHome } from "./home.js";
@@ -161,6 +161,7 @@ function watchHeader(): void {
 
 async function start(): Promise<void> {
   initMotionFlag();
+  smoothScroll();
   watchHeader();
   bindNav();
   try {

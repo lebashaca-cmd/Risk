@@ -55,8 +55,6 @@ export function revealOnScroll(root, selector, className = "in", threshold = 0.3
  * speeds up while you scroll and glides back to its pace afterwards.
  */
 export function scrollFx(root) {
-    if (!document.documentElement.classList.contains("anim"))
-        return () => undefined;
     const doc = document.documentElement;
     let current = window.scrollY;
     let rate = 1;
@@ -95,4 +93,62 @@ export function scrollFx(root) {
             cancelAnimationFrame(frame);
         doc.style.removeProperty("--prog");
     };
+}
+/**
+ * Inertial mouse-wheel scrolling. The wheel moves a target position and the
+ * page glides toward it, so each flick has momentum and settles gently.
+ * Touch, keyboard, find-in-page and links keep the browser's own scrolling.
+ */
+export function smoothScroll() {
+    if (!window.matchMedia("(pointer: fine)").matches)
+        return;
+    let target = window.scrollY;
+    let current = target;
+    let lastSet = target;
+    let frame = 0;
+    let last = 0;
+    const limit = () => Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+    const clamp = (value) => Math.min(limit(), Math.max(0, value));
+    const canScroll = (el) => {
+        for (let node = el; node && node !== document.body; node = node.parentElement) {
+            const style = getComputedStyle(node);
+            const scrolls = /(auto|scroll)/.test(style.overflowY) && node.scrollHeight > node.clientHeight + 1;
+            if (scrolls)
+                return true;
+        }
+        return false;
+    };
+    const step = (now) => {
+        frame = 0;
+        const dt = Math.min(64, now - last || 16);
+        last = now;
+        current += (target - current) * (1 - Math.exp(-dt / 140));
+        if (Math.abs(target - current) < 0.4)
+            current = target;
+        lastSet = current;
+        window.scrollTo({ top: current, behavior: "instant" });
+        if (current !== target)
+            frame = requestAnimationFrame(step);
+    };
+    window.addEventListener("wheel", (event) => {
+        if (event.ctrlKey || event.defaultPrevented || event.deltaY === 0 || Math.abs(event.deltaX) > Math.abs(event.deltaY))
+            return;
+        if (canScroll(event.target))
+            return;
+        event.preventDefault();
+        const unit = event.deltaMode === 1 ? 36 : event.deltaMode === 2 ? window.innerHeight : 1;
+        target = clamp(target + Math.max(-240, Math.min(240, event.deltaY * unit)) * 1.15);
+        if (!frame) {
+            last = performance.now();
+            frame = requestAnimationFrame(step);
+        }
+    }, { passive: false });
+    window.addEventListener("scroll", () => {
+        if (Math.abs(window.scrollY - lastSet) > 2) {
+            target = current = lastSet = window.scrollY;
+            if (frame)
+                cancelAnimationFrame(frame);
+            frame = 0;
+        }
+    }, { passive: true });
 }
