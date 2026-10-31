@@ -404,14 +404,14 @@ html.anim .intro.is-in [data-step] {
   opacity: 1; transform: none; transition: opacity 0.7s ease, transform 0.8s var(--ease); transition-delay: calc(var(--s, 0) * 110ms + 380ms);
 }
 @keyframes slide { from { transform: translateX(0); } to { transform: translateX(-50%); } }
-html.anim .track { animation: slide 80s linear infinite; }
+.track { animation: slide 60s linear infinite; }
+html:not(.anim) .track { animation-duration: 110s; }
 html.anim .marquee.rev .track { animation-direction: reverse; animation-duration: 62s; }
-html.anim .marquee:hover .track, html.anim .marquee:focus-within .track { animation-play-state: paused; }
+.marquee:hover .track, .marquee:focus-within .track { animation-play-state: paused; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   .btn, .toast, .nav-ind { transition: none; }
-  .marquee { overflow-x: auto; scrollbar-width: none; }
 }
 
 /* Placeholder cards shown until the bot reports its servers */
