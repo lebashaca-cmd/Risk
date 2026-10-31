@@ -241,7 +241,7 @@ async def fallback(request):
 async def asset_cache(request, handler):
     response = await handler(request)
     if request.path.startswith("/assets/") and response.status == 200:
-        response.headers.setdefault("Cache-Control", "public, max-age=3600")
+        response.headers.setdefault("Cache-Control", "no-cache")
     return response
 
 
