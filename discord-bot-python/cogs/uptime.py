@@ -15,7 +15,7 @@ class Uptime(commands.Cog):
 
     @commands.command(name="uptime")
     async def uptime(self, ctx: commands.Context):
-        """Usage: ,uptime"""
+        """Shows how long the bot has been online. Usage: ,uptime"""
         elapsed_seconds = max(0, int(time.monotonic() - self.started_at))
         days, remainder = divmod(elapsed_seconds, 86400)
         hours, remainder = divmod(remainder, 3600)

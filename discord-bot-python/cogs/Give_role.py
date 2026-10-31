@@ -21,7 +21,7 @@ class GiveRole(commands.Cog):
         *,
         role_query: str,
     ):
-        """Usage: ,r @user ROLE or ,r USER_ID ROLE"""
+        """Gives a member a role by name. Usage: ,r @user ROLE or ,r USER_ID ROLE"""
 
         guild = ctx.guild
         if guild is None:
