@@ -1,60 +1,10 @@
 import { api } from "./api.js";
 import { h } from "./dom.js";
-import { playIntro, splitWords } from "./anim.js";
+import { playIntro, revealOnScroll, scrollFx, splitWords } from "./anim.js";
 import { mountDemo } from "./demo.js";
 import { icon, type IconName } from "./icons.js";
 import { applyStatus, currentStatus, onStatus, setExtraStat } from "./status.js";
-import { copyWithToast, flashCopied } from "./ui.js";
 import type { CommandInfo, ServerInfo, SiteConfig } from "./types.js";
-
-type Feature = { name: string; sub: string; ic: IconName; command: string };
-
-const ROW_ONE: Feature[] = [
-  { name: "Tickets", sub: "Private support channels", ic: "ticket", command: ",ticket 123456789012345678 @Staff" },
-  { name: "Server logs", sub: "Deletes, edits and roles", ic: "logs", command: ",logs #mod-log" },
-  { name: "Welcome", sub: "Greet new members", ic: "welcome", command: ",welcome 123456789012345678 Welcome New_user to Risk" },
-  { name: "AI answers", sub: "Code and files in chat", ic: "ai", command: ",ask make me a hello.lua" },
-  { name: "Moderation", sub: "Clear, kick, ban, unban", ic: "shield", command: "!clear 20" },
-];
-
-const ROW_TWO: Feature[] = [
-  { name: "TikTok", sub: "Profiles and stats", ic: "tiktok", command: ",tiktok username" },
-  { name: "YouTube", sub: "Channels and videos", ic: "youtube", command: ",youtube @channel" },
-  { name: "GitHub", sub: "Users and repos", ic: "github", command: ",github owner/repo" },
-  { name: "Spotify", sub: "Songs and artists", ic: "spotify", command: ",spotify song name" },
-  { name: "Commands", sub: "Every command, listed", ic: "terminal", command: "!commands" },
-];
-
-function featureCard(item: Feature, hidden: boolean): HTMLElement {
-  const button = h(
-    "button",
-    {
-      class: "fcard",
-      type: "button",
-      title: `Copy ${item.command}`,
-      "aria-label": `Copy example: ${item.command}`,
-      tabindex: hidden ? "-1" : "0",
-      onclick: () => {
-        flashCopied(button);
-        void copyWithToast(item.command);
-      },
-    },
-    h("span", { class: "ficon" }, icon(item.ic)),
-    h("span", { class: "ftext" }, h("strong", {}, item.name), h("span", {}, item.sub)),
-  );
-  return button;
-}
-
-function marqueeRow(items: Feature[], reverse: boolean, label: string): HTMLElement {
-  const track = h("div", { class: "track" });
-  for (const hidden of [false, true]) {
-    const group = h("div", { class: "group" });
-    if (hidden) group.setAttribute("aria-hidden", "true");
-    for (const item of items) group.appendChild(featureCard(item, hidden));
-    track.appendChild(group);
-  }
-  return h("div", { class: `marquee${reverse ? " rev" : ""}`, role: "group", "aria-label": label }, track);
-}
 
 function serverCard(server: ServerInfo): HTMLElement {
   const initial = (server.name.trim()[0] ?? "?").toUpperCase();
@@ -68,16 +18,23 @@ function serverCard(server: ServerInfo): HTMLElement {
   return h("div", { class: "fcard server" }, avatar, h("span", { class: "ftext" }, h("strong", {}, server.name), members ? h("span", {}, members) : null));
 }
 
+function placeholderCard(): HTMLElement {
+  return h(
+    "div",
+    { class: "fcard server ghost" },
+    h("span", { class: "savatar" }, h("span", { class: "sinitial", "aria-hidden": "true" }, "+")),
+    h("span", { class: "ftext" }, h("strong", {}, "Your server"), h("span", {}, "Add Risk to see it here")),
+  );
+}
+
 function serverRow(servers: ServerInfo[]): HTMLElement {
-  if (servers.length <= 4) {
-    const group = h("div", { class: "group" }, ...servers.map(serverCard));
-    return h("div", { class: "marquee static", role: "list", "aria-label": "Servers using Risk" }, h("div", { class: "track" }, group));
-  }
-  let items = servers;
-  while (items.length < 8) items = [...items, ...servers];
+  const cards = (): HTMLElement[] => (servers.length > 0 ? servers.map(serverCard) : Array.from({ length: 4 }, placeholderCard));
+  const per = servers.length > 0 ? servers.length : 4;
+  const copies = Math.max(1, Math.ceil(10 / per));
   const track = h("div", { class: "track" });
   for (const hidden of [false, true]) {
-    const group = h("div", { class: "group" }, ...items.map(serverCard));
+    const group = h("div", { class: "group" });
+    for (let i = 0; i < copies; i += 1) group.append(...cards());
     if (hidden) group.setAttribute("aria-hidden", "true");
     track.appendChild(group);
   }
@@ -97,12 +54,12 @@ const CATEGORY_META: Record<string, { ic: IconName; blurb: string }> = {
   Lookups: { ic: "lookup", blurb: "TikTok, YouTube, GitHub and Spotify profiles." },
 };
 
-function categoryRow(name: string, items: CommandInfo[], prefix: string): HTMLElement {
+function categoryRow(name: string, items: CommandInfo[], prefix: string, index: number): HTMLElement {
   const meta = CATEGORY_META[name] ?? { ic: "terminal" as IconName, blurb: "" };
   const samples = items.filter((c) => c.kind === "prefix").slice(0, 4);
   return h(
     "a",
-    { class: "row", href: "/commands", "data-link": true, "aria-label": `${name}: ${items.length} commands` },
+    { class: "row", href: "/commands", "data-link": true, style: `--n:${index % 6}`, "aria-label": `${name}: ${items.length} commands` },
     h("span", { class: "row-ic" }, icon(meta.ic)),
     h("span", { class: "row-name" }, h("strong", {}, name), h("span", { class: "row-count" }, `${items.length} command${items.length === 1 ? "" : "s"}`)),
     h("span", { class: "row-blurb" }, meta.blurb),
@@ -151,19 +108,13 @@ export function renderHome(config: SiteConfig): { node: HTMLElement; cleanup: ()
     ),
   );
 
-  const rowsNote = h("p", { class: "fine rows-note" });
   const rows = h("section", { class: "feature-rows", "aria-label": "Servers using Risk", "data-step": true, style: "--s:5" });
   let shown = "";
   const fillRows = (servers: ServerInfo[]): void => {
     const key = JSON.stringify(servers);
     if (key === shown && rows.firstChild) return;
     shown = key;
-    if (servers.length > 0) {
-      rows.replaceChildren(h("p", { class: "strip-label" }, "Servers running Risk"), serverRow(servers));
-    } else {
-      rowsNote.textContent = "Click a card to copy its command.";
-      rows.replaceChildren(marqueeRow([...ROW_ONE, ...ROW_TWO], false, "Features"), rowsNote);
-    }
+    rows.replaceChildren(h("p", { class: "strip-label" }, servers.length > 0 ? "Servers running Risk" : "Servers running Risk will show up here"), serverRow(servers));
   };
   fillRows(currentStatus()?.servers ?? []);
   const stopStatus = onStatus((status) => fillRows(status?.servers ?? []));
@@ -171,7 +122,7 @@ export function renderHome(config: SiteConfig): { node: HTMLElement; cleanup: ()
   const catGrid = h("div", { class: "index" });
   const cats = h(
     "section",
-    { class: "container cats", "aria-labelledby": "cats-title" },
+    { class: "container cats", "aria-labelledby": "cats-title", "data-reveal": true },
     h(
       "div",
       { class: "paper" },
@@ -183,14 +134,14 @@ export function renderHome(config: SiteConfig): { node: HTMLElement; cleanup: ()
   const demoRoot = h("div", { class: "demo-grid" });
   const demo = h(
     "section",
-    { class: "container demo", "aria-labelledby": "demo-title" },
+    { class: "container demo", "aria-labelledby": "demo-title", "data-reveal": true },
     h("div", { class: "sec-head" }, h("h2", { id: "demo-title" }, "See a command run"), h("p", { class: "lede" }, "Pick one to watch Risk reply.")),
     demoRoot,
   );
 
   const cta = h(
     "section",
-    { class: "container cta-sec", "aria-labelledby": "cta-title" },
+    { class: "container cta-sec", "aria-labelledby": "cta-title", "data-reveal": true },
     h(
       "div",
       { class: "cta-panel" },
@@ -207,6 +158,9 @@ export function renderHome(config: SiteConfig): { node: HTMLElement; cleanup: ()
 
   const node = h("div", { class: "view intro" }, hero, rows, cats, demo, cta);
 
+  let stopRows: () => void = () => undefined;
+  const stopReveal = revealOnScroll(node, "[data-reveal]", "in", 0.15);
+  const stopFx = scrollFx(node);
   const stopDemo = mountDemo(demoRoot);
   applyStatus(node);
   playIntro(node);
@@ -218,7 +172,9 @@ export function renderHome(config: SiteConfig): { node: HTMLElement; cleanup: ()
       const groups = new Map<string, CommandInfo[]>();
       for (const command of data.commands) groups.set(command.category, [...(groups.get(command.category) ?? []), command]);
       const prefix = data.prefixes[0] ?? "!";
-      catGrid.replaceChildren(...[...groups].map(([name, items]) => categoryRow(name, items, prefix)));
+      catGrid.replaceChildren(...[...groups].map(([name, items], i) => categoryRow(name, items, prefix, i)));
+      stopRows();
+      stopRows = revealOnScroll(catGrid, ".row", "in", 0.2);
     })
     .catch(() => cats.remove());
 
@@ -227,6 +183,9 @@ export function renderHome(config: SiteConfig): { node: HTMLElement; cleanup: ()
     cleanup: () => {
       stopDemo();
       stopStatus();
+      stopReveal();
+      stopRows();
+      stopFx();
     },
   };
 }
