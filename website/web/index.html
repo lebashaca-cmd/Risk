@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Risk: tickets, logs and moderation for Discord</title>
+  <meta name="description" content="Risk is a Discord bot for ticket channels, server logs, welcome messages, AI answers and TikTok, YouTube, GitHub and Spotify lookups.">
+  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#131314">
+  <meta property="og:title" content="Risk: tickets, logs and moderation for Discord">
+  <meta property="og:description" content="Ticket channels, server logs, welcome messages, AI answers and social lookups in one Discord bot.">
+  <meta property="og:type" content="website">
+  <link rel="icon" href="/favicon.png" type="image/png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,300;0,400;0,500;0,600;1,300&family=JetBrains+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="/assets/css/site.css">
+</head>
+<body>
+  <a class="skip" href="#app">Skip to content</a>
+
+  <header class="nav-wrap">
+    <div class="nav">
+      <a class="wordmark" href="/" data-link aria-label="Risk home">
+        <img class="logo-img" src="/assets/logo.jpg" alt="" width="28" height="28">
+        <span class="wm-text">risk</span>
+      </a>
+      <nav class="nav-links" aria-label="Main">
+        <span class="nav-ind" aria-hidden="true"></span>
+        <a href="/commands" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5h16v14H4z"/><path d="M8 10l3 2-3 2"/><path d="M13 15h3"/></svg>Commands</a>
+        <a href="/terms" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5"/><path d="M10 16h5"/></svg>Terms</a>
+        <span class="nav-status" role="status"><span class="status-dot" data-status-dot data-state="checking"></span>Status</span>
+      </nav>
+      <a class="btn btn-primary btn-small" data-invite href="/commands"><span class="btn-long">Add to server</span><span class="btn-short">Add</span></a>
+    </div>
+  </header>
+
+  <main id="app" tabindex="-1">
+    <noscript>
+      <div class="container page">
+        <h1>Risk</h1>
+        <p class="lede">This site needs JavaScript to show the command list and live status. Type !commands in your Discord server to see everything Risk can do.</p>
+      </div>
+    </noscript>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <a class="wordmark" href="/" data-link aria-label="Risk home">
+          <img class="logo-img" src="/assets/logo.jpg" alt="" width="28" height="28">
+          <span>risk</span>
+        </a>
+        <p>Tickets, logs and moderation for Discord.</p>
+        <p class="fine">Risk isn't affiliated with Discord Inc.</p>
+      </div>
+      <nav aria-label="Footer">
+        <a href="/commands" data-link>Commands</a>
+        <a href="/terms" data-link>Terms</a>
+        <a data-invite href="/commands">Add to server</a>
+      </nav>
+    </div>
+  </footer>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script type="module" src="/assets/js/app.js"></script>
+</body>
+</html>
