@@ -188,16 +188,10 @@ mark { background: #f2f2f2; color: #111; border-radius: 3px; padding: 0 0.12em; 
 .sinitial { font-weight: 600; font-size: 1.15rem; color: #fff; }
 .fcard.server { cursor: default; }
 .fcard.server:hover { transform: none; border-color: var(--edge); }
-.marquee.static { -webkit-mask-image: none; mask-image: none; width: min(100% - 2rem, 74rem); margin-inline: auto; }
-@media (min-width: 40rem) { .marquee.static { width: min(100% - 4rem, 74rem); } }
-.marquee.static .track { width: auto; }
-.marquee.static .group { flex-wrap: wrap; padding-right: 0; }
-.ftext { display: grid; gap: 0.05rem; min-width: 0; }
+@media (min-width: 40rem) { .ftext { display: grid; gap: 0.05rem; min-width: 0; }
 .ftext strong { font-size: 0.98rem; font-weight: 500; letter-spacing: -0.01em; white-space: nowrap; }
 .ftext span { color: var(--mist); font-size: 0.8rem; font-weight: 300; white-space: nowrap; }
-.rows-note { text-align: left; margin: 0.75rem auto 0; width: min(100% - 2rem, 74rem); }
-@media (min-width: 40rem) { .rows-note { width: min(100% - 4rem, 74rem); } }
-
+@media (min-width: 40rem) { 
 /* Command index */
 .cats { padding-block: 4.5rem 1rem; }
 .paper { background: #ececee; color: #151516; border-radius: 32px; padding: clamp(1.5rem, 5vw, 3.5rem); }
@@ -419,3 +413,31 @@ html.anim .marquee:hover .track, html.anim .marquee:focus-within .track { animat
   .btn, .toast, .nav-ind { transition: none; }
   .marquee { overflow-x: auto; scrollbar-width: none; }
 }
+
+/* Placeholder cards shown until the bot reports its servers */
+.fcard.ghost { border-style: dashed; background: transparent; }
+.fcard.ghost .savatar { background: transparent; border-style: dashed; }
+.fcard.ghost .sinitial { color: var(--mist); font-weight: 300; font-size: 1.5rem; }
+
+/* Scroll progress under the nav */
+.nav-wrap::after { content: ""; position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: #f2f2f2; transform-origin: 0 50%; transform: scaleX(var(--prog, 0)); opacity: 0; }
+
+html.anim .nav-wrap::after { opacity: 0.85; }
+
+/* Scroll weight: layers trail the scroll and settle */
+html.anim .portrait { translate: 0 var(--py, 0px); will-change: translate; }
+html.anim .portrait::before { transform: rotate(-9deg) translate(-1.6rem, calc(0.4rem + var(--py2, 0px))); }
+html.anim .portrait::after { transform: rotate(calc(-4deg + var(--tilt, 0deg))) translate(-0.7rem, 0.5rem); }
+html.anim .frame { transform: rotate(calc(2.5deg + var(--tilt, 0deg) * -0.6)); }
+html.anim .hero-copy { translate: 0 var(--hy, 0px); will-change: translate; }
+
+/* Sections rise in as they arrive; rows follow one after another */
+html.anim [data-reveal] { opacity: 0; transform: translateY(56px) scale(0.985); }
+html.anim [data-reveal].in { opacity: 1; transform: none; transition: opacity 0.9s ease, transform 1s var(--ease); }
+html.anim .paper .row { opacity: 0; transform: translateX(-28px); }
+html.anim .paper .row.in { opacity: 1; transform: none; transition: opacity 0.6s ease, transform 0.7s var(--ease), background-color 0.2s ease, padding 0.25s var(--ease); transition-delay: calc(var(--n, 0) * 70ms), calc(var(--n, 0) * 70ms), 0s, 0s; }
+html.anim .fcard { transition: transform 0.25s var(--ease), border-color 0.2s ease, background-color 0.2s ease; }
+html.anim .fcard.server:hover { transform: translateY(-4px); border-color: var(--edge-strong); background: rgba(255, 255, 255, 0.07); }
+html.anim .btn:hover { transform: translateY(-2px); }
+html.anim .cta-panel { background-size: 160% 160%; animation: glow 9s ease-in-out infinite alternate; }
+@keyframes glow { from { background-position: 100% 0%, 0 0; } to { background-position: 60% 30%, 0 0; } }
