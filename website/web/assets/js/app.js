@@ -4,7 +4,7 @@ import { h, mount } from "./dom.js";
 import { renderCommands } from "./commands.js";
 import { renderHome } from "./home.js";
 import { applyStatus, startStatusPolling } from "./status.js";
-import { renderTerms } from "./terms.js";
+import { renderPrivacy, renderTerms } from "./terms.js";
 const outlet = document.getElementById("app");
 const fallbackConfig = { name: "Risk", inviteUrl: null, supportUrl: null };
 let config = fallbackConfig;
@@ -15,6 +15,7 @@ const TITLES = {
     "/": "Risk: tickets, logs and moderation for Discord",
     "/commands": "Commands · Risk",
     "/terms": "Terms of Service · Risk",
+    "/privacy": "Privacy Policy · Risk",
 };
 function normalize(path) {
     const trimmed = path.replace(/\/+$/, "");
@@ -81,6 +82,12 @@ function render() {
         }
         case "/terms": {
             const view = renderTerms();
+            node = view.node;
+            cleanup = view.cleanup;
+            break;
+        }
+        case "/privacy": {
+            const view = renderPrivacy();
             node = view.node;
             cleanup = view.cleanup;
             break;

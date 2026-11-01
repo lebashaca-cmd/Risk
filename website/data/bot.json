@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T00:31:32+00:00",
+  "generatedAt": "2026-11-01T05:28:39+00:00",
   "prefixes": [
     "!",
     "?",
@@ -32,6 +32,16 @@
       "category": "Info",
       "description": "Check the bot's latency.",
       "examples": [],
+      "permission": null
+    },
+    {
+      "name": "privacy",
+      "kind": "prefix",
+      "category": "Info",
+      "description": "Shows what data Risk saves and how it is used.",
+      "examples": [
+        ""
+      ],
       "permission": null
     },
     {
@@ -1437,14 +1447,114 @@
       "permission": null
     },
     {
-      "name": "levels",
+      "name": "addxp",
       "kind": "prefix",
       "category": "Levels",
-      "description": "Shows the most active members by XP.",
+      "description": "Gives someone extra XP.",
+      "examples": [
+        "@user 500"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "delreward",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Removes the reward for a level.",
+      "examples": [
+        "10"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "levelchannel",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Chooses where level-ups are announced: a #channel, here, or off.",
+      "examples": [
+        "#levels"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "levelinfo",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows how levels are set up in this server.",
       "examples": [
         ""
       ],
       "permission": null
+    },
+    {
+      "name": "levelmessage",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Sets the level-up message using {user}, {name} and {level}, or reset.",
+      "examples": [
+        "Nice one {user}, level {level}!"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "levelreward",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Gives a role when members reach a level.",
+      "examples": [
+        "10 @Regular"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "levelrewards",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Lists the roles given at each level.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "levels",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows the most active members by XP, 10 per page.",
+      "examples": [
+        "2"
+      ],
+      "permission": null
+    },
+    {
+      "name": "levelstats",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows level statistics for the server.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "nextlevel",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows how much XP is left for the next level.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "noxp",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Toggles a channel or role that earns no XP.",
+      "examples": [
+        "#bot-spam"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "rank",
@@ -1457,12 +1567,112 @@
       "permission": null
     },
     {
+      "name": "removexp",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Takes XP away from someone.",
+      "examples": [
+        "@user 500"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "resetlevels",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Resets everyone's XP in this server.",
+      "examples": [
+        "confirm"
+      ],
+      "permission": "Administrator"
+    },
+    {
+      "name": "resetxp",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Resets one person's XP and message count.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rewardmode",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Chooses whether reward roles stack or only the newest is kept.",
+      "examples": [
+        "replace"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "rewardsync",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Gives reward roles to members who already qualify.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "setlevel",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Sets someone to the start of a level.",
+      "examples": [
+        "@user 10"
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "setxp",
       "kind": "prefix",
       "category": "Levels",
       "description": "Sets someone's XP.",
       "examples": [
         "@user 2500"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "xpcooldown",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Sets how many seconds a member waits between XP gains.",
+      "examples": [
+        "45"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "xpmultiplier",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Sets how much XP each message earns, from 0.5 to 5.",
+      "examples": [
+        "2"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "xpneeded",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows the total XP needed to reach a level.",
+      "examples": [
+        "25"
+      ],
+      "permission": null
+    },
+    {
+      "name": "delpanel",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Turns off a ticket panel by its message ID.",
+      "examples": [
+        "123456789012345678"
       ],
       "permission": "Manage Server"
     },
@@ -1487,6 +1697,236 @@
       "permission": "Manage Channels"
     },
     {
+      "name": "ticketadd",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Adds someone to the current ticket.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketclaim",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Claims the current ticket so others know you're handling it.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketclose",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Closes the current ticket with a reason and saves a transcript to the log channel.",
+      "examples": [
+        "resolved"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketinfo",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Shows details about a ticket.",
+      "examples": [
+        "#ticket-name"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketlock",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Stops the ticket's opener from sending messages.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketnote",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Saves a private staff note on the ticket and hides your message.",
+      "examples": [
+        "customer wants a refund"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketnotes",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Sends you this ticket's staff notes by direct message.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketpanels",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Lists the ticket panels that are active.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "ticketping",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Pings the ticket's opener to ask for a reply.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketpriority",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Sets the ticket priority: low, normal, high or urgent.",
+      "examples": [
+        "high"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketremove",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Removes someone from the current ticket.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketrename",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Renames the current ticket channel.",
+      "examples": [
+        "billing-issue"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tickets",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Lists the open tickets in this server.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "ticketstats",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Shows a summary of open tickets.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "ticketunclaim",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Releases your claim on the current ticket.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "ticketunlock",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Lets the ticket's opener send messages again.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "transcript",
+      "kind": "prefix",
+      "category": "Tickets",
+      "description": "Sends a text transcript of the current ticket without closing it.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "logchannel",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Sends one log category to its own channel, or back to the main one with off.",
+      "examples": [
+        "voice #voice-logs"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "logevents",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Lists every log category and whether it's on.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "logignore",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Stops logging message edits and deletes in a channel.",
+      "examples": [
+        "#staff-chat"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "logignored",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Lists the channels whose message logs are off.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "logrecent",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Shows the most recent logged events since the bot started.",
+      "examples": [
+        "15"
+      ],
+      "permission": "View Audit Log"
+    },
+    {
+      "name": "logreset",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Resets categories, extra channels and ignored channels to the defaults.",
+      "examples": [
+        "confirm"
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "logs",
       "kind": "prefix",
       "category": "Server logs",
@@ -1495,6 +1935,66 @@
         "#channel"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "logsearch",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Searches recent logged events for some text.",
+      "examples": [
+        "deleted"
+      ],
+      "permission": "View Audit Log"
+    },
+    {
+      "name": "logstatus",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Shows the log channel and the current log settings.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "logtest",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Sends a test message to the log channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "logtoggle",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Turns a log category off or on.",
+      "examples": [
+        "voice"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "logunignore",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Starts logging message edits and deletes in a channel again.",
+      "examples": [
+        "#staff-chat"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "loguser",
+      "kind": "prefix",
+      "category": "Server logs",
+      "description": "Shows recent logged events about a person.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "View Audit Log"
     },
     {
       "name": "welcome",
@@ -1627,5 +2127,54 @@
       }
     ],
     "updated": "October 10, 2026"
+  },
+  "privacy": {
+    "sections": [
+      {
+        "title": "1. Who this covers",
+        "text": "This policy covers the Risk Discord bot and its website. Risk is run by an individual, not a company. For any question or request below, use the support server linked on the website."
+      },
+      {
+        "title": "2. What Risk saves",
+        "text": "Risk saves only what its features need, tied to Discord user, server, channel and role IDs: coin balances, items and cooldowns (economy); XP, message counts and level settings (levels); to-do lists, AFK notes and reminder text; warnings with the reason, moderator and time; welcome, log, ticket and sticky-message settings; and ticket records, including staff notes. Risk does not keep a copy of your general chat messages."
+      },
+      {
+        "title": "3. Messages Risk reads",
+        "text": "Risk reads messages in servers it is in so it can notice commands and count messages for levels. It saves the count, not the text. For the snipe commands it holds the last deleted and last edited message of each channel in memory only. These are replaced by newer ones and cleared when the bot restarts."
+      },
+      {
+        "title": "4. Tickets and server logs",
+        "text": "When a ticket closes, Risk posts a text transcript (messages, names and attachment links) to the staff log channel that server chose. Server logs post things like deleted and edited messages, joins and leaves, role, nickname and voice changes to the channel that server's admins choose. That content then lives in Discord, under that server's control. Risk itself keeps only the last 200 log summaries per server, in memory."
+      },
+      {
+        "title": "5. Outside services",
+        "text": "Some commands send what you type to other services to get an answer: AI questions go to Groq; weather locations to wttr.in; words to dictionaryapi.dev; QR text to qrserver.com; topics to Wikipedia; profile lookups to api.nerve.wtf and the platform being looked up; and GIF, image, joke, advice and trivia commands to nekos.best, waifu.pics, thecatapi.com, dog.ceo, randomfox.ca, icanhazdadjoke.com, adviceslip.com and opentdb.com. Don't send passwords or private details to these commands. Each service has its own policy."
+      },
+      {
+        "title": "6. The website",
+        "text": "The website shows the bot's status and command list. It sets no cookies, uses no analytics or ads, and stores nothing in your browser. Its host keeps ordinary request logs (IP address, time and page), and the pages load fonts from Google Fonts, which sees your IP address. The public status feed lists, for up to 30 servers the bot is in, the server's name, icon and member count. Server owners can ask to be left out."
+      },
+      {
+        "title": "7. How long data is kept",
+        "text": "Saved data stays on the bot's host until it is reset or deleted. Admins can reset XP with the level commands, clear warnings with the moderation commands, and you can clear your own to-do list. If Risk leaves a server, that server's saved data stays on the host until it is deleted on request."
+      },
+      {
+        "title": "8. Your choices",
+        "text": "You can ask what Risk has saved about you, or ask for it to be deleted, through the support server. Include your Discord user ID. Server admins can switch features off, exclude channels from XP and logs, or remove the bot. Removing the bot stops all collection from that server."
+      },
+      {
+        "title": "9. Sharing and security",
+        "text": "Risk does not sell your data or use it for advertising. It is shared only as described above, or when the law requires it. Saved files and secret keys are kept on the bot's host and not published, but no system is perfectly secure, so avoid putting sensitive information into any command."
+      },
+      {
+        "title": "10. Age",
+        "text": "Discord requires users to be at least 13, or the minimum age in their country. Risk is not meant for anyone younger and does not knowingly collect data from them."
+      },
+      {
+        "title": "11. Changes",
+        "text": "This policy may change as Risk gains features. The date at the bottom shows the latest version, and continuing to use Risk means you accept the current one."
+      }
+    ],
+    "updated": "November 1, 2026"
   }
 }

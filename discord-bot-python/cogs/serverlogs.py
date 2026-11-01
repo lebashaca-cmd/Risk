@@ -36,6 +36,13 @@ class ServerLogs(commands.Cog):
 
     async def send(self, guild, title, color, description=None, fields=(), user=None):
         channel = self.log_channel(guild)
+        tools = self.bot.get_cog("LogTools")
+        category = None
+        if tools is not None:
+            category = tools.category_for(title)
+            if not tools.enabled(guild.id, category):
+                return
+            channel = tools.route(guild, category) or channel
         if channel is None:
             return
         embed = discord.Embed(title=title, description=description, color=color, timestamp=datetime.now(timezone.utc))
@@ -47,7 +54,13 @@ class ServerLogs(commands.Cog):
         try:
             await channel.send(embed=embed)
         except discord.HTTPException:
-            pass
+            return
+        if tools is not None:
+            tools.record(guild.id, category, title, description, fields, user)
+
+    def muted_channel(self, channel):
+        tools = self.bot.get_cog("LogTools")
+        return tools is not None and tools.is_muted(channel)
 
     def ignored_channel(self, channel):
         log = self.log_channel(channel.guild) if channel is not None else None
@@ -105,7 +118,7 @@ class ServerLogs(commands.Cog):
             return
         guild = self.bot.get_guild(payload.guild_id)
         channel = guild.get_channel(payload.channel_id) if guild else None
-        if guild is None or channel is None or self.ignored_channel(channel):
+        if guild is None or channel is None or self.ignored_channel(channel) or self.muted_channel(channel):
             return
 
         message = payload.cached_message
@@ -133,7 +146,7 @@ class ServerLogs(commands.Cog):
     async def on_raw_bulk_message_delete(self, payload):
         guild = self.bot.get_guild(payload.guild_id) if payload.guild_id else None
         channel = guild.get_channel(payload.channel_id) if guild else None
-        if guild is None or channel is None or self.ignored_channel(channel):
+        if guild is None or channel is None or self.ignored_channel(channel) or self.muted_channel(channel):
             return
         await self.send(
             guild,
@@ -146,7 +159,7 @@ class ServerLogs(commands.Cog):
     async def on_message_edit(self, before, after):
         if after.guild is None or after.author.bot or before.content == after.content:
             return
-        if self.ignored_channel(after.channel):
+        if self.ignored_channel(after.channel) or self.muted_channel(after.channel):
             return
         await self.send(
             after.guild,

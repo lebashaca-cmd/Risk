@@ -11,4 +11,5 @@ export const api = {
   status: () => getJSON<BotStatus>("/api/status"),
   commands: () => getJSON<CommandsPayload>("/api/commands"),
   tos: () => getJSON<TosPayload>("/api/tos"),
+  privacy: () => getJSON<TosPayload>("/api/privacy"),
 };

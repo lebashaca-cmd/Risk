@@ -20,6 +20,7 @@ CATEGORY_BY_FILE = {
     "bot_time": "Info",
     "website": "Info",
     "tos": "Info",
+    "privacy": "Info",
     "utility": "Utility",
     "utility_tools": "Utility",
     "utility_extra": "Utility",
@@ -32,7 +33,9 @@ CATEGORY_BY_FILE = {
     "economy_extra": "Economy",
     "levels": "Levels",
     "tickets": "Tickets",
+    "ticket_tools": "Tickets",
     "serverlogs": "Server logs",
+    "log_tools": "Server logs",
     "welcome": "Welcome",
     "ai_chat": "AI",
     "nerve": "Lookups",
@@ -157,7 +160,7 @@ def read_tos(path):
         if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "SECTIONS" for t in node.targets):
             for title, text in ast.literal_eval(node.value):
                 sections.append({"title": title, "text": text})
-    match = re.search(r"Last updated:\s*([^\"']+)", source)
+    match = re.search(r"UPDATED\s*=\s*[\"']([^\"']+)[\"']", source) or re.search(r"Last updated:\s*([^\"']+)", source)
     return {"sections": sections, "updated": match.group(1).strip() if match else None}
 
 
@@ -200,11 +203,12 @@ def main():
         "prefixes": prefixes,
         "commands": unique,
         "tos": read_tos(root / "cogs" / "tos.py"),
+        "privacy": read_tos(root / "cogs" / "privacy.py"),
     }
     out = Path(args.out)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    print(f"Wrote {out}: {len(unique)} commands, {len(data['tos']['sections'])} terms sections, prefixes {prefixes}")
+    print(f"Wrote {out}: {len(unique)} commands, {len(data['tos']['sections'])} terms sections, {len(data['privacy']['sections'])} privacy sections, prefixes {prefixes}")
 
 
 if __name__ == "__main__":

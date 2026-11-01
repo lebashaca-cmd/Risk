@@ -9,15 +9,33 @@ function slug(title, index) {
     return text || `section-${index + 1}`;
 }
 export function renderTerms() {
-    const body = h("div", { class: "terms-layout" }, h("p", { class: "muted" }, "Loading terms"));
-    const node = h("div", { class: "view container page" }, h("h1", {}, "Terms of Service"), body);
+    return renderDocument({
+        title: "Terms of Service",
+        loading: "Loading terms",
+        empty: "The terms aren't published yet.",
+        failed: "The terms didn't load. Refresh the page and try again.",
+        load: () => api.tos(),
+    });
+}
+export function renderPrivacy() {
+    return renderDocument({
+        title: "Privacy Policy",
+        loading: "Loading the privacy policy",
+        empty: "The privacy policy isn't published yet.",
+        failed: "The privacy policy didn't load. Refresh the page and try again.",
+        load: () => api.privacy(),
+    });
+}
+function renderDocument(options) {
+    const body = h("div", { class: "terms-layout" }, h("p", { class: "muted" }, options.loading));
+    const node = h("div", { class: "view container page" }, h("h1", {}, options.title), body);
     let onScroll = null;
     let onUnpin = null;
     let pinned = null;
     let frame = 0;
     const show = (tos) => {
         if (!tos.sections.length) {
-            mount(body, h("p", { class: "empty" }, "The terms aren't published yet."));
+            mount(body, h("p", { class: "empty" }, options.empty));
             return;
         }
         const sections = tos.sections.map((section, i) => ({ ...section, id: slug(section.title, i) }));
@@ -70,10 +88,10 @@ export function renderTerms() {
         if (window.location.hash)
             document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
     };
-    api
-        .tos()
+    options
+        .load()
         .then(show)
-        .catch(() => mount(body, h("p", { class: "empty" }, "The terms didn't load. Refresh the page and try again.")));
+        .catch(() => mount(body, h("p", { class: "empty" }, options.failed)));
     return {
         node,
         cleanup: () => {

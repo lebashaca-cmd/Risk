@@ -9,4 +9,5 @@ export const api = {
     status: () => getJSON("/api/status"),
     commands: () => getJSON("/api/commands"),
     tos: () => getJSON("/api/tos"),
+    privacy: () => getJSON("/api/privacy"),
 };
