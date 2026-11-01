@@ -4,7 +4,7 @@ import { h, mount } from "./dom.js";
 import { renderCommands } from "./commands.js";
 import { renderHome } from "./home.js";
 import { applyStatus, startStatusPolling } from "./status.js";
-import { renderTerms } from "./terms.js";
+import { renderPrivacy, renderTerms } from "./terms.js";
 import type { SiteConfig } from "./types.js";
 
 const outlet = document.getElementById("app");
@@ -18,6 +18,7 @@ const TITLES: Record<string, string> = {
   "/": "Risk: tickets, logs and moderation for Discord",
   "/commands": "Commands · Risk",
   "/terms": "Terms of Service · Risk",
+  "/privacy": "Privacy Policy · Risk",
 };
 
 function normalize(path: string): string {
@@ -94,6 +95,12 @@ function render(): void {
     }
     case "/terms": {
       const view = renderTerms();
+      node = view.node;
+      cleanup = view.cleanup;
+      break;
+    }
+    case "/privacy": {
+      const view = renderPrivacy();
       node = view.node;
       cleanup = view.cleanup;
       break;

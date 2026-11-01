@@ -11,9 +11,37 @@ function slug(title: string, index: number): string {
   return text || `section-${index + 1}`;
 }
 
+interface DocumentOptions {
+  title: string;
+  loading: string;
+  empty: string;
+  failed: string;
+  load: () => Promise<TosPayload>;
+}
+
 export function renderTerms(): { node: HTMLElement; cleanup: () => void } {
-  const body = h("div", { class: "terms-layout" }, h("p", { class: "muted" }, "Loading terms"));
-  const node = h("div", { class: "view container page" }, h("h1", {}, "Terms of Service"), body);
+  return renderDocument({
+    title: "Terms of Service",
+    loading: "Loading terms",
+    empty: "The terms aren't published yet.",
+    failed: "The terms didn't load. Refresh the page and try again.",
+    load: () => api.tos(),
+  });
+}
+
+export function renderPrivacy(): { node: HTMLElement; cleanup: () => void } {
+  return renderDocument({
+    title: "Privacy Policy",
+    loading: "Loading the privacy policy",
+    empty: "The privacy policy isn't published yet.",
+    failed: "The privacy policy didn't load. Refresh the page and try again.",
+    load: () => api.privacy(),
+  });
+}
+
+function renderDocument(options: DocumentOptions): { node: HTMLElement; cleanup: () => void } {
+  const body = h("div", { class: "terms-layout" }, h("p", { class: "muted" }, options.loading));
+  const node = h("div", { class: "view container page" }, h("h1", {}, options.title), body);
   let onScroll: (() => void) | null = null;
   let onUnpin: (() => void) | null = null;
   let pinned: string | null = null;
@@ -21,7 +49,7 @@ export function renderTerms(): { node: HTMLElement; cleanup: () => void } {
 
   const show = (tos: TosPayload) => {
     if (!tos.sections.length) {
-      mount(body, h("p", { class: "empty" }, "The terms aren't published yet."));
+      mount(body, h("p", { class: "empty" }, options.empty));
       return;
     }
     const sections = tos.sections.map((section, i) => ({ ...section, id: slug(section.title, i) }));
@@ -77,10 +105,10 @@ export function renderTerms(): { node: HTMLElement; cleanup: () => void } {
     if (window.location.hash) document.getElementById(window.location.hash.slice(1))?.scrollIntoView();
   };
 
-  api
-    .tos()
+  options
+    .load()
     .then(show)
-    .catch(() => mount(body, h("p", { class: "empty" }, "The terms didn't load. Refresh the page and try again.")));
+    .catch(() => mount(body, h("p", { class: "empty" }, options.failed)));
 
   return {
     node,

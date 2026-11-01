@@ -1,9 +1,9 @@
 # Risk website
 
-A small site for the Risk Discord bot: home page with a live status strip, a searchable command list, and the Terms of Service.
+A small site for the Risk Discord bot: home page with a live status strip, a searchable command list, the Terms of Service and the Privacy Policy.
 
 - **Frontend:** TypeScript in `src/`, compiled to plain JavaScript in `web/assets/js/`. The compiled files are included, so you don't need Node to run the site.
-- **Backend:** Python (`server.py`, aiohttp). It serves the pages and four small JSON routes: `/api/config`, `/api/status`, `/api/commands`, `/api/tos`.
+- **Backend:** Python (`server.py`, aiohttp). It serves the pages and five small JSON routes: `/api/config`, `/api/status`, `/api/commands`, `/api/tos`, `/api/privacy`.
 - **Data:** `data/bot.json` holds the command list and the terms. A script builds it from your bot's files.
 
 ## Run it

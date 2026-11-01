@@ -11,7 +11,7 @@ from aiohttp import web
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 DATA_FILE = ROOT / "data" / "bot.json"
-PAGES = {"/", "/commands", "/terms"}
+PAGES = {"/", "/commands", "/terms", "/privacy"}
 STATUS_TTL = 10
 API_LIMIT = (90, 60)
 
@@ -77,7 +77,7 @@ def read_bot_data():
     try:
         return json.loads(DATA_FILE.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return {"prefixes": ["!"], "commands": [], "tos": {"sections": [], "updated": None}}
+        return {"prefixes": ["!"], "commands": [], "tos": {"sections": [], "updated": None}, "privacy": {"sections": [], "updated": None}}
 
 
 class StatusCache:
@@ -216,6 +216,10 @@ async def api_tos(request):
     return json_ok(read_bot_data().get("tos", {"sections": [], "updated": None}), 300)
 
 
+async def api_privacy(request):
+    return json_ok(read_bot_data().get("privacy", {"sections": [], "updated": None}), 300)
+
+
 async def healthz(request):
     return web.json_response({"ok": True})
 
@@ -265,6 +269,7 @@ def make_app():
     app.router.add_get("/api/status", api_status)
     app.router.add_get("/api/commands", api_commands)
     app.router.add_get("/api/tos", api_tos)
+    app.router.add_get("/api/privacy", api_privacy)
     app.router.add_get("/healthz", healthz)
     app.router.add_get("/favicon.png", lambda r: web.FileResponse(WEB_DIR / "favicon.png"))
     app.router.add_static("/assets", WEB_DIR / "assets", follow_symlinks=False)
