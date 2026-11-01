@@ -79,7 +79,10 @@ class Economy(commands.Cog):
             acc["wallet"] = min(MAX_BALANCE, acc["wallet"] + reward)
             acc["last_daily"] = now
             self.store.save()
-        await ctx.reply(f"You claimed {self.money(reward)}. Streak: **{acc['streak']}** day(s).", mention_author=False)
+        embed = discord.Embed(title="Daily reward", description=f"You claimed {self.money(reward)}.", color=discord.Color.gold())
+        embed.add_field(name="Streak", value=f"{acc['streak']} day(s)")
+        embed.add_field(name="Wallet", value=self.money(acc["wallet"]))
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="work")
     async def work(self, ctx):
@@ -95,7 +98,9 @@ class Economy(commands.Cog):
             acc["wallet"] = min(MAX_BALANCE, acc["wallet"] + reward)
             acc["last_work"] = now
             self.store.save()
-        await ctx.reply(f"{random.choice(WORK_LINES)} and earned {self.money(reward)}.", mention_author=False)
+        embed = discord.Embed(title="Shift done", description=f"{random.choice(WORK_LINES)} and earned {self.money(reward)}.", color=discord.Color.gold())
+        embed.set_footer(text="Come back in an hour.")
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="deposit", aliases=["dep"])
     async def deposit(self, ctx, amount: str):
@@ -187,7 +192,8 @@ class Economy(commands.Cog):
             acc["wallet"] = min(MAX_BALANCE, acc["wallet"] - value + payout)
             self.store.save()
         outcome = f"You won {self.money(payout)}!" if payout > value else ("You got your bet back." if payout == value else f"You lost {self.money(value)}.")
-        await ctx.reply(f"🎰 | {' '.join(reels)} |\n{outcome}", mention_author=False)
+        embed = discord.Embed(title="🎰 Slots", description=f"## {' '.join(reels)}\n{outcome}", color=discord.Color.gold())
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="leaderboard", aliases=["lb", "rich"])
     async def leaderboard(self, ctx):

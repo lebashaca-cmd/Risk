@@ -203,12 +203,16 @@ class Fun(commands.Cog):
     @commands.command(name="8ball")
     async def eight_ball(self, ctx, *, question: str):
         """Asks the magic 8-ball a question. Usage: !8ball will it rain"""
-        await ctx.reply(f"🎱 {random.choice(EIGHT_BALL)}", mention_author=False)
+        embed = discord.Embed(color=discord.Color.dark_purple())
+        embed.add_field(name="Question", value=question[:250], inline=False)
+        embed.add_field(name="🎱 Answer", value=random.choice(EIGHT_BALL), inline=False)
+        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="coinflip", aliases=["flip", "coin"])
     async def coinflip(self, ctx):
         """Flips a coin. Usage: !coinflip"""
-        await ctx.reply(f"🪙 {random.choice(['Heads', 'Tails'])}", mention_author=False)
+        side = random.choice(["Heads", "Tails"])
+        await ctx.reply(embed=discord.Embed(title=f"🪙 {side}", color=discord.Color.gold()), mention_author=False)
 
     @commands.command(name="roll", aliases=["dice"])
     async def roll(self, ctx, spec: str = "1d6"):
@@ -261,7 +265,9 @@ class Fun(commands.Cog):
     async def rate(self, ctx, *, thing: str):
         """Rates anything out of 10. Usage: !rate pineapple pizza"""
         score = stable("rate", thing) % 11
-        await ctx.reply(f"I rate **{thing[:100]}** a **{score}/10**.", mention_author=False, allowed_mentions=NO_MENTIONS)
+        stars = "⭐" * score + "▫️" * (10 - score)
+        embed = discord.Embed(title=f"{score}/10", description=f"I rate **{discord.utils.escape_markdown(thing[:100])}**\n{stars}", color=discord.Color.light_grey())
+        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="ship")
     async def ship(self, ctx, first: discord.Member, second: discord.Member = None):
@@ -271,14 +277,41 @@ class Fun(commands.Cog):
         percent = stable("ship", *pair) % 101
         filled = percent // 10
         bar = "█" * filled + "░" * (10 - filled)
-        await ctx.reply(f"💞 {first.display_name} + {second.display_name}\n`{bar}` **{percent}%**", mention_author=False, allowed_mentions=NO_MENTIONS)
+        embed = discord.Embed(
+            title=f"💞 {first.display_name} + {second.display_name}",
+            description=f"`{bar}` **{percent}%**",
+            color=discord.Color.from_rgb(255, 105, 180),
+        )
+        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
 
     async def action(self, ctx, kind, member):
         if member.id == ctx.author.id:
             await ctx.reply("Pick someone else.", mention_author=False)
             return
         text = random.choice(ACTIONS[kind]).format(a=ctx.author.display_name, b=member.display_name)
-        await ctx.send(text, allowed_mentions=NO_MENTIONS)
+        gif, source = await self.action_gif(kind)
+        if not gif:
+            await ctx.send(text, allowed_mentions=NO_MENTIONS)
+            return
+        embed = discord.Embed(description=f"**{text}**", color=discord.Color.light_grey())
+        embed.set_image(url=gif)
+        if source:
+            embed.set_footer(text=source)
+        await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
+
+    async def action_gif(self, kind):
+        """Returns (gif_url, credit) for an action, or (None, None) if the GIF services are down."""
+        try:
+            data = await self.fetch_json(f"https://nekos.best/api/v2/{kind}")
+            item = data["results"][0]
+            return item["url"], item.get("anime_name")
+        except Exception:
+            pass
+        try:
+            data = await self.fetch_json(f"https://api.waifu.pics/sfw/{kind}")
+            return data["url"], None
+        except Exception:
+            return None, None
 
     @commands.command(name="hug")
     async def hug(self, ctx, member: discord.Member):
