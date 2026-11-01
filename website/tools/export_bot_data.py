@@ -22,18 +22,22 @@ CATEGORY_BY_FILE = {
     "tos": "Info",
     "utility": "Utility",
     "utility_tools": "Utility",
+    "utility_extra": "Utility",
     "moderation": "Moderation",
     "moderation_tools": "Moderation",
     "give_role": "Moderation",
     "fun": "Fun",
+    "fun_extra": "Fun",
     "economy": "Economy",
+    "economy_extra": "Economy",
+    "levels": "Levels",
     "tickets": "Tickets",
     "serverlogs": "Server logs",
     "welcome": "Welcome",
     "ai_chat": "AI",
     "nerve": "Lookups",
 }
-CATEGORY_ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
+CATEGORY_ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
 DEFAULT_HIDDEN = {"dusklogs", "duskreset"}
 
 
