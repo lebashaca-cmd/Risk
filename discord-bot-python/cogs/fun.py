@@ -278,7 +278,29 @@ class Fun(commands.Cog):
             await ctx.reply("Pick someone else.", mention_author=False)
             return
         text = random.choice(ACTIONS[kind]).format(a=ctx.author.display_name, b=member.display_name)
-        await ctx.send(text, allowed_mentions=NO_MENTIONS)
+        gif, source = await self.action_gif(kind)
+        if not gif:
+            await ctx.send(text, allowed_mentions=NO_MENTIONS)
+            return
+        embed = discord.Embed(description=f"**{text}**", color=discord.Color.light_grey())
+        embed.set_image(url=gif)
+        if source:
+            embed.set_footer(text=source)
+        await ctx.send(embed=embed, allowed_mentions=NO_MENTIONS)
+
+    async def action_gif(self, kind):
+        """Returns (gif_url, credit) for an action, or (None, None) if the GIF services are down."""
+        try:
+            data = await self.fetch_json(f"https://nekos.best/api/v2/{kind}")
+            item = data["results"][0]
+            return item["url"], item.get("anime_name")
+        except Exception:
+            pass
+        try:
+            data = await self.fetch_json(f"https://api.waifu.pics/sfw/{kind}")
+            return data["url"], None
+        except Exception:
+            return None, None
 
     @commands.command(name="hug")
     async def hug(self, ctx, member: discord.Member):
