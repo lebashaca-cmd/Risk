@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-10-31T00:23:54+00:00",
+  "generatedAt": "2026-11-01T00:31:32+00:00",
   "prefixes": [
     "!",
     "?",
@@ -76,6 +76,16 @@
       "permission": null
     },
     {
+      "name": "announce",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Sends an announcement to a channel.",
+      "examples": [
+        "#news Server maintenance tonight"
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "avatar",
       "kind": "prefix",
       "category": "Utility",
@@ -92,6 +102,26 @@
       "description": "Shows someone's profile banner.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "base64",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Encodes or decodes Base64 text.",
+      "examples": [
+        "encode hello"
+      ],
+      "permission": null
+    },
+    {
+      "name": "binary",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts text to binary, or binary back to text.",
+      "examples": [
+        "hi"
       ],
       "permission": null
     },
@@ -156,6 +186,16 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "embed",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Posts an embed in a channel. Separate the title and text with a pipe.",
+      "examples": [
+        "#news Title | The text"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
       "name": "emojis",
       "kind": "prefix",
       "category": "Utility",
@@ -186,6 +226,16 @@
       "permission": null
     },
     {
+      "name": "hash",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Hashes text with md5, sha1, sha256 or sha512.",
+      "examples": [
+        "sha256 hello"
+      ],
+      "permission": null
+    },
+    {
       "name": "inrole",
       "kind": "prefix",
       "category": "Utility",
@@ -212,6 +262,26 @@
       "description": "Shows how many members the server has.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "morse",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts text to Morse code, or Morse code back to text.",
+      "examples": [
+        "hello world"
+      ],
+      "permission": null
+    },
+    {
+      "name": "password",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Sends you a random password in a direct message.",
+      "examples": [
+        "20"
       ],
       "permission": null
     },
@@ -287,6 +357,16 @@
       "permission": null
     },
     {
+      "name": "rot13",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Applies the ROT13 letter swap.",
+      "examples": [
+        "hello"
+      ],
+      "permission": null
+    },
+    {
       "name": "serverbanner",
       "kind": "prefix",
       "category": "Utility",
@@ -335,6 +415,26 @@
       "permission": null
     },
     {
+      "name": "timestamp",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Makes a Discord timestamp from a UTC date.",
+      "examples": [
+        "2026-12-25 18:00"
+      ],
+      "permission": null
+    },
+    {
+      "name": "todo",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Keeps a personal to-do list. Actions: add, list, done, remove, clear.",
+      "examples": [
+        "add buy milk"
+      ],
+      "permission": null
+    },
+    {
       "name": "userinfo",
       "kind": "prefix",
       "category": "Utility",
@@ -351,6 +451,16 @@
       "description": "Shows the current weather for a city.",
       "examples": [
         "Chicago"
+      ],
+      "permission": null
+    },
+    {
+      "name": "wiki",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows the summary of a Wikipedia article.",
+      "examples": [
+        "Alan Turing"
       ],
       "permission": null
     },
@@ -617,10 +727,50 @@
       "permission": null
     },
     {
+      "name": "advice",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Gives a piece of advice.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "bite",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Bites someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "blush",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Blushes.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "bonk",
       "kind": "prefix",
       "category": "Fun",
       "description": "Bonks someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "boot",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Kicks someone with a GIF.",
       "examples": [
         "@user"
       ],
@@ -677,10 +827,50 @@
       "permission": null
     },
     {
+      "name": "cry",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Cries.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "cuddle",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Cuddles someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "dadjoke",
       "kind": "prefix",
       "category": "Fun",
       "description": "Fetches a random dad joke.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "dance",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Dances.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "dare",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Gives a dare.",
       "examples": [
         ""
       ],
@@ -717,10 +907,40 @@
       "permission": null
     },
     {
+      "name": "fight",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Starts a silly fight with someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "fortune",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Reads your fortune.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "fox",
       "kind": "prefix",
       "category": "Fun",
       "description": "Shows a random fox picture.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "guess",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Guess a number from 1 to 100 in six tries.",
       "examples": [
         ""
       ],
@@ -753,6 +973,16 @@
       "description": "Tells a joke.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "kiss",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Kisses someone.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -797,6 +1027,16 @@
       "permission": null
     },
     {
+      "name": "punch",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Punches someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "rate",
       "kind": "prefix",
       "category": "Fun",
@@ -813,6 +1053,16 @@
       "description": "Reverses your text.",
       "examples": [
         "hello"
+      ],
+      "permission": null
+    },
+    {
+      "name": "riddle",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Asks a riddle. First correct answer in 30 seconds wins.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -847,6 +1097,16 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "scramble",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Unscramble a word. First correct answer in 30 seconds wins.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "ship",
       "kind": "prefix",
       "category": "Fun",
@@ -867,12 +1127,32 @@
       "permission": null
     },
     {
+      "name": "tickle",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Tickles someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "tictactoe",
       "kind": "prefix",
       "category": "Fun",
       "description": "Starts a game of tic-tac-toe with someone.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "topic",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Starts a conversation with a random topic.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -887,12 +1167,32 @@
       "permission": null
     },
     {
+      "name": "truth",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Gives a truth question.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "uwu",
       "kind": "prefix",
       "category": "Fun",
       "description": "Turns text into uwu speak.",
       "examples": [
         "hello there"
+      ],
+      "permission": null
+    },
+    {
+      "name": "wave",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Waves hello.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -927,12 +1227,52 @@
       "permission": null
     },
     {
+      "name": "beg",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Begs for spare change.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "bet",
       "kind": "prefix",
       "category": "Economy",
       "description": "Bets on a coin flip. Win to double it.",
       "examples": [
         "100 heads"
+      ],
+      "permission": null
+    },
+    {
+      "name": "blackjack",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Plays blackjack against the dealer with buttons.",
+      "examples": [
+        "500"
+      ],
+      "permission": null
+    },
+    {
+      "name": "buy",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Buys an item from the shop.",
+      "examples": [
+        "padlock 2"
+      ],
+      "permission": null
+    },
+    {
+      "name": "crime",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Attempts a risky crime for big coins, or a fine.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -957,12 +1297,32 @@
       "permission": null
     },
     {
+      "name": "fish",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Goes fishing with a rod.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "give",
       "kind": "prefix",
       "category": "Economy",
       "description": "Gives some of your wallet coins to someone.",
       "examples": [
         "@user 100"
+      ],
+      "permission": null
+    },
+    {
+      "name": "inventory",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Shows the items someone owns.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -977,12 +1337,82 @@
       "permission": null
     },
     {
+      "name": "mine",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Mines for ore with a pickaxe.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "monthly",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Claims your monthly coins.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "rob",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Tries to steal coins from someone's wallet.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "roulette",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Bets on a roulette spin: red, black, even, odd, low, high or a number 0-36.",
+      "examples": [
+        "500 red"
+      ],
+      "permission": null
+    },
+    {
+      "name": "sell",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Sells an item back for half its price.",
+      "examples": [
+        "rod"
+      ],
+      "permission": null
+    },
+    {
+      "name": "shop",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Lists items you can buy.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "slots",
       "kind": "prefix",
       "category": "Economy",
       "description": "Spins the slot machine.",
       "examples": [
         "100"
+      ],
+      "permission": null
+    },
+    {
+      "name": "weekly",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Claims your weekly coins.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1005,6 +1435,36 @@
         ""
       ],
       "permission": null
+    },
+    {
+      "name": "levels",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows the most active members by XP.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "rank",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows someone's level and XP.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "setxp",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Sets someone's XP.",
+      "examples": [
+        "@user 2500"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "setlogs",
@@ -1109,6 +1569,22 @@
         "search words"
       ],
       "permission": null
+    },
+    {
+      "name": "sticky",
+      "kind": "prefix",
+      "category": "Sticky",
+      "description": "Set an embedded sticky message.",
+      "examples": [],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "unsticky",
+      "kind": "prefix",
+      "category": "Sticky",
+      "description": "Remove a sticky message.",
+      "examples": [],
+      "permission": "Manage Messages"
     }
   ],
   "tos": {

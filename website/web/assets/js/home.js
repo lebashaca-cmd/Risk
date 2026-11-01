@@ -39,6 +39,7 @@ const CATEGORY_META = {
     Moderation: { ic: "shield", blurb: "Timeouts, warnings, bans, locks and cleanup." },
     Fun: { ic: "gamepad", blurb: "Games, jokes, trivia and little actions." },
     Economy: { ic: "coin", blurb: "Daily coins, work, slots, betting and a leaderboard." },
+    Levels: { ic: "info", blurb: "XP for chatting, ranks and a top chatters board." },
     Tickets: { ic: "ticket", blurb: "Private support channels with transcripts." },
     "Server logs": { ic: "logs", blurb: "Deletes, edits, voice, roles and joins in one place." },
     Welcome: { ic: "welcome", blurb: "Greet new members with your own message." },
