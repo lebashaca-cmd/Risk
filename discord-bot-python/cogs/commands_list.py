@@ -9,18 +9,22 @@ CATEGORY_BY_COG = {
     "BotTime": "Info",
     "Utility": "Utility",
     "UtilityTools": "Utility",
+    "UtilityExtra": "Utility",
     "Moderation": "Moderation",
     "ModerationTools": "Moderation",
     "GiveRole": "Moderation",
     "Fun": "Fun",
+    "FunExtra": "Fun",
     "Economy": "Economy",
+    "EconomyExtra": "Economy",
+    "Levels": "Levels",
     "Tickets": "Tickets",
     "ServerLogs": "Server logs",
     "Welcome": "Welcome",
     "AIChat": "AI",
     "Nerve": "Lookups",
 }
-ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
+ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
 HIDDEN_PREFIX_COMMANDS = {"help"}
 
 
