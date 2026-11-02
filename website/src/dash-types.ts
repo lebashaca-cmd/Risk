@@ -111,4 +111,5 @@ export interface GuildPayload {
   guild: { id: string; name: string; icon: string | null; members: number | null };
   meta: Meta;
   settings: AllSettings;
+  unavailable?: Partial<Record<SectionId, string>>;
 }

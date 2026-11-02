@@ -16,8 +16,14 @@ import discord
 from aiohttp import web
 from discord.ext import commands
 
-from cogs.commands_list import CATEGORY_BY_COG
-from cogs.log_tools import CATEGORIES as LOG_CATEGORIES
+try:
+    from cogs.commands_list import CATEGORY_BY_COG
+except ImportError:  # an older commands_list.py on the host
+    CATEGORY_BY_COG = {}
+try:
+    from cogs.log_tools import CATEGORIES as LOG_CATEGORIES
+except ImportError:  # log_tools.py missing or old
+    LOG_CATEGORIES = {}
 from utils.helpers import ModError, explain_error
 from utils.store import JsonStore
 
@@ -27,6 +33,21 @@ SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community")
 MAX_BODY = 20_000
 USER_AGENT = {"User-Agent": "DiscordBot (https://github.com/lebashaca-cmd/Risk, 1.0)"}
 SNOWFLAKE = re.compile(r"\d{15,21}")
+
+
+# What each section needs from other cogs. A missing or outdated file disables only that section.
+REQUIREMENTS = {
+    "general": [],
+    "welcome": [("Welcome", "welcome.py", ["config.data", "config.save"])],
+    "logs": [("ServerLogs", "serverlogs.py", ["config", "_save"]), ("LogTools", "log_tools.py", ["cfg", "store.save"])],
+    "levels": [("Levels", "levels.py", ["cfg", "settings.save"])],
+    "automod": [("AutoMod", "automod.py", ["cfg", "store.save"])],
+    "community": [
+        ("Community", "community.py", ["cfg", "sugg", "settings.save", "suggestions.save"]),
+        ("CommunityExtra", "community_extra.py", ["cfg", "store.save"]),
+        ("Tickets", "Tickets.py", ["_guild", "_save", "config"]),
+    ],
+}
 
 
 class ApiError(Exception):
@@ -257,6 +278,22 @@ class Dashboard(commands.Cog):
             "logCategories": [{"id": key, "label": label} for key, (label, _) in LOG_CATEGORIES.items()],
             "defaultPrefixes": list(DEFAULT_PREFIXES),
         }
+
+    def unavailable(self, section):
+        """A message if a cog this section depends on is missing or out of date, else None."""
+        for cog_name, filename, attributes in REQUIREMENTS[section]:
+            cog = self.bot.get_cog(cog_name)
+            if cog is None:
+                return f"{filename} isn't loaded on the bot host. Upload the latest bot files and restart the bot."
+            for path in attributes:
+                target = cog
+                for part in path.split("."):
+                    target = getattr(target, part, None)
+                    if target is None:
+                        return f"{filename} on the bot host is out of date. Upload the latest bot files and restart the bot."
+        if section == "logs" and not LOG_CATEGORIES:
+            return "log_tools.py on the bot host is out of date. Upload the latest bot files and restart the bot."
+        return None
 
     # Sections: each pair reads the current settings and applies a validated update.
     def read_general(self, guild):
@@ -532,11 +569,18 @@ class Dashboard(commands.Cog):
         member = await self.authorize(guild, user_id)
 
         if len(parts) == 2 and method == "GET":
-            return {
-                "guild": self.guild_card(guild),
-                "meta": self.meta(guild),
-                "settings": {name: getattr(self, f"read_{name}")(guild) for name in SECTIONS},
-            }
+            settings, missing = {}, {}
+            for name in SECTIONS:
+                reason = self.unavailable(name)
+                if reason is None:
+                    try:
+                        settings[name] = getattr(self, f"read_{name}")(guild)
+                    except Exception as error:
+                        print(f"[dashboard] Couldn't read the {name} settings: {type(error).__name__}: {str(error)[:200]}", flush=True)
+                        reason = "These settings couldn't be read. Check the bot's console for details."
+                if reason is not None:
+                    missing[name] = reason
+            return {"guild": self.guild_card(guild), "meta": self.meta(guild), "settings": settings, "unavailable": missing}
         if len(parts) == 3 and method == "PUT" and parts[2] in SECTIONS:
             body = await self.read_json(request)
             await self.apply(guild, parts[2], body)
@@ -611,20 +655,22 @@ class Dashboard(commands.Cog):
     def stores_for(self, section):
         """The live dicts a section writes to, so a failed update can be rolled back."""
         cog = self.bot.get_cog
-        mapping = {
-            "general": [self.store.data],
-            "welcome": [cog("Welcome").config.data],
-            "logs": [cog("ServerLogs").config, cog("LogTools").store.data],
-            "levels": [cog("Levels").settings.data],
-            "automod": [cog("AutoMod").store.data],
-            "community": [cog("Community").settings.data, cog("Community").suggestions.data, cog("CommunityExtra").store.data, cog("Tickets").config],
-        }
-        return mapping[section]
+        if section == "general":
+            return [self.store.data]
+        if section == "welcome":
+            return [cog("Welcome").config.data]
+        if section == "logs":
+            return [cog("ServerLogs").config, cog("LogTools").store.data]
+        if section == "levels":
+            return [cog("Levels").settings.data]
+        if section == "automod":
+            return [cog("AutoMod").store.data]
+        return [cog("Community").settings.data, cog("Community").suggestions.data, cog("CommunityExtra").store.data, cog("Tickets").config]
 
     async def apply(self, guild, section, body):
-        for name in {"general": [], "welcome": ["Welcome"], "logs": ["ServerLogs", "LogTools"], "levels": ["Levels"], "automod": ["AutoMod"], "community": ["Community", "CommunityExtra", "Tickets"]}[section]:
-            if self.bot.get_cog(name) is None:
-                raise ApiError(503, f"The {name} feature isn't loaded on the bot.")
+        reason = self.unavailable(section)
+        if reason is not None:
+            raise ApiError(503, reason)
         stores = self.stores_for(section)
         snapshots = [copy.deepcopy(d) for d in stores]
         try:
