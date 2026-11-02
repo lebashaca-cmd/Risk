@@ -2,6 +2,8 @@ export interface SiteConfig {
   name: string;
   inviteUrl: string | null;
   supportUrl: string | null;
+  dashboardUrl?: string;
+  dashboardHost?: boolean;
 }
 
 export interface ServerInfo {

@@ -36,6 +36,7 @@ CATEGORY_BY_FILE = {
     "economy": "Economy",
     "economy_extra": "Economy",
     "economy_more": "Economy",
+    "dashboard": "Info",
     "levels": "Levels",
     "stats": "Levels",
     "community": "Community",
@@ -147,6 +148,13 @@ def read_prefixes(main_path):
         tree = ast.parse(main_path.read_text(encoding="utf-8"))
     except (OSError, SyntaxError):
         return []
+    for node in tree.body:
+        if isinstance(node, ast.Assign) and any(isinstance(t, ast.Name) and t.id == "DEFAULT_PREFIXES" for t in node.targets):
+            try:
+                value = ast.literal_eval(node.value)
+            except ValueError:
+                break
+            return [value] if isinstance(value, str) else [str(v) for v in value]
     for node in ast.walk(tree):
         if isinstance(node, ast.Call):
             for kw in node.keywords:

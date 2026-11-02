@@ -27,6 +27,7 @@ CATEGORY_BY_COG = {
     "Stats": "Levels",
     "Community": "Community",
     "CommunityExtra": "Community",
+    "Dashboard": "Info",
     "Giveaway": "Community",
     "Tickets": "Tickets",
     "TicketTools": "Tickets",
@@ -124,6 +125,8 @@ class CommandsList(commands.Cog):
 
     def prefixes(self):
         value = self.bot.command_prefix
+        if callable(value):
+            return ['!', '?', ',']
         return list(value) if isinstance(value, (list, tuple)) else [value]
 
     def gather(self):

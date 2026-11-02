@@ -2,6 +2,7 @@ import { api } from "./api.js";
 import { initMotionFlag, prefersReduced, smoothScroll } from "./anim.js";
 import { h, mount } from "./dom.js";
 import { renderCommands } from "./commands.js";
+import { renderDashboard } from "./dashboard.js";
 import { renderHome } from "./home.js";
 import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
@@ -60,14 +61,34 @@ function bindNav() {
 function notFound() {
     return h("div", { class: "view container page" }, h("h1", {}, "That page doesn't exist"), h("p", { class: "lede" }, "The link may be old or mistyped."), h("div", { class: "actions" }, h("a", { class: "btn btn-primary", href: "/", "data-link": true }, "Go to the home page")));
 }
+/** On the dashboard subdomain ids live at /<id>; on the main site they live at /dashboard/<id>. */
+function dashboardRoute(path) {
+    if (config.dashboardHost) {
+        if (path === "/")
+            return { id: null, base: "" };
+        const direct = /^\/(\d{15,21})$/.exec(path);
+        return direct ? { id: direct[1] ?? null, base: "" } : null;
+    }
+    if (path === "/dashboard")
+        return { id: null, base: "/dashboard" };
+    const nested = /^\/dashboard\/(\d{15,21})$/.exec(path);
+    return nested ? { id: nested[1] ?? null, base: "/dashboard" } : null;
+}
 function render() {
     if (!outlet)
         return;
     cleanup?.();
     cleanup = null;
     const path = normalize(window.location.pathname);
+    const dash = dashboardRoute(path);
     let node;
-    switch (path) {
+    switch (dash ? "dashboard" : path) {
+        case "dashboard": {
+            const view = renderDashboard(dash?.id ?? null, dash?.base ?? "/dashboard");
+            node = view.node;
+            cleanup = view.cleanup;
+            break;
+        }
         case "/": {
             const home = renderHome(config);
             node = home.node;
@@ -96,9 +117,10 @@ function render() {
             node = notFound();
     }
     mount(outlet, node);
-    document.title = TITLES[path] ?? "Page not found · Risk";
+    document.title = dash ? "Dashboard · Risk" : (TITLES[path] ?? "Page not found · Risk");
     document.querySelectorAll("nav a[data-link]").forEach((link) => {
-        if (normalize(new URL(link.href).pathname) === path)
+        const linkPath = normalize(new URL(link.href).pathname);
+        if (linkPath === path || (dash && link.hasAttribute("data-dashboard") && linkPath === (config.dashboardHost ? "/" : "/dashboard")))
             link.setAttribute("aria-current", "page");
         else
             link.removeAttribute("aria-current");
@@ -169,6 +191,12 @@ async function start() {
             link.href = config.inviteUrl;
         else
             link.hidden = true;
+    });
+    document.querySelectorAll("[data-dashboard]").forEach((link) => {
+        const target = config.dashboardUrl ?? "/dashboard";
+        link.href = target;
+        if (/^https?:/.test(target))
+            link.removeAttribute("data-link");
     });
     render();
     startStatusPolling();

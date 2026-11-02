@@ -19,7 +19,15 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 
-bot = commands.Bot(command_prefix=('!', '?', ','), intents=intents)
+DEFAULT_PREFIXES = ('!', '?', ',')
+
+
+async def get_prefix(bot, message):
+    dashboard = bot.get_cog('Dashboard')
+    return dashboard.prefixes_for(message) if dashboard else list(DEFAULT_PREFIXES)
+
+
+bot = commands.Bot(command_prefix=get_prefix, intents=intents)
 
 
 def public_servers():
@@ -50,8 +58,16 @@ async def status_handler(request):
     return web.json_response(data, headers={"Access-Control-Allow-Origin": "*"})
 
 
+async def dashboard_handler(request):
+    dashboard = bot.get_cog('Dashboard')
+    if dashboard is None:
+        return web.json_response({"error": "The dashboard isn't loaded yet."}, status=503)
+    return await dashboard.handle(request)
+
+
 async def start_status_server():
-    app = web.Application()
+    app = web.Application(client_max_size=64 * 1024)
+    app.router.add_route('*', '/dash/{tail:.*}', dashboard_handler)
     app.router.add_get('/', status_handler)
     app.router.add_get('/status', status_handler)
     runner = web.AppRunner(app)
