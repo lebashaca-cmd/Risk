@@ -24,6 +24,7 @@ SECTIONS = {"general", "welcome", "logs", "levels", "automod", "community"}
 SESSION_COOKIE = "risk_session"
 STATE_COOKIE = "risk_oauth"
 PRESENCE_TTL = 20
+LOGIN_REASONS = {"denied", "secret", "redirect", "expired", "busy", "blocked", "unreachable", "helper", "failed"}
 USER_AGENT = {"User-Agent": "DiscordBot (https://github.com/lebashaca-cmd/Risk, 1.0)"}
 
 
@@ -54,7 +55,7 @@ class Dashboard:
 
     @property
     def enabled(self):
-        return bool(self.settings.client_id.isdigit() and self.client_secret and len(self.key) >= 16 and self.bot_api)
+        return bool(self.settings.client_id.isdigit() and len(self.key) >= 16 and self.bot_api)
 
     # Helpers
     def origin(self, request):
@@ -140,37 +141,12 @@ class Dashboard:
         code = request.query.get("code", "")
         if request.query.get("error") or not code or not expected or not hmac.compare_digest(expected, given):
             return self.back(request, "denied")
-        session = request.app["session"]
-        token = None
-        user = guilds = None
-        try:
-            async with session.post(
-                f"{self.discord_api}/oauth2/token",
-                data={"client_id": self.settings.client_id, "client_secret": self.client_secret, "grant_type": "authorization_code", "code": code, "redirect_uri": f"{self.origin(request)}/api/auth/callback"},
-                headers=USER_AGENT,
-                timeout=aiohttp.ClientTimeout(total=10),
-            ) as resp:
-                if resp.status != 200:
-                    return self.back(request, await self.explain(resp, "token exchange"))
-                token = (await resp.json(content_type=None)).get("access_token")
-            if not isinstance(token, str):
-                print("[dashboard] Discord's token answer had no access_token", flush=True)
-                return self.back(request, "failed")
-            headers = {"Authorization": f"Bearer {token}", **USER_AGENT}
-            async with session.get(f"{self.discord_api}/users/@me", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                if resp.status != 200:
-                    return self.back(request, await self.explain(resp, "profile lookup"))
-                user = await resp.json(content_type=None)
-            async with session.get(f"{self.discord_api}/users/@me/guilds", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                if resp.status != 200:
-                    return self.back(request, await self.explain(resp, "server list lookup"))
-                guilds = await resp.json(content_type=None)
-        except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as error:
-            print(f"[dashboard] Couldn't reach Discord: {type(error).__name__}: {str(error)[:200]}", flush=True)
-            return self.back(request, "unreachable")
-        finally:
-            if token:
-                asyncio.create_task(self.revoke(session, token))
+        redirect_uri = f"{self.origin(request)}/api/auth/callback"
+        user, guilds, reason = await self.lookup_via_bot(request, code, redirect_uri)
+        if reason == "helper" and self.client_secret:
+            user, guilds, reason = await self.lookup_directly(request, code, redirect_uri)
+        if reason:
+            return self.back(request, reason)
         if not isinstance(user, dict) or not isinstance(guilds, list) or not str(user.get("id", "")).isdigit():
             print("[dashboard] Discord's profile or server list had an unexpected shape", flush=True)
             return self.back(request, "failed")
@@ -200,6 +176,51 @@ class Dashboard:
         response.del_cookie(STATE_COOKIE, path="/")
         return response
 
+    async def lookup_via_bot(self, request, code, redirect_uri):
+        """Lets the bot's host talk to Discord, in case this host's address is blocked by Discord's firewall."""
+        status, payload = await self.ask_bot(request, "POST", "oauth", body={"code": code, "redirect_uri": redirect_uri})
+        if status != 200:
+            print(f"[dashboard] Bot sign-in helper answered {status}: {str(payload.get('error'))[:200]}", flush=True)
+            return None, None, "helper" if status in (401, 503) else "unreachable" if status == 502 else "failed"
+        if payload.get("ok") is not True:
+            reason = payload.get("reason")
+            return None, None, reason if reason in LOGIN_REASONS else "failed"
+        return payload.get("user"), payload.get("guilds"), None
+
+    async def lookup_directly(self, request, code, redirect_uri):
+        session = request.app["session"]
+        token = None
+        user = guilds = None
+        try:
+            async with session.post(
+                f"{self.discord_api}/oauth2/token",
+                data={"client_id": self.settings.client_id, "client_secret": self.client_secret, "grant_type": "authorization_code", "code": code, "redirect_uri": redirect_uri},
+                headers=USER_AGENT,
+                timeout=aiohttp.ClientTimeout(total=10),
+            ) as resp:
+                if resp.status != 200:
+                    return None, None, await self.explain(resp, "token exchange")
+                token = (await resp.json(content_type=None)).get("access_token")
+            if not isinstance(token, str):
+                print("[dashboard] Discord's token answer had no access_token", flush=True)
+                return None, None, "failed"
+            headers = {"Authorization": f"Bearer {token}", **USER_AGENT}
+            async with session.get(f"{self.discord_api}/users/@me", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                if resp.status != 200:
+                    return None, None, await self.explain(resp, "profile lookup")
+                user = await resp.json(content_type=None)
+            async with session.get(f"{self.discord_api}/users/@me/guilds", headers=headers, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                if resp.status != 200:
+                    return None, None, await self.explain(resp, "server list lookup")
+                guilds = await resp.json(content_type=None)
+        except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as error:
+            print(f"[dashboard] Couldn't reach Discord: {type(error).__name__}: {str(error)[:200]}", flush=True)
+            return None, None, "unreachable"
+        finally:
+            if token:
+                asyncio.create_task(self.revoke(session, token))
+        return user, guilds, None
+
     async def explain(self, resp, step):
         """Logs what Discord answered (never secrets) and turns it into a short reason code for the page."""
         try:
@@ -213,6 +234,8 @@ class Dashboard:
             body = None
         error = body.get("error") if isinstance(body, dict) else None
         detail = str(body.get("error_description", "")) if isinstance(body, dict) else ""
+        if body is None and resp.status in (403, 429, 503):
+            return "blocked"
         if resp.status == 429:
             return "busy"
         if step == "token exchange":
@@ -220,8 +243,6 @@ class Dashboard:
                 return "secret"
             if error == "invalid_grant":
                 return "redirect" if "redirect_uri" in detail else "expired"
-        if body is None and resp.status in (403, 503):
-            return "blocked"
         return "failed"
 
     def home(self):

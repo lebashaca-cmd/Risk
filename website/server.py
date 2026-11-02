@@ -315,5 +315,5 @@ if __name__ == "__main__":
     if not settings.status_url:
         print("BOT_STATUS_URL is not set, so the status badge will read 'unavailable'.")
     if not app["dashboard"].enabled:
-        print("Dashboard is off: set DISCORD_CLIENT_SECRET, DASHBOARD_KEY (16+ characters) and CLIENT_ID to turn it on.")
+        print("Dashboard is off: set CLIENT_ID, DASHBOARD_KEY (16+ characters) and BOT_STATUS_URL or BOT_API_URL to turn it on.")
     web.run_app(app, host="0.0.0.0", port=settings.port, print=None)
