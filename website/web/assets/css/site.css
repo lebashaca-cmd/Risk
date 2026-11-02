@@ -546,3 +546,5 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 @media (prefers-reduced-motion: reduce) { .dash-server, .dash-switch, .dash-switch::after, .dash-tab { transition: none; } a.dash-server:hover { transform: none; } }
 
 .dash [hidden] { display: none !important; }
+.dash-tab.is-off { opacity: 0.55; }
+.dash-tab.is-off::after { content: "needs update"; margin-left: 0.5rem; font-size: 0.7rem; color: var(--fog); }

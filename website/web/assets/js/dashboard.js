@@ -226,13 +226,15 @@ function renderEditor(payload, guildId) {
         nav.querySelectorAll("button").forEach((button) => {
             const id = button.dataset.section;
             button.classList.toggle("is-dirty", isDirty(id));
+            button.classList.toggle("is-off", Boolean(payload.unavailable?.[id]));
             button.setAttribute("aria-selected", String(id === current));
             button.tabIndex = id === current ? 0 : -1;
         });
     };
     const draw = () => {
         const info = SECTION_META.find((s) => s.id === current);
-        const body = RENDERERS[current](drafts[current], payload.meta, refresh);
+        const problem = payload.unavailable?.[current];
+        const body = problem ? [notice("info", problem)] : RENDERERS[current](drafts[current], payload.meta, refresh);
         panel.replaceChildren(h("header", { class: "dash-panel-head" }, h("h2", {}, info?.label ?? ""), h("p", { class: "lede" }, info?.blurb ?? "")), ...body);
         panel.setAttribute("aria-labelledby", `tab-${current}`);
         refresh();

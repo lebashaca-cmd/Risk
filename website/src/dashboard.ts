@@ -303,6 +303,7 @@ function renderEditor(payload: GuildPayload, guildId: string): View {
     nav.querySelectorAll<HTMLButtonElement>("button").forEach((button) => {
       const id = button.dataset.section as SectionId;
       button.classList.toggle("is-dirty", isDirty(id));
+      button.classList.toggle("is-off", Boolean(payload.unavailable?.[id]));
       button.setAttribute("aria-selected", String(id === current));
       button.tabIndex = id === current ? 0 : -1;
     });
@@ -310,7 +311,8 @@ function renderEditor(payload: GuildPayload, guildId: string): View {
 
   const draw = (): void => {
     const info = SECTION_META.find((s) => s.id === current);
-    const body = (RENDERERS[current] as Renderer<SectionId>)(drafts[current], payload.meta, refresh);
+    const problem = payload.unavailable?.[current];
+    const body = problem ? [notice("info", problem)] : (RENDERERS[current] as Renderer<SectionId>)(drafts[current], payload.meta, refresh);
     panel.replaceChildren(h("header", { class: "dash-panel-head" }, h("h2", {}, info?.label ?? ""), h("p", { class: "lede" }, info?.blurb ?? "")), ...body);
     panel.setAttribute("aria-labelledby", `tab-${current}`);
     refresh();
