@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-01T05:28:39+00:00",
+  "generatedAt": "2026-11-02T00:06:10+00:00",
   "prefixes": [
     "!",
     "?",
@@ -76,12 +76,42 @@
       "permission": null
     },
     {
+      "name": "addemoji",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Adds a custom emoji from an image link or attachment.",
+      "examples": [
+        "party https://example.com/party.png"
+      ],
+      "permission": "Manage Expressions"
+    },
+    {
+      "name": "admins",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the members with Administrator permission.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "afk",
       "kind": "prefix",
       "category": "Utility",
       "description": "Marks you as away. Anyone who pings you is told.",
       "examples": [
         "lunch"
+      ],
+      "permission": null
+    },
+    {
+      "name": "age",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Works out an age and the next birthday from a date.",
+      "examples": [
+        "2000-05-17"
       ],
       "permission": null
     },
@@ -102,6 +132,16 @@
       "description": "Shows someone's avatar in full size.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "average",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Gives the mean, median, mode, range and sum of some numbers.",
+      "examples": [
+        "4 8 15 16 23 42"
       ],
       "permission": null
     },
@@ -136,12 +176,53 @@
       "permission": null
     },
     {
+      "name": "bmi",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Works out body mass index from kg and cm, or lb and inches.",
+      "examples": [
+        "70 175",
+        "154 69 imperial"
+      ],
+      "permission": null
+    },
+    {
+      "name": "boosters",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the members boosting the server.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "botinfo",
       "kind": "prefix",
       "category": "Utility",
       "description": "Shows stats about the bot.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "bots",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the bots in this server.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "caesar",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shifts the letters of some text, a Caesar cipher.",
+      "examples": [
+        "3 hello"
       ],
       "permission": null
     },
@@ -166,12 +247,62 @@
       "permission": null
     },
     {
+      "name": "charinfo",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows the Unicode name and code of each character.",
+      "examples": [
+        "é"
+      ],
+      "permission": null
+    },
+    {
       "name": "color",
       "kind": "prefix",
       "category": "Utility",
       "description": "Previews a hex color.",
       "examples": [
         "#ff8800"
+      ],
+      "permission": null
+    },
+    {
+      "name": "convert",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts length, mass, volume, speed and temperature units.",
+      "examples": [
+        "10 km to mi"
+      ],
+      "permission": null
+    },
+    {
+      "name": "countdown",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Counts down to a UTC date and time.",
+      "examples": [
+        "2026-12-25 18:00"
+      ],
+      "permission": null
+    },
+    {
+      "name": "crypto",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows a cryptocurrency price in US dollars.",
+      "examples": [
+        "eth"
+      ],
+      "permission": null
+    },
+    {
+      "name": "daysuntil",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Tells you how many days are left until a date.",
+      "examples": [
+        "2026-12-25"
       ],
       "permission": null
     },
@@ -206,6 +337,16 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "emojiinfo",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows details about a custom emoji.",
+      "examples": [
+        ":name:"
+      ],
+      "permission": null
+    },
+    {
       "name": "emojis",
       "kind": "prefix",
       "category": "Utility",
@@ -222,6 +363,17 @@
       "description": "Shows a custom emoji at full size.",
       "examples": [
         ":custom_emoji:"
+      ],
+      "permission": null
+    },
+    {
+      "name": "epoch",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts between Unix time and a UTC date.",
+      "examples": [
+        "1798221600",
+        "2026-12-25 18:00"
       ],
       "permission": null
     },
@@ -266,6 +418,36 @@
       "permission": null
     },
     {
+      "name": "joined",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows when someone joined and their join position.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "leetspeak",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Writes text in leetspeak.",
+      "examples": [
+        "elite hacker"
+      ],
+      "permission": null
+    },
+    {
+      "name": "lowercase",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Turns text into lowercase.",
+      "examples": [
+        "HELLO"
+      ],
+      "permission": null
+    },
+    {
       "name": "membercount",
       "kind": "prefix",
       "category": "Utility",
@@ -286,12 +468,52 @@
       "permission": null
     },
     {
+      "name": "newest",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the members who joined most recently.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "oldest",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the members who joined first.",
+      "examples": [
+        "2"
+      ],
+      "permission": null
+    },
+    {
+      "name": "palette",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Builds a five-colour palette from one hex colour.",
+      "examples": [
+        "#5865F2"
+      ],
+      "permission": null
+    },
+    {
       "name": "password",
       "kind": "prefix",
       "category": "Utility",
       "description": "Sends you a random password in a direct message.",
       "examples": [
         "20"
+      ],
+      "permission": null
+    },
+    {
+      "name": "percent",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Works out percentages between two numbers.",
+      "examples": [
+        "20 150"
       ],
       "permission": null
     },
@@ -313,6 +535,16 @@
       "examples": [
         "Pizza",
         "tacos? | Pizza | Tacos"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pypi",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Looks up a Python package on PyPI.",
+      "examples": [
+        "requests"
       ],
       "permission": null
     },
@@ -347,6 +579,16 @@
       "permission": null
     },
     {
+      "name": "removeemoji",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Deletes a custom emoji from this server.",
+      "examples": [
+        ":party:"
+      ],
+      "permission": "Manage Expressions"
+    },
+    {
       "name": "roleinfo",
       "kind": "prefix",
       "category": "Utility",
@@ -363,6 +605,16 @@
       "description": "Lists every role in the server.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "roman",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts a number to a Roman numeral, or back.",
+      "examples": [
+        "2026"
       ],
       "permission": null
     },
@@ -405,6 +657,16 @@
       "permission": null
     },
     {
+      "name": "slugify",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Turns text into a url-friendly slug.",
+      "examples": [
+        "My Great Post!"
+      ],
+      "permission": null
+    },
+    {
       "name": "snipe",
       "kind": "prefix",
       "category": "Utility",
@@ -435,12 +697,42 @@
       "permission": null
     },
     {
+      "name": "titlecase",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Turns text Into Title Case.",
+      "examples": [
+        "the quick brown fox"
+      ],
+      "permission": null
+    },
+    {
       "name": "todo",
       "kind": "prefix",
       "category": "Utility",
       "description": "Keeps a personal to-do list. Actions: add, list, done, remove, clear.",
       "examples": [
         "add buy milk"
+      ],
+      "permission": null
+    },
+    {
+      "name": "uppercase",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Turns text into UPPERCASE.",
+      "examples": [
+        "hello"
+      ],
+      "permission": null
+    },
+    {
+      "name": "urlencode",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Encodes or decodes text for use in a link.",
+      "examples": [
+        "encode hello world"
       ],
       "permission": null
     },
@@ -455,12 +747,32 @@
       "permission": null
     },
     {
+      "name": "uuid",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Generates random UUIDs.",
+      "examples": [
+        "3"
+      ],
+      "permission": null
+    },
+    {
       "name": "weather",
       "kind": "prefix",
       "category": "Utility",
       "description": "Shows the current weather for a city.",
       "examples": [
         "Chicago"
+      ],
+      "permission": null
+    },
+    {
+      "name": "whohas",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the members that have a role.",
+      "examples": [
+        "@Moderators"
       ],
       "permission": null
     },
@@ -473,6 +785,76 @@
         "Alan Turing"
       ],
       "permission": null
+    },
+    {
+      "name": "wordcount",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Counts the words, characters and sentences in some text.",
+      "examples": [
+        "some text here"
+      ],
+      "permission": null
+    },
+    {
+      "name": "addrole",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Gives one role to a member.",
+      "examples": [
+        "@user @Member"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "antiinvite",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Deletes messages with Discord invite links.",
+      "examples": [
+        "on"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "antilink",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Deletes messages with links from members who can't manage messages.",
+      "examples": [
+        "on"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "antispam",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Deletes message floods and times the sender out for 5 minutes.",
+      "examples": [
+        "on"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "automod",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Shows which automod protections are on.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "automodignore",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Toggles a channel or role that automod leaves alone.",
+      "examples": [
+        "#staff-chat"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "ban",
@@ -513,6 +895,56 @@
         "@user"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "clonechannel",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Makes a copy of a text channel with the same permissions.",
+      "examples": [
+        "#general"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "createchannel",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Creates a text or voice channel.",
+      "examples": [
+        "text general-2"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "createrole",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Creates a role with no permissions.",
+      "examples": [
+        "Event Team"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "deletechannel",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Deletes a channel (this one if you name none) after you confirm.",
+      "examples": [
+        "#old-chat"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "deleterole",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Deletes a role.",
+      "examples": [
+        "@Old Role"
+      ],
+      "permission": "Manage Roles"
     },
     {
       "name": "delwarn",
@@ -563,6 +995,26 @@
         "#channel"
       ],
       "permission": "Manage Channels"
+    },
+    {
+      "name": "lockdown",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Stops @everyone from sending messages in every text channel.",
+      "examples": [
+        "raid"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "maxmentions",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Deletes messages that mention more than a number of people or roles, or 0 to turn off.",
+      "examples": [
+        "5"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "nick",
@@ -626,6 +1078,66 @@
       "permission": "Manage Roles"
     },
     {
+      "name": "renamechannel",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Renames a channel.",
+      "examples": [
+        "#general chat-room"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "resetnick",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Clears a member's nickname.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "Manage Nicknames"
+    },
+    {
+      "name": "roleall",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Gives a role to every member who doesn't have it.",
+      "examples": [
+        "@Member"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "rolecolor",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Changes a role's color.",
+      "examples": [
+        "@Member #ff8800"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "rolename",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Renames a role.",
+      "examples": [
+        "@Member Verified Member"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "settopic",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Sets this channel's topic, or use `clear` to remove it.",
+      "examples": [
+        "Daily chat"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
       "name": "slowmode",
       "kind": "prefix",
       "category": "Moderation",
@@ -643,6 +1155,26 @@
       "description": "Bans and unbans a member to delete their recent messages.",
       "examples": [
         "@user reason"
+      ],
+      "permission": "Ban Members"
+    },
+    {
+      "name": "tempban",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Bans a member and unbans them automatically later.",
+      "examples": [
+        "@user 3d reason"
+      ],
+      "permission": "Ban Members"
+    },
+    {
+      "name": "tempbans",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Lists the temporary bans that will end on their own.",
+      "examples": [
+        ""
       ],
       "permission": "Ban Members"
     },
@@ -667,6 +1199,16 @@
       "permission": "Ban Members"
     },
     {
+      "name": "unbanall",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Unbans everyone in this server after you confirm.",
+      "examples": [
+        ""
+      ],
+      "permission": "Administrator"
+    },
+    {
       "name": "unhide",
       "kind": "prefix",
       "category": "Moderation",
@@ -687,6 +1229,26 @@
       "permission": "Manage Channels"
     },
     {
+      "name": "unlockdown",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Lets @everyone send messages again in every text channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "unroleall",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Takes a role away from every member who has it.",
+      "examples": [
+        "@Member"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
       "name": "untimeout",
       "kind": "prefix",
       "category": "Moderation",
@@ -697,6 +1259,26 @@
       "permission": "Moderate Members"
     },
     {
+      "name": "vcdeafen",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Server-deafens a member in voice.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "Deafen Members"
+    },
+    {
+      "name": "vcdisconnectall",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Disconnects everyone from your voice channel except you.",
+      "examples": [
+        ""
+      ],
+      "permission": "Move Members"
+    },
+    {
       "name": "vckick",
       "kind": "prefix",
       "category": "Moderation",
@@ -705,6 +1287,56 @@
         "@user"
       ],
       "permission": "Move Members"
+    },
+    {
+      "name": "vcmove",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Moves a member to another voice channel.",
+      "examples": [
+        "@user General"
+      ],
+      "permission": "Move Members"
+    },
+    {
+      "name": "vcmute",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Server-mutes a member in voice.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "Mute Members"
+    },
+    {
+      "name": "vcmuteall",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Mutes or unmutes everyone in your voice channel except you.",
+      "examples": [
+        "on"
+      ],
+      "permission": "Mute Members"
+    },
+    {
+      "name": "vcundeafen",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Removes a server deafen in voice.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "Deafen Members"
+    },
+    {
+      "name": "vcunmute",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Removes a server mute in voice.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "Mute Members"
     },
     {
       "name": "warn",
@@ -787,10 +1419,30 @@
       "permission": null
     },
     {
+      "name": "bubble",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Turns your message into bubble wrap, one pop per letter.",
+      "examples": [
+        "pop me"
+      ],
+      "permission": null
+    },
+    {
       "name": "cat",
       "kind": "prefix",
       "category": "Fun",
       "description": "Shows a random cat picture.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "catfact",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Tells a random cat fact.",
       "examples": [
         ""
       ],
@@ -831,6 +1483,16 @@
       "kind": "prefix",
       "category": "Fun",
       "description": "Gives someone a nice compliment.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "connect4",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Plays Connect 4 against another member with buttons.",
       "examples": [
         "@user"
       ],
@@ -897,6 +1559,16 @@
       "permission": null
     },
     {
+      "name": "duel",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Fights another member in a turn-based button duel.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "emojify",
       "kind": "prefix",
       "category": "Fun",
@@ -913,6 +1585,16 @@
       "description": "Shares a random fact.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "fakeban",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Pretends to ban someone (nobody is banned).",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -957,6 +1639,26 @@
       "permission": null
     },
     {
+      "name": "hack",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Runs a pretend hacking animation (all fake, nothing happens).",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "hangman",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Plays hangman: type single letters or the whole word in chat.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "highfive",
       "kind": "prefix",
       "category": "Fun",
@@ -967,10 +1669,40 @@
       "permission": null
     },
     {
+      "name": "horoscope",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Reads today's horoscope for a zodiac sign.",
+      "examples": [
+        "leo"
+      ],
+      "permission": null
+    },
+    {
+      "name": "howcute",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Rates how cute someone is.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "hug",
       "kind": "prefix",
       "category": "Fun",
       "description": "Hugs someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "iq",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Reveals someone's completely made-up IQ.",
       "examples": [
         "@user"
       ],
@@ -997,12 +1729,52 @@
       "permission": null
     },
     {
+      "name": "lenny",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Adds a lenny face to your message.",
+      "examples": [
+        "nice"
+      ],
+      "permission": null
+    },
+    {
+      "name": "luck",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shows how lucky someone is today.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mathrace",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Race to solve a math problem. First correct answer wins.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "mock",
       "kind": "prefix",
       "category": "Fun",
       "description": "Turns text into mOcKiNg cAsE.",
       "examples": [
         "you can't be serious"
+      ],
+      "permission": null
+    },
+    {
+      "name": "neverhaveiever",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Posts a Never Have I Ever prompt.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1027,6 +1799,16 @@
       "permission": null
     },
     {
+      "name": "pickup",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Sends a cheesy pickup line.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "poke",
       "kind": "prefix",
       "category": "Fun",
@@ -1047,12 +1829,32 @@
       "permission": null
     },
     {
+      "name": "quote",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shares a short inspirational line.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "rate",
       "kind": "prefix",
       "category": "Fun",
       "description": "Rates anything out of 10.",
       "examples": [
         "pineapple pizza"
+      ],
+      "permission": null
+    },
+    {
+      "name": "reactiontest",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Tests your reaction time with a button.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1077,6 +1879,16 @@
       "permission": null
     },
     {
+      "name": "roast",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Roasts someone, all in good fun.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "roll",
       "kind": "prefix",
       "category": "Fun",
@@ -1093,6 +1905,16 @@
       "description": "Plays rock paper scissors against the bot.",
       "examples": [
         "rock"
+      ],
+      "permission": null
+    },
+    {
+      "name": "russianroulette",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Pulls the trigger in a harmless game of chance.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1127,12 +1949,62 @@
       "permission": null
     },
     {
+      "name": "shout",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shouts your message in capital letters.",
+      "examples": [
+        "hello everyone"
+      ],
+      "permission": null
+    },
+    {
+      "name": "shrug",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Adds a shrug to your message.",
+      "examples": [
+        "no idea"
+      ],
+      "permission": null
+    },
+    {
       "name": "slap",
       "kind": "prefix",
       "category": "Fun",
       "description": "Slaps someone with a wet noodle.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "spoiler",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Hides each word of your message behind a spoiler.",
+      "examples": [
+        "the butler did it"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tableflip",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Flips a table.",
+      "examples": [
+        "so annoying"
+      ],
+      "permission": null
+    },
+    {
+      "name": "thisorthat",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Asks a this-or-that question with reactions.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1187,6 +2059,26 @@
       "permission": null
     },
     {
+      "name": "typing",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Race to type a sentence exactly. First to finish wins.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "unflip",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Puts the table back.",
+      "examples": [
+        "sorry"
+      ],
+      "permission": null
+    },
+    {
       "name": "uwu",
       "kind": "prefix",
       "category": "Fun",
@@ -1197,12 +2089,32 @@
       "permission": null
     },
     {
+      "name": "vibe",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Checks someone's vibe for today.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "wave",
       "kind": "prefix",
       "category": "Fun",
       "description": "Waves hello.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "wheel",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Spins a wheel with your comma-separated options.",
+      "examples": [
+        "pizza, sushi, tacos"
       ],
       "permission": null
     },
@@ -1307,12 +2219,32 @@
       "permission": null
     },
     {
+      "name": "dicebet",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Bets on the number a die will land on. A correct guess pays 5 to 1.",
+      "examples": [
+        "100 4"
+      ],
+      "permission": null
+    },
+    {
       "name": "fish",
       "kind": "prefix",
       "category": "Economy",
       "description": "Goes fishing with a rod.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "gift",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Gives one of your shop items to another member.",
+      "examples": [
+        "@user padlock 1"
       ],
       "permission": null
     },
@@ -1327,22 +2259,42 @@
       "permission": null
     },
     {
+      "name": "heist",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Starts a bank heist that others can join for 45 seconds.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "highlow",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Guesses higher or lower to build a streak, then cash out.",
+      "examples": [
+        "200"
+      ],
+      "permission": null
+    },
+    {
+      "name": "hunt",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Hunts animals with a rifle for coins.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "inventory",
       "kind": "prefix",
       "category": "Economy",
       "description": "Shows the items someone owns.",
       "examples": [
         "@user"
-      ],
-      "permission": null
-    },
-    {
-      "name": "leaderboard",
-      "kind": "prefix",
-      "category": "Economy",
-      "description": "Shows the richest members of this server.",
-      "examples": [
-        ""
       ],
       "permission": null
     },
@@ -1367,6 +2319,16 @@
       "permission": null
     },
     {
+      "name": "networth",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Shows wallet, bank and item value added together.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "rob",
       "kind": "prefix",
       "category": "Economy",
@@ -1383,6 +2345,16 @@
       "description": "Bets on a roulette spin: red, black, even, odd, low, high or a number 0-36.",
       "examples": [
         "500 red"
+      ],
+      "permission": null
+    },
+    {
+      "name": "scratch",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Scratches a card with 3 hidden boxes. Match symbols to win.",
+      "examples": [
+        "50"
       ],
       "permission": null
     },
@@ -1465,6 +2437,16 @@
         "10"
       ],
       "permission": "Manage Roles"
+    },
+    {
+      "name": "leaderboard",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows the top members with all of their stats. Sort by coins, wallet, bank, level, messages, streak, items or giveaways.",
+      "examples": [
+        "level 2"
+      ],
+      "permission": null
     },
     {
       "name": "levelchannel",
@@ -1555,6 +2537,16 @@
         "#bot-spam"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "profile",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Shows every stat Risk has for a member, with their rank in each.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
     },
     {
       "name": "rank",
@@ -1665,6 +2657,116 @@
         "25"
       ],
       "permission": null
+    },
+    {
+      "name": "approve",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Approves a suggestion, with an optional reason.",
+      "examples": [
+        "12 great idea"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "birthdaychannel",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Sets where birthday messages go, or turns them off.",
+      "examples": [
+        "#birthdays"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "deny",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Denies a suggestion, with an optional reason.",
+      "examples": [
+        "12 not right now"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "report",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Reports a member to the staff team.",
+      "examples": [
+        "@user spamming links"
+      ],
+      "permission": null
+    },
+    {
+      "name": "reportchannel",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Sets the staff channel for member reports, or turns reports off.",
+      "examples": [
+        "#reports"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rules",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows this server's rules.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "setrules",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Saves the server rules shown by the rules command, or reset to clear them.",
+      "examples": [
+        "1. Be kind. 2. No spam."
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "suggest",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a suggestion for the server to vote on.",
+      "examples": [
+        "add a music channel"
+      ],
+      "permission": null
+    },
+    {
+      "name": "suggestchannel",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Sets the channel suggestions are posted in, or turns them off.",
+      "examples": [
+        "#suggestions"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "tags",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists the tags in this server.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "verifysetup",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a Verify button that gives a role to whoever presses it.",
+      "examples": [
+        "#verify @Member"
+      ],
+      "permission": "Manage Roles"
     },
     {
       "name": "delpanel",

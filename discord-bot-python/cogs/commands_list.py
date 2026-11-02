@@ -11,14 +11,23 @@ CATEGORY_BY_COG = {
     "Utility": "Utility",
     "UtilityTools": "Utility",
     "UtilityExtra": "Utility",
+    "UtilityMore": "Utility",
     "Moderation": "Moderation",
     "ModerationTools": "Moderation",
+    "ModerationMore": "Moderation",
+    "AutoMod": "Moderation",
     "GiveRole": "Moderation",
     "Fun": "Fun",
     "FunExtra": "Fun",
+    "FunMore": "Fun",
     "Economy": "Economy",
     "EconomyExtra": "Economy",
+    "EconomyMore": "Economy",
     "Levels": "Levels",
+    "Stats": "Levels",
+    "Community": "Community",
+    "CommunityExtra": "Community",
+    "Giveaway": "Community",
     "Tickets": "Tickets",
     "TicketTools": "Tickets",
     "ServerLogs": "Server logs",
@@ -27,7 +36,7 @@ CATEGORY_BY_COG = {
     "AIChat": "AI",
     "Nerve": "Lookups",
 }
-ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
+ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
 HIDDEN_PREFIX_COMMANDS = {"help"}
 
 
@@ -57,8 +66,13 @@ class CategorySelect(discord.ui.Select):
             await interaction.response.send_message("Run `!commands` to get your own.", ephemeral=True)
             return
         choice = self.values[0]
-        embed = self.cog.overview(view.prefix, self.categories) if choice == "Overview" else self.cog.category_embed(view.prefix, choice, self.categories[choice])
-        await interaction.response.edit_message(embed=embed, view=view)
+        if choice == "Overview":
+            view.pages = [self.cog.overview(view.prefix, self.categories)]
+        else:
+            view.pages = self.cog.category_embeds(view.prefix, choice, self.categories[choice])
+        view.index = 0
+        view.refresh()
+        await interaction.response.edit_message(embed=view.pages[0], view=view)
 
 
 class CommandsView(discord.ui.View):
@@ -66,7 +80,33 @@ class CommandsView(discord.ui.View):
         super().__init__(timeout=180)
         self.author_id, self.prefix = author_id, prefix
         self.message = None
+        self.pages = []
+        self.index = 0
         self.add_item(CategorySelect(cog, categories))
+        self.refresh()
+
+    def refresh(self):
+        many = len(self.pages) > 1
+        self.previous.disabled = not many or self.index == 0
+        self.next.disabled = not many or self.index >= len(self.pages) - 1
+
+    async def interaction_check(self, interaction):
+        if interaction.user.id != self.author_id:
+            await interaction.response.send_message("Run `!commands` to get your own.", ephemeral=True)
+            return False
+        return True
+
+    @discord.ui.button(label="Previous", style=discord.ButtonStyle.secondary, row=1)
+    async def previous(self, interaction, button):
+        self.index = max(0, self.index - 1)
+        self.refresh()
+        await interaction.response.edit_message(embed=self.pages[self.index], view=self)
+
+    @discord.ui.button(label="Next", style=discord.ButtonStyle.secondary, row=1)
+    async def next(self, interaction, button):
+        self.index = min(len(self.pages) - 1, self.index + 1)
+        self.refresh()
+        await interaction.response.edit_message(embed=self.pages[self.index], view=self)
 
     async def on_timeout(self):
         for child in self.children:
@@ -110,15 +150,33 @@ class CommandsList(commands.Cog):
             embed.add_field(name=f"{name} ({len(items)})", value=sample[:1000], inline=False)
         return embed
 
-    def category_embed(self, prefix, name, items):
+    def category_embeds(self, prefix, name, items):
+        """Splits a category into embeds that each stay well under Discord's 6000 character limit."""
         lines = []
         for cmd in items:
             alias = f" (also {', '.join(f'`{a}`' for a in cmd.aliases)})" if cmd.aliases else ""
             lines.append(f"`{prefix}{cmd.name}`{alias}: {cmd.short_doc or 'No description.'}")
-        embed = discord.Embed(title=f"{name} commands", color=discord.Color.light_grey())
-        for index, page in enumerate(chunk(lines)):
-            embed.add_field(name="​" if index else f"{len(items)} commands", value=page, inline=False)
-        return embed
+        embeds, fields, size = [], [], 0
+        for page in chunk(lines):
+            if fields and size + len(page) > 4200:
+                embeds.append(fields)
+                fields, size = [], 0
+            fields.append(page)
+            size += len(page)
+        embeds.append(fields)
+        total = len(embeds)
+        result = []
+        for number, group in enumerate(embeds, start=1):
+            embed = discord.Embed(title=f"{name} commands", color=discord.Color.light_grey())
+            for index, page in enumerate(group):
+                embed.add_field(name=f"{len(items)} commands" if number == 1 and index == 0 else "\u200b", value=page, inline=False)
+            if total > 1:
+                embed.set_footer(text=f"Page {number} of {total}")
+            result.append(embed)
+        return result
+
+    def category_embed(self, prefix, name, items):
+        return self.category_embeds(prefix, name, items)[0]
 
     @commands.command(name="commands")
     async def commands_list(self, ctx):
@@ -126,7 +184,9 @@ class CommandsList(commands.Cog):
         categories = self.gather()
         prefix = ctx.prefix or "!"
         view = CommandsView(self, ctx.author.id, prefix, categories)
-        view.message = await ctx.send(embed=self.overview(prefix, categories), view=view)
+        view.pages = [self.overview(prefix, categories)]
+        view.refresh()
+        view.message = await ctx.send(embed=view.pages[0], view=view)
 
 
 async def setup(bot):
