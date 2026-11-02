@@ -82,15 +82,19 @@ How it fits together: the site (this folder) handles the Discord sign-in and for
 2. **Bot host** (bot-hosting.cloud, in the bot's `.env` or Startup variables):
    - `DASHBOARD_KEY` = the key
    - `DASHBOARD_URL` = `https://dashboard.<your domain>` (shown by the `!dashboard` command)
+   - `DISCORD_CLIENT_SECRET` = the application's client secret (Discord Developer Portal, your app, OAuth2, Reset Secret)
    Upload the updated bot files and restart.
 3. **Render** (service, Environment tab):
    - `DASHBOARD_KEY` = the same key
-   - `DISCORD_CLIENT_SECRET` = the application's client secret (Discord Developer Portal, your app, OAuth2)
    - `DASHBOARD_HOST` = `dashboard.<your domain>` (no `https://`)
 4. **Custom domain.** In Render, Settings, Custom Domains, add `dashboard.<your domain>` and create the DNS record Render shows. Add your main domain too if you want the site there. Render's `onrender.com` address can't have subdomains, so this step needs a domain you own.
 5. **Discord redirect.** In the Developer Portal, OAuth2, Redirects, add `https://dashboard.<your domain>/api/auth/callback`.
 
 Without `DASHBOARD_HOST` the dashboard still works on the main address at `/dashboard/<server id>`. If `DASHBOARD_HOST` is set, `/dashboard/...` on the main site redirects to the subdomain.
+
+### Why the client secret lives on the bot
+
+Discord's firewall sometimes blocks the shared outgoing addresses of hosts like Render (the sign-in then fails with an HTML "429" or "403" page). So the site hands Discord's login code to the bot, and the bot talks to Discord from its own address. The site tries the bot first. If the bot has no secret and the site does (`DISCORD_CLIENT_SECRET` on Render), the site falls back to calling Discord itself.
 
 ### Notes
 

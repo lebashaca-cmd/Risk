@@ -19,7 +19,5 @@ services:
         value: Risk
       - key: DASHBOARD_HOST
         sync: false
-      - key: DISCORD_CLIENT_SECRET
-        sync: false
       - key: DASHBOARD_KEY
         sync: false

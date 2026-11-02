@@ -395,7 +395,8 @@ const LOGIN_PROBLEMS: Record<string, () => string> = {
   redirect: () => `Discord says the redirect address doesn't match. The site owner should add ${window.location.origin}/api/auth/callback under OAuth2, Redirects in the Developer Portal.`,
   expired: () => "That sign-in link was already used or expired. Try again.",
   busy: () => "Discord is limiting requests from this site right now. Wait a minute and try again.",
-  blocked: () => "Discord refused the request from this site's host. The site owner can find the details in the host's logs.",
+  blocked: () => "Discord's firewall blocked the sign-in request. The site owner should set DISCORD_CLIENT_SECRET on the bot's host so the bot signs people in, then restart the bot.",
+  helper: () => "The site couldn't use the bot to sign you in. The site owner should check that DASHBOARD_KEY matches on the site and the bot, and that DISCORD_CLIENT_SECRET is set on the bot.",
   unreachable: () => "The site couldn't reach Discord. Try again in a moment.",
   failed: () => "Discord didn't complete the sign-in. Try again in a moment.",
 };

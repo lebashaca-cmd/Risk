@@ -4,12 +4,14 @@ The website signs people in with Discord and forwards their requests here with a
 (DASHBOARD_KEY). Every request is checked again in this file: the user must be the server owner
 or hold Administrator or Manage Server in that server, and every value is validated.
 """
+import asyncio
 import copy
 import hmac
 import json
 import os
 import re
 
+import aiohttp
 import discord
 from aiohttp import web
 from discord.ext import commands
@@ -23,6 +25,7 @@ DEFAULT_PREFIXES = ("!", "?", ",")
 NEVER_MATCHES = "​​ignored​​"
 SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community")
 MAX_BODY = 20_000
+USER_AGENT = {"User-Agent": "DiscordBot (https://github.com/lebashaca-cmd/Risk, 1.0)"}
 SNOWFLAKE = re.compile(r"\d{15,21}")
 
 
@@ -512,6 +515,9 @@ class Dashboard(commands.Cog):
             return web.json_response({"error": error.message}, status=error.status)
 
     async def route(self, request, method, parts):
+        if parts == ["oauth"] and method == "POST":
+            return await self.oauth(await self.read_json(request))
+
         if parts == ["present"] and method == "POST":
             body = await self.read_json(request)
             ids = [as_snowflake(i, "Server id") for i in as_list(body.get("ids", []), "Server ids", 200)]
@@ -537,6 +543,70 @@ class Dashboard(commands.Cog):
             await self.audit(guild, member, parts[2])
             return {"settings": getattr(self, f"read_{parts[2]}")(guild)}
         raise ApiError(404, "Not found.")
+
+    # Sign-in: the site hands over Discord's login code and the bot talks to Discord from its own address.
+    @staticmethod
+    def sign_in_reason(status, raw, step):
+        try:
+            body = json.loads(raw)
+        except ValueError:
+            body = None
+        error = body.get("error") if isinstance(body, dict) else None
+        detail = str(body.get("error_description", "")) if isinstance(body, dict) else ""
+        if body is None and status in (403, 429, 503):
+            return "blocked"
+        if status == 429:
+            return "busy"
+        if step == "token exchange":
+            if status == 401 or error == "invalid_client":
+                return "secret"
+            if error == "invalid_grant":
+                return "redirect" if "redirect_uri" in detail else "expired"
+        return "failed"
+
+    async def oauth(self, body):
+        secret = os.getenv("DISCORD_CLIENT_SECRET", "").strip()
+        if not secret:
+            raise ApiError(503, "The bot has no DISCORD_CLIENT_SECRET set.")
+        code = as_text(body.get("code"), "Code", 300, required=True)
+        redirect = as_text(body.get("redirect_uri"), "Redirect address", 300, required=True)
+        if not redirect.endswith("/api/auth/callback"):
+            raise ApiError(400, "That redirect address isn't valid.")
+        api = os.getenv("DISCORD_API", "https://discord.com/api/v10").rstrip("/")
+        client_id = str(self.bot.application_id or (self.bot.user.id if self.bot.user else ""))
+        timeout = aiohttp.ClientTimeout(total=10)
+        token = None
+        try:
+            async with aiohttp.ClientSession(headers=USER_AGENT, timeout=timeout) as http:
+                try:
+                    async with http.post(f"{api}/oauth2/token", data={"client_id": client_id, "client_secret": secret, "grant_type": "authorization_code", "code": code, "redirect_uri": redirect}) as resp:
+                        text = await resp.text()
+                        if resp.status != 200:
+                            print(f"[dashboard] Discord token exchange answered {resp.status}: {text[:300]!r}", flush=True)
+                            return {"ok": False, "reason": self.sign_in_reason(resp.status, text[:300], "token exchange")}
+                        payload = json.loads(text)
+                        token = payload.get("access_token") if isinstance(payload, dict) else None
+                    if not isinstance(token, str):
+                        return {"ok": False, "reason": "failed"}
+                    auth = {"Authorization": f"Bearer {token}"}
+                    results = {}
+                    for key, path in (("user", "/users/@me"), ("guilds", "/users/@me/guilds")):
+                        async with http.get(f"{api}{path}", headers=auth) as resp:
+                            text = await resp.text()
+                            if resp.status != 200:
+                                print(f"[dashboard] Discord {key} lookup answered {resp.status}: {text[:300]!r}", flush=True)
+                                return {"ok": False, "reason": self.sign_in_reason(resp.status, text[:300], key)}
+                            results[key] = json.loads(text)
+                    return {"ok": True, **results}
+                finally:
+                    if token:
+                        try:
+                            await http.post(f"{api}/oauth2/token/revoke", data={"client_id": client_id, "client_secret": secret, "token": token})
+                        except (aiohttp.ClientError, asyncio.TimeoutError):
+                            pass
+        except (aiohttp.ClientError, asyncio.TimeoutError, ValueError) as error:
+            print(f"[dashboard] Couldn't reach Discord: {type(error).__name__}: {str(error)[:200]}", flush=True)
+            return {"ok": False, "reason": "unreachable"}
 
     def stores_for(self, section):
         """The live dicts a section writes to, so a failed update can be rolled back."""
