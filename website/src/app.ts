@@ -2,6 +2,7 @@ import { api } from "./api.js";
 import { initMotionFlag, prefersReduced, smoothScroll } from "./anim.js";
 import { h, mount } from "./dom.js";
 import { renderCommands } from "./commands.js";
+import { renderDashboard } from "./dashboard.js";
 import { renderHome } from "./home.js";
 import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
@@ -73,14 +74,33 @@ function notFound(): HTMLElement {
   );
 }
 
+/** On the dashboard subdomain ids live at /<id>; on the main site they live at /dashboard/<id>. */
+function dashboardRoute(path: string): { id: string | null; base: string } | null {
+  if (config.dashboardHost) {
+    if (path === "/") return { id: null, base: "" };
+    const direct = /^\/(\d{15,21})$/.exec(path);
+    return direct ? { id: direct[1] ?? null, base: "" } : null;
+  }
+  if (path === "/dashboard") return { id: null, base: "/dashboard" };
+  const nested = /^\/dashboard\/(\d{15,21})$/.exec(path);
+  return nested ? { id: nested[1] ?? null, base: "/dashboard" } : null;
+}
+
 function render(): void {
   if (!outlet) return;
   cleanup?.();
   cleanup = null;
 
   const path = normalize(window.location.pathname);
+  const dash = dashboardRoute(path);
   let node: HTMLElement;
-  switch (path) {
+  switch (dash ? "dashboard" : path) {
+    case "dashboard": {
+      const view = renderDashboard(dash?.id ?? null, dash?.base ?? "/dashboard");
+      node = view.node;
+      cleanup = view.cleanup;
+      break;
+    }
     case "/": {
       const home = renderHome(config);
       node = home.node;
@@ -110,9 +130,10 @@ function render(): void {
   }
 
   mount(outlet, node);
-  document.title = TITLES[path] ?? "Page not found · Risk";
+  document.title = dash ? "Dashboard · Risk" : (TITLES[path] ?? "Page not found · Risk");
   document.querySelectorAll<HTMLAnchorElement>("nav a[data-link]").forEach((link) => {
-    if (normalize(new URL(link.href).pathname) === path) link.setAttribute("aria-current", "page");
+    const linkPath = normalize(new URL(link.href).pathname);
+    if (linkPath === path || (dash && link.hasAttribute("data-dashboard") && linkPath === (config.dashboardHost ? "/" : "/dashboard"))) link.setAttribute("aria-current", "page");
     else link.removeAttribute("aria-current");
   });
   moveIndicator(activeLink());
@@ -179,6 +200,11 @@ async function start(): Promise<void> {
   document.querySelectorAll<HTMLAnchorElement>("[data-invite]").forEach((link) => {
     if (config.inviteUrl) link.href = config.inviteUrl;
     else link.hidden = true;
+  });
+  document.querySelectorAll<HTMLAnchorElement>("[data-dashboard]").forEach((link) => {
+    const target = config.dashboardUrl ?? "/dashboard";
+    link.href = target;
+    if (/^https?:/.test(target)) link.removeAttribute("data-link");
   });
   render();
   startStatusPolling();

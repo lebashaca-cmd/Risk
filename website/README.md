@@ -69,3 +69,31 @@ Notes:
 - `/healthz` is the health check Render uses.
 
 The bot's own host only gives the bot one port, and the bot's status page already uses it, so the website has to run somewhere else. Render, Railway, Fly.io or any small VPS all work: the start command is `python server.py` and the install command is `pip install -r requirements.txt`.
+
+## Dashboard
+
+Server owners and people with Manage Server sign in with Discord and change Risk's settings for their server. It lives at `dashboard.<your domain>/<server id>`.
+
+How it fits together: the site (this folder) handles the Discord sign-in and forwards settings changes to the bot's web port with a shared key. The bot checks the person's permissions in that server again and validates every value before saving.
+
+### Turn it on
+
+1. **Pick a key.** Make up a long random string (at least 16 characters, 32+ is better).
+2. **Bot host** (bot-hosting.cloud, in the bot's `.env` or Startup variables):
+   - `DASHBOARD_KEY` = the key
+   - `DASHBOARD_URL` = `https://dashboard.<your domain>` (shown by the `!dashboard` command)
+   Upload the updated bot files and restart.
+3. **Render** (service, Environment tab):
+   - `DASHBOARD_KEY` = the same key
+   - `DISCORD_CLIENT_SECRET` = the application's client secret (Discord Developer Portal, your app, OAuth2)
+   - `DASHBOARD_HOST` = `dashboard.<your domain>` (no `https://`)
+4. **Custom domain.** In Render, Settings, Custom Domains, add `dashboard.<your domain>` and create the DNS record Render shows. Add your main domain too if you want the site there. Render's `onrender.com` address can't have subdomains, so this step needs a domain you own.
+5. **Discord redirect.** In the Developer Portal, OAuth2, Redirects, add `https://dashboard.<your domain>/api/auth/callback`.
+
+Without `DASHBOARD_HOST` the dashboard still works on the main address at `/dashboard/<server id>`. If `DASHBOARD_HOST` is set, `/dashboard/...` on the main site redirects to the subdomain.
+
+### Notes
+
+- Sign-ins are kept in the site's memory, so a Render restart or sleep signs everyone out. They sign back in with one click.
+- The sign-in asks Discord for the `identify` and `guilds` scopes only, and the token is revoked right after the server list is read.
+- Each save is recorded in the server's logs as "Dashboard Updated" with who made it.

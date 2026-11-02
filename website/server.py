@@ -1,12 +1,15 @@
 import asyncio
 import json
 import os
+import re
 import time
 from collections import defaultdict, deque
 from pathlib import Path
 
 import aiohttp
 from aiohttp import web
+
+from dashboard import Dashboard
 
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
@@ -59,6 +62,8 @@ class Settings:
         self.invite_url = env("INVITE_URL")
         self.support_url = env("SUPPORT_URL")
         self.trust_proxy = env("TRUST_PROXY") in ("1", "true", "yes")
+        host = env("DASHBOARD_HOST").lower()
+        self.dashboard_host = host.removeprefix("https://").removeprefix("http://").strip("/")
         permissions = env("INVITE_PERMISSIONS")
         self.permissions = int(permissions) if permissions.isdigit() else INVITE_PERMISSIONS
 
@@ -198,9 +203,28 @@ def json_ok(payload, max_age):
     return web.json_response(payload, headers={"Cache-Control": f"public, max-age={max_age}"})
 
 
+def request_host(request, settings):
+    host = request.headers.get("X-Forwarded-Host", "") if settings.trust_proxy else ""
+    return (host.split(",")[0].strip() or request.host).split(":")[0].lower()
+
+
+def on_dashboard_host(request):
+    settings = request.app["settings"]
+    return bool(settings.dashboard_host) and request_host(request, settings) == settings.dashboard_host
+
+
+DASH_ID = re.compile(r"/\d{15,21}")
+
+
 async def api_config(request):
     settings = request.app["settings"]
-    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None}, 60)
+    if on_dashboard_host(request):
+        dashboard_url = "/"
+    elif settings.dashboard_host:
+        dashboard_url = f"https://{settings.dashboard_host}/"
+    else:
+        dashboard_url = "/dashboard"
+    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "dashboardHost": on_dashboard_host(request)}, 60)
 
 
 async def api_status(request):
@@ -234,7 +258,12 @@ async def fallback(request):
     path = request.path.rstrip("/") or "/"
     if path.startswith("/api/"):
         return web.json_response({"error": "Not found."}, status=404)
-    if path in PAGES:
+    settings = request.app["settings"]
+    is_dashboard_path = path == "/dashboard" or path.startswith("/dashboard/")
+    if settings.dashboard_host and is_dashboard_path and not on_dashboard_host(request):
+        target = path[len("/dashboard"):] or "/"
+        raise web.HTTPFound(f"https://{settings.dashboard_host}{target}")
+    if path in PAGES or is_dashboard_path or (on_dashboard_host(request) and DASH_ID.fullmatch(path)):
         return await page()(request)
     if Path(path).suffix:
         return web.Response(status=404, text="Not found.")
@@ -262,6 +291,8 @@ def make_app():
     app["settings"] = Settings()
     app["status"] = StatusCache()
     app["hits"] = defaultdict(deque)
+    app["dashboard"] = Dashboard(app["settings"], env)
+    app["dashboard"].add_routes(app)
     app.on_startup.append(on_startup)
     app.on_cleanup.append(on_cleanup)
 
@@ -283,4 +314,6 @@ if __name__ == "__main__":
     print(f"{settings.name} site listening on http://0.0.0.0:{settings.port}")
     if not settings.status_url:
         print("BOT_STATUS_URL is not set, so the status badge will read 'unavailable'.")
+    if not app["dashboard"].enabled:
+        print("Dashboard is off: set DISCORD_CLIENT_SECRET, DASHBOARD_KEY (16+ characters) and CLIENT_ID to turn it on.")
     web.run_app(app, host="0.0.0.0", port=settings.port, print=None)

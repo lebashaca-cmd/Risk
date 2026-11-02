@@ -1,3 +1,4 @@
+import type { AllSettings, GuildPayload, MePayload, SectionId } from "./dash-types.js";
 import type { BotStatus, CommandsPayload, SiteConfig, TosPayload } from "./types.js";
 
 async function getJSON<T>(path: string): Promise<T> {
@@ -12,4 +13,46 @@ export const api = {
   commands: () => getJSON<CommandsPayload>("/api/commands"),
   tos: () => getJSON<TosPayload>("/api/tos"),
   privacy: () => getJSON<TosPayload>("/api/privacy"),
+};
+
+export class ApiFailure extends Error {
+  constructor(
+    message: string,
+    readonly status: number,
+  ) {
+    super(message);
+  }
+}
+
+async function send<T>(method: string, path: string, body?: unknown): Promise<T> {
+  let res: Response;
+  try {
+    res = await fetch(path, {
+      method,
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "X-Requested-With": "risk", ...(body === undefined ? {} : { "Content-Type": "application/json" }) },
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+  } catch {
+    throw new ApiFailure("Couldn't reach the site. Check your connection and try again.", 0);
+  }
+  let payload: unknown = null;
+  try {
+    payload = await res.json();
+  } catch {
+    payload = null;
+  }
+  if (!res.ok) {
+    const message = payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string" ? payload.error : `The request failed (${res.status}).`;
+    throw new ApiFailure(message, res.status);
+  }
+  return payload as T;
+}
+
+export const dashApi = {
+  me: () => send<MePayload>("GET", "/api/auth/me"),
+  guild: (id: string) => send<GuildPayload>("GET", `/api/dash/guild/${encodeURIComponent(id)}`),
+  save: <K extends SectionId>(id: string, section: K, body: AllSettings[K]) =>
+    send<{ settings: AllSettings[K] }>("PUT", `/api/dash/guild/${encodeURIComponent(id)}/${section}`, body),
+  logout: () => send<{ ok: boolean }>("POST", "/api/auth/logout"),
 };
