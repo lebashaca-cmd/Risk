@@ -195,22 +195,6 @@ class Economy(commands.Cog):
         embed = discord.Embed(title="🎰 Slots", description=f"## {' '.join(reels)}\n{outcome}", color=discord.Color.gold())
         await ctx.reply(embed=embed, mention_author=False)
 
-    @commands.command(name="leaderboard", aliases=["lb", "rich"])
-    async def leaderboard(self, ctx):
-        """Shows the richest members of this server. Usage: !leaderboard"""
-        accounts = self.store.data.get(str(ctx.guild.id), {})
-        ranked = sorted(accounts.items(), key=lambda item: item[1]["wallet"] + item[1]["bank"], reverse=True)[:10]
-        ranked = [(uid, acc) for uid, acc in ranked if acc["wallet"] + acc["bank"] > 0]
-        if not ranked:
-            await ctx.reply("Nobody has any coins yet. Try `!daily`.", mention_author=False)
-            return
-        lines = []
-        for index, (uid, acc) in enumerate(ranked, start=1):
-            member = ctx.guild.get_member(int(uid))
-            name = discord.utils.escape_markdown(member.display_name) if member else f"User {uid}"
-            lines.append(f"**{index}.** {name}: {self.money(acc['wallet'] + acc['bank'])}")
-        await ctx.send(embed=discord.Embed(title="Richest members", description="\n".join(lines), color=discord.Color.gold()))
-
     @commands.command(name="addmoney")
     @commands.has_permissions(administrator=True)
     async def addmoney(self, ctx, member: discord.Member, amount: int):

@@ -24,14 +24,23 @@ CATEGORY_BY_FILE = {
     "utility": "Utility",
     "utility_tools": "Utility",
     "utility_extra": "Utility",
+    "utility_more": "Utility",
     "moderation": "Moderation",
     "moderation_tools": "Moderation",
+    "moderation_more": "Moderation",
+    "automod": "Moderation",
     "give_role": "Moderation",
     "fun": "Fun",
     "fun_extra": "Fun",
+    "fun_more": "Fun",
     "economy": "Economy",
     "economy_extra": "Economy",
+    "economy_more": "Economy",
     "levels": "Levels",
+    "stats": "Levels",
+    "community": "Community",
+    "community_extra": "Community",
+    "giveaway": "Community",
     "tickets": "Tickets",
     "ticket_tools": "Tickets",
     "serverlogs": "Server logs",
@@ -40,7 +49,7 @@ CATEGORY_BY_FILE = {
     "ai_chat": "AI",
     "nerve": "Lookups",
 }
-CATEGORY_ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
+CATEGORY_ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
 DEFAULT_HIDDEN = {"dusklogs", "duskreset"}
 
 

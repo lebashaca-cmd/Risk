@@ -10,10 +10,11 @@ ITEMS = {
     "rod": {"name": "Fishing rod", "price": 2000, "info": "Needed for `!fish`."},
     "pickaxe": {"name": "Pickaxe", "price": 5000, "info": "Needed for `!mine`."},
     "padlock": {"name": "Padlock", "price": 3000, "info": "Stops the next `!rob` against you, then breaks."},
+    "rifle": {"name": "Hunting rifle", "price": 4000, "info": "Needed for `!hunt`."},
 }
 COOLDOWNS = {
     "weekly": 7 * 86400, "monthly": 30 * 86400, "beg": 60, "crime": 2 * 3600,
-    "rob": 3600, "fish": 300, "mine": 600,
+    "rob": 3600, "fish": 300, "mine": 600, "hunt": 450,
 }
 FISH = [("an old boot", 5), ("a tiny minnow", 40), ("a trout", 120), ("a salmon", 250), ("a golden carp", 600), ("a treasure chest", 1500)]
 ORES = [("some stone", 30), ("copper ore", 90), ("iron ore", 200), ("gold ore", 450), ("a diamond", 1200)]
