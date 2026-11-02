@@ -205,6 +205,7 @@ class Giveaway(commands.Cog):
 
     # Commands
     async def launch(self, ctx, seconds, winners, prize, drop=False, role=None):
+        seconds = int(seconds.total_seconds()) if hasattr(seconds, "total_seconds") else seconds
         if not drop and not MIN_SECONDS <= seconds <= MAX_SECONDS:
             await ctx.reply("A giveaway must last between 10 seconds and 30 days.", mention_author=False)
             return
