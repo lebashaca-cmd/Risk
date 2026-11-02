@@ -389,9 +389,19 @@ function renderEditor(payload: GuildPayload, guildId: string): View {
 }
 
 // Pages
+const LOGIN_PROBLEMS: Record<string, () => string> = {
+  denied: () => "Sign-in was cancelled or expired. Try again.",
+  secret: () => "Discord rejected the site's client secret. The site owner should copy DISCORD_CLIENT_SECRET again from the Developer Portal (OAuth2 page, Reset Secret) and update it on the host.",
+  redirect: () => `Discord says the redirect address doesn't match. The site owner should add ${window.location.origin}/api/auth/callback under OAuth2, Redirects in the Developer Portal.`,
+  expired: () => "That sign-in link was already used or expired. Try again.",
+  busy: () => "Discord is limiting requests from this site right now. Wait a minute and try again.",
+  blocked: () => "Discord refused the request from this site's host. The site owner can find the details in the host's logs.",
+  unreachable: () => "The site couldn't reach Discord. Try again in a moment.",
+  failed: () => "Discord didn't complete the sign-in. Try again in a moment.",
+};
+
 function signInView(reason: string | null, enabled: boolean): HTMLElement {
-  const text =
-    reason === "denied" ? "Sign-in was cancelled or expired. Try again." : reason === "failed" ? "Discord didn't complete the sign-in. Try again in a moment." : null;
+  const text = reason ? (LOGIN_PROBLEMS[reason] ?? LOGIN_PROBLEMS["failed"])?.() ?? null : null;
   return h(
     "div",
     { class: "dash-hero" },
