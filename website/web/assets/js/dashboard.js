@@ -312,8 +312,18 @@ function renderEditor(payload, guildId) {
     return { node: root, cleanup: () => window.removeEventListener("beforeunload", warn) };
 }
 // Pages
+const LOGIN_PROBLEMS = {
+    denied: () => "Sign-in was cancelled or expired. Try again.",
+    secret: () => "Discord rejected the site's client secret. The site owner should copy DISCORD_CLIENT_SECRET again from the Developer Portal (OAuth2 page, Reset Secret) and update it on the host.",
+    redirect: () => `Discord says the redirect address doesn't match. The site owner should add ${window.location.origin}/api/auth/callback under OAuth2, Redirects in the Developer Portal.`,
+    expired: () => "That sign-in link was already used or expired. Try again.",
+    busy: () => "Discord is limiting requests from this site right now. Wait a minute and try again.",
+    blocked: () => "Discord refused the request from this site's host. The site owner can find the details in the host's logs.",
+    unreachable: () => "The site couldn't reach Discord. Try again in a moment.",
+    failed: () => "Discord didn't complete the sign-in. Try again in a moment.",
+};
 function signInView(reason, enabled) {
-    const text = reason === "denied" ? "Sign-in was cancelled or expired. Try again." : reason === "failed" ? "Discord didn't complete the sign-in. Try again in a moment." : null;
+    const text = reason ? (LOGIN_PROBLEMS[reason] ?? LOGIN_PROBLEMS["failed"])?.() ?? null : null;
     return h("div", { class: "dash-hero" }, h("h1", {}, "Dashboard"), h("p", { class: "lede" }, "Change how Risk works in your server: welcome messages, logs, levels, auto-moderation and more."), text ? notice("error", text) : null, enabled
         ? h("div", { class: "actions" }, h("a", { class: "btn btn-primary", href: "/api/auth/login" }, "Sign in with Discord"))
         : notice("info", "The dashboard isn't switched on yet. Check back soon."), h("p", { class: "dash-fine" }, "Risk sees your Discord name, avatar and the servers you manage. It doesn't get your messages and can't act as you. See the privacy policy for details."));
