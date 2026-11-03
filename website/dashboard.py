@@ -284,7 +284,14 @@ class Dashboard:
                 except ValueError:
                     payload = None
                 if not isinstance(payload, dict):
-                    return 502, {"error": "The bot sent an unexpected answer."}
+                    print(f"[dashboard] Bot answered {resp.status} with something that wasn't JSON", flush=True)
+                    if resp.status == 404:
+                        text = "The bot host doesn't have the dashboard yet. Upload the latest bot files (main.py and cogs/dashboard.py) and restart the bot."
+                    elif resp.status >= 500:
+                        text = "The bot hit an error. Check the bot's console for details."
+                    else:
+                        text = f"The bot sent an unexpected answer (status {resp.status})."
+                    return 502, {"error": text}
                 return resp.status, payload
         except (aiohttp.ClientError, asyncio.TimeoutError):
             return 502, {"error": "The bot is offline or restarting. Try again in a minute."}
