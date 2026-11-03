@@ -10,6 +10,7 @@ import hmac
 import json
 import os
 import re
+import traceback
 
 import aiohttp
 import discord
@@ -550,6 +551,9 @@ class Dashboard(commands.Cog):
             return web.json_response(payload)
         except ApiError as error:
             return web.json_response({"error": error.message}, status=error.status)
+        except Exception:
+            traceback.print_exc()
+            return web.json_response({"error": "The bot hit an error while handling that. Check the bot's console for the details."}, status=500)
 
     async def route(self, request, method, parts):
         if parts == ["oauth"] and method == "POST":
