@@ -84,6 +84,25 @@ async def setup_hook():
     await start_status_server()
 
 
+bot.load_errors = {}
+
+
+@bot.command(name='cogstatus', aliases=['loaded'])
+@commands.is_owner()
+async def cogstatus(ctx):
+    """Owner only. Shows which parts of the bot loaded and which failed. Usage: !cogstatus"""
+    files = sorted(f[:-3] for f in os.listdir(COGS_DIR) if f.endswith('.py')) if os.path.isdir(COGS_DIR) else []
+    loaded = [f for f in files if f'cogs.{f}' in bot.extensions]
+    missing = [f for f in files if f not in loaded]
+    lines = [f'{len(loaded)} of {len(files)} cog files loaded, {len(bot.commands)} commands.']
+    for name in missing:
+        lines.append(f'Not loaded: {name} - {bot.load_errors.get(name + ".py", "no error recorded")}')
+    for name in ('streams', 'vip', 'dashboard'):
+        if name not in files:
+            lines.append(f'Missing file: cogs/{name}.py was not uploaded to this host.')
+    await ctx.reply('\n'.join(lines)[:1900], mention_author=False)
+
+
 @bot.event
 async def on_ready():
     print(f'Logged in as {bot.user.name} (ID: {bot.user.id})')
@@ -102,6 +121,7 @@ async def on_ready():
                 await bot.load_extension(ext)
                 print(f'Loaded extension: {filename}')
             except Exception as e:
+                bot.load_errors[filename] = f'{type(e).__name__}: {e}'
                 print(f'Failed to load extension {filename}: {e}')
 
     if not getattr(bot, 'commands_synced', False):

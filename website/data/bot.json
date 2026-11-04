@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T21:50:03+00:00",
+  "generatedAt": "2026-11-04T21:58:34+00:00",
   "prefixes": [
     "!",
     "?",
@@ -11,6 +11,16 @@
       "kind": "prefix",
       "category": "Info",
       "description": "Displays information from your Risk Bio website.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "cogstatus",
+      "kind": "prefix",
+      "category": "Info",
+      "description": "Owner only. Shows which parts of the bot loaded and which failed.",
       "examples": [
         ""
       ],
