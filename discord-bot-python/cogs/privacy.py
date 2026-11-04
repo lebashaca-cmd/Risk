@@ -50,7 +50,7 @@ SECTIONS = [
         "which servers you can manage, and asks Discord to revoke the access token right after sign-in. A random session "
         "cookie (HttpOnly, 6 hours) keeps you signed in, and the site holds your name, avatar and managed-server list in "
         "memory until you sign out, the session ends or the site restarts. Settings you save are stored with the bot like "
-        "any other setting, and each save is noted in that server's logs with your name.",
+        "any other setting, and each save is noted in that server's logs with your name. If you change the bot's profile there, the picture, banner, name and bio you upload are sent to Discord for that server. Servers can also have a VIP status, stored as a server id with an optional end date.",
     ),
     (
         "8. How long data is kept",

@@ -1,4 +1,4 @@
-import type { AllSettings, GuildPayload, MePayload, SectionId } from "./dash-types.js";
+import type { AllSettings, BotProfile, GuildPayload, MePayload, SectionId } from "./dash-types.js";
 import type { BotStatus, CommandsPayload, SiteConfig, TosPayload } from "./types.js";
 
 async function getJSON<T>(path: string): Promise<T> {
@@ -54,5 +54,7 @@ export const dashApi = {
   guild: (id: string) => send<GuildPayload>("GET", `/api/dash/guild/${encodeURIComponent(id)}`),
   save: <K extends SectionId>(id: string, section: K, body: AllSettings[K]) =>
     send<{ settings: AllSettings[K] }>("PUT", `/api/dash/guild/${encodeURIComponent(id)}/${section}`, body),
+  saveProfile: (id: string, body: { nick?: string; bio?: string; avatar?: string | null; banner?: string | null }) =>
+    send<{ profile: BotProfile }>("PUT", `/api/dash/guild/${encodeURIComponent(id)}/profile`, body),
   logout: () => send<{ ok: boolean }>("POST", "/api/auth/logout"),
 };

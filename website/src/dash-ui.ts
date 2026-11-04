@@ -216,3 +216,14 @@ export function tagEditor(label: string, values: string[], onChange: (values: st
   draw();
   return labelled(id, label, h("div", { class: "dash-multi" }, list, h("div", { class: "dash-add" }, input, add), note), options.hint);
 }
+
+/** Disables every control inside an element (used for features a server hasn't unlocked). */
+export function lockControls(root: HTMLElement, locked: boolean): HTMLElement {
+  if (locked) root.querySelectorAll<HTMLElement>("input, select, textarea, button").forEach((el) => el.setAttribute("disabled", ""));
+  root.classList.toggle("is-locked", locked);
+  return root;
+}
+
+export function vipBadge(): HTMLElement {
+  return h("span", { class: "dash-vip" }, "VIP");
+}

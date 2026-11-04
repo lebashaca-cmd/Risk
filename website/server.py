@@ -287,7 +287,7 @@ async def on_cleanup(app):
 
 
 def make_app():
-    app = web.Application(middlewares=[guard, asset_cache])
+    app = web.Application(middlewares=[guard, asset_cache], client_max_size=8 * 1024 * 1024)
     app["settings"] = Settings()
     app["status"] = StatusCache()
     app["hits"] = defaultdict(deque)

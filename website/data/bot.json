@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-02T05:35:11+00:00",
+  "generatedAt": "2026-11-04T02:48:40+00:00",
   "prefixes": [
     "!",
     "?",
@@ -3193,6 +3193,36 @@
       "permission": null
     },
     {
+      "name": "schedule",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Repeats a message in a channel.",
+      "examples": [
+        "#channel 6h Your message"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "schedules",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Lists this server's scheduled messages.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "serverstats",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Shows a detailed server report.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "sticky",
       "kind": "prefix",
       "category": "Sticky",
@@ -3201,12 +3231,72 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "unschedule",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Removes a scheduled message.",
+      "examples": [
+        "<number>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "unsticky",
       "kind": "prefix",
       "category": "Sticky",
       "description": "Remove a sticky message.",
       "examples": [],
       "permission": "Manage Messages"
+    },
+    {
+      "name": "vip",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Shows this server's VIP status and what VIP unlocks.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "vipembed",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Posts a custom embed.",
+      "examples": [
+        "#channel #5865f2 Title | Body text"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "vipgrant",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Owner only. Gives a server VIP for some days (0 = no end).",
+      "examples": [
+        "<server id> [days] [note]"
+      ],
+      "permission": null
+    },
+    {
+      "name": "viplist",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Owner only. Lists servers that have VIP.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "viprevoke",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Owner only. Removes a server's VIP.",
+      "examples": [
+        "<server id>"
+      ],
+      "permission": null
     }
   ],
   "tos": {
@@ -3278,7 +3368,7 @@
       },
       {
         "title": "7. The dashboard",
-        "text": "Signing in to the dashboard uses Discord's OAuth2. Risk asks for your Discord ID, name and avatar, and the list of servers you are in with your permissions there (the identify and guilds scopes). It uses these only to work out which servers you can manage, and asks Discord to revoke the access token right after sign-in. A random session cookie (HttpOnly, 6 hours) keeps you signed in, and the site holds your name, avatar and managed-server list in memory until you sign out, the session ends or the site restarts. Settings you save are stored with the bot like any other setting, and each save is noted in that server's logs with your name."
+        "text": "Signing in to the dashboard uses Discord's OAuth2. Risk asks for your Discord ID, name and avatar, and the list of servers you are in with your permissions there (the identify and guilds scopes). It uses these only to work out which servers you can manage, and asks Discord to revoke the access token right after sign-in. A random session cookie (HttpOnly, 6 hours) keeps you signed in, and the site holds your name, avatar and managed-server list in memory until you sign out, the session ends or the site restarts. Settings you save are stored with the bot like any other setting, and each save is noted in that server's logs with your name. If you change the bot's profile there, the picture, banner, name and bio you upload are sent to Discord for that server. Servers can also have a VIP status, stored as a server id with an optional end date."
       },
       {
         "title": "8. How long data is kept",

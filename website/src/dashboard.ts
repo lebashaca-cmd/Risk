@@ -14,20 +14,29 @@ import {
   textInput,
   toggle,
   uid,
+  vipBadge,
 } from "./dash-ui.js";
+import { announcements, commands, overview, responders, vipSection } from "./dash-extra.js";
+import type { Ctx, ExtraRenderer } from "./dash-extra.js";
+import { profileCard } from "./dash-profile.js";
 import { h, mount } from "./dom.js";
 import { toast } from "./ui.js";
 
 type View = { node: HTMLElement; cleanup: () => void };
-type Renderer<K extends SectionId> = (draft: AllSettings[K], meta: Meta, changed: () => void) => HTMLElement[];
+type Renderer<K extends SectionId> = (draft: AllSettings[K], meta: Meta, changed: () => void, ctx: Ctx) => HTMLElement[];
 
-const SECTION_META: { id: SectionId; label: string; blurb: string }[] = [
+const SECTION_META: { id: SectionId; label: string; blurb: string; vip?: boolean; readOnly?: boolean }[] = [
+  { id: "overview", label: "Overview", blurb: "Your server at a glance.", readOnly: true },
   { id: "general", label: "General", blurb: "Prefix, which commands work, and where commands are ignored." },
   { id: "welcome", label: "Welcome and leave", blurb: "Messages when members join or leave." },
   { id: "logs", label: "Server logs", blurb: "Where each kind of log goes, and what is left out." },
   { id: "levels", label: "Levels", blurb: "XP speed, level-up messages and role rewards." },
   { id: "automod", label: "Auto-moderation", blurb: "Blocks links, invites, spam and listed words." },
   { id: "community", label: "Community", blurb: "Auto role, suggestions, starboard, birthdays, reports, counting and rules." },
+  { id: "commands", label: "Command rules", blurb: "Limit who can use a command, where, and how often." },
+  { id: "responders", label: "Auto-replies", blurb: "Have Risk answer messages that match a trigger." },
+  { id: "announcements", label: "Announcements", blurb: "Messages Risk repeats on a timer.", vip: true },
+  { id: "vip", label: "VIP", blurb: "Your plan, its limits and VIP extras.", vip: true },
 ];
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -270,13 +279,19 @@ const community: Renderer<"community"> = (draft, meta, changed) => [
   group("Server rules", "Shown when someone uses !rules.", textArea("Rules", draft.rules, (v) => { draft.rules = v; changed(); }, { max: 1500, rows: 7 })),
 ];
 
-const RENDERERS: { [K in SectionId]: Renderer<K> } = { general, welcome, logs, levels, automod, community };
+const RENDERERS = (vip: AllSettings["vip"] | undefined): { [K in SectionId]: ExtraRenderer<AllSettings[K]> } => ({
+  overview, general, welcome, logs, levels, automod, community, commands, responders,
+  announcements: announcements(vip ?? null),
+  vip: vipSection(),
+});
 
 // Settings editor for one server
 function renderEditor(payload: GuildPayload, guildId: string): View {
   const settings = clone(payload.settings);
   const drafts = clone(payload.settings);
-  let current: SectionId = "general";
+  let current: SectionId = "overview";
+  const renderers = RENDERERS(payload.settings.vip);
+  const info0 = (id: SectionId) => SECTION_META.find((s) => s.id === id);
   let saving = false;
   let status: { text: string; error: boolean } = { text: "", error: false };
 
@@ -290,10 +305,11 @@ function renderEditor(payload: GuildPayload, guildId: string): View {
   bar.append(message, discard, save);
 
   const isDirty = (id: SectionId): boolean => JSON.stringify(drafts[id]) !== JSON.stringify(settings[id]);
-  const anyDirty = (): boolean => SECTION_META.some((s) => isDirty(s.id));
+  const anyDirty = (): boolean => SECTION_META.some((s) => !s.readOnly && isDirty(s.id));
 
   const refresh = (): void => {
     const dirty = isDirty(current);
+    bar.hidden = Boolean(info0(current)?.readOnly);
     save.disabled = !dirty || saving;
     discard.disabled = !dirty || saving;
     const shown = dirty && !status.error ? { text: "You have unsaved changes.", error: false } : status;
@@ -312,7 +328,7 @@ function renderEditor(payload: GuildPayload, guildId: string): View {
   const draw = (): void => {
     const info = SECTION_META.find((s) => s.id === current);
     const problem = payload.unavailable?.[current];
-    const body = problem ? [notice("info", problem)] : (RENDERERS[current] as Renderer<SectionId>)(drafts[current], payload.meta, refresh);
+    const body = problem ? [notice("info", problem)] : (renderers[current] as ExtraRenderer<never>)(drafts[current] as never, payload.meta, refresh, { go: select, guildName: payload.guild.name, guildIcon: payload.guild.icon });
     panel.replaceChildren(h("header", { class: "dash-panel-head" }, h("h2", {}, info?.label ?? ""), h("p", { class: "lede" }, info?.blurb ?? "")), ...body);
     panel.setAttribute("aria-labelledby", `tab-${current}`);
     refresh();
@@ -324,7 +340,7 @@ function renderEditor(payload: GuildPayload, guildId: string): View {
   };
 
   for (const info of SECTION_META) {
-    const button = h("button", { type: "button", role: "tab", class: "dash-tab", id: `tab-${info.id}`, "data-section": info.id, "aria-controls": "dash-panel" }, info.label);
+    const button = h("button", { type: "button", role: "tab", class: "dash-tab", id: `tab-${info.id}`, "data-section": info.id, "aria-controls": "dash-panel" }, info.label, info.vip ? vipBadge() : null);
     button.addEventListener("click", () => select(info.id));
     nav.appendChild(button);
   }
@@ -385,6 +401,7 @@ function renderEditor(payload: GuildPayload, guildId: string): View {
   };
   window.addEventListener("beforeunload", warn);
 
+  if (payload.profile) root.append(profileCard(payload.profile, guildId));
   root.append(h("aside", { class: "dash-side" }, nav), h("div", { class: "dash-main" }, panel, bar));
   draw();
   return { node: root, cleanup: () => window.removeEventListener("beforeunload", warn) };

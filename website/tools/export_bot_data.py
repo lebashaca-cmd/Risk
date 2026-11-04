@@ -37,6 +37,7 @@ CATEGORY_BY_FILE = {
     "economy_extra": "Economy",
     "economy_more": "Economy",
     "dashboard": "Info",
+    "vip": "VIP",
     "levels": "Levels",
     "stats": "Levels",
     "community": "Community",

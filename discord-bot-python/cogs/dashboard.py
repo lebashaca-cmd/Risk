@@ -5,11 +5,14 @@ The website signs people in with Discord and forwards their requests here with a
 or hold Administrator or Manage Server in that server, and every value is validated.
 """
 import asyncio
+import base64
+import binascii
 import copy
 import hmac
 import json
 import os
 import re
+import time
 import traceback
 
 import aiohttp
@@ -22,6 +25,10 @@ try:
 except ImportError:  # an older commands_list.py on the host
     CATEGORY_BY_COG = {}
 try:
+    from cogs.vip import LIMITS, PERKS
+except ImportError:  # vip.py not uploaded yet: everyone is on the free plan
+    LIMITS, PERKS = {"responders": (5, 50), "command_rules": (5, 100), "schedules": (0, 10), "badwords": (25, 100), "level_rewards": (5, 25), "xp_multiplier": (2.0, 5.0), "ignored_channels": (10, 50)}, []
+try:
     from cogs.log_tools import CATEGORIES as LOG_CATEGORIES
 except ImportError:  # log_tools.py missing or old
     LOG_CATEGORIES = {}
@@ -30,8 +37,12 @@ from utils.store import JsonStore
 
 DEFAULT_PREFIXES = ("!", "?", ",")
 NEVER_MATCHES = "​​ignored​​"
-SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community")
+SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "announcements", "vip")
+READ_ONLY = ("overview",)
 MAX_BODY = 20_000
+MAX_PROFILE_BODY = 7_500_000
+IMAGE_LIMITS = {"avatar": 2_000_000, "banner": 3_000_000}
+IMAGE_SIGNATURES = ((b"\x89PNG\r\n\x1a\n", "png"), (b"\xff\xd8\xff", "jpeg"), (b"GIF87a", "gif"), (b"GIF89a", "gif"))
 USER_AGENT = {"User-Agent": "DiscordBot (https://github.com/lebashaca-cmd/Risk, 1.0)"}
 SNOWFLAKE = re.compile(r"\d{15,21}")
 
@@ -43,6 +54,11 @@ REQUIREMENTS = {
     "logs": [("ServerLogs", "serverlogs.py", ["config", "_save"]), ("LogTools", "log_tools.py", ["cfg", "store.save"])],
     "levels": [("Levels", "levels.py", ["cfg", "settings.save"])],
     "automod": [("AutoMod", "automod.py", ["cfg", "store.save"])],
+    "commands": [],
+    "responders": [],
+    "overview": [],
+    "announcements": [("VIP", "vip.py", ["schedules", "is_vip", "limit", "store.save"])],
+    "vip": [("VIP", "vip.py", ["info", "limit", "cfg", "store.save"])],
     "community": [
         ("Community", "community.py", ["cfg", "sugg", "settings.save", "suggestions.save"]),
         ("CommunityExtra", "community_extra.py", ["cfg", "store.save"]),
@@ -157,6 +173,8 @@ class Dashboard(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.store = JsonStore("dashboard")
+        self.cooldowns = {}
+        self.reply_times = {}
 
     async def cog_load(self):
         self.bot.add_check(self.command_allowed)
@@ -174,7 +192,23 @@ class Dashboard(commands.Cog):
         data.setdefault("prefix", None)
         data.setdefault("disabled_commands", [])
         data.setdefault("ignored_channels", [])
+        data.setdefault("rules", {})
+        data.setdefault("responders", [])
+        data.setdefault("activity", [])
         return data
+
+    # VIP lookups that still work when vip.py isn't on the host
+    def vip_info(self, guild_id):
+        cog = self.bot.get_cog("VIP")
+        return cog.info(guild_id) if cog else {"vip": False, "source": None, "until": None, "note": ""}
+
+    def cap(self, guild_id, key):
+        free, vip = LIMITS[key]
+        return vip if self.vip_info(guild_id)["vip"] else free
+
+    def need_vip(self, guild_id, what):
+        if not self.vip_info(guild_id)["vip"]:
+            raise ApiError(403, f"{what} is a VIP feature. This server is on the free plan.")
 
     async def command_allowed(self, ctx):
         if ctx.guild is None or ctx.command is None:
@@ -183,11 +217,64 @@ class Dashboard(commands.Cog):
         if not config:
             return True
         root = ctx.command.root_parent or ctx.command
+        perms = getattr(ctx.author, "guild_permissions", None)
+        staff = bool(perms and (perms.administrator or perms.manage_guild))
+        if staff:
+            return True
         if root.name in config.get("disabled_commands", []):
-            perms = getattr(ctx.author, "guild_permissions", None)
-            if not (perms and (perms.administrator or perms.manage_guild)):
-                raise ModError(f"`{root.name}` is turned off in this server.")
+            raise ModError(f"`{root.name}` is turned off in this server.")
+        rules = config.get("rules", {})
+        rule = rules.get(root.name)
+        if rule and root.name in list(rules)[: self.cap(ctx.guild.id, "command_rules")]:
+            channels = rule.get("channels", [])
+            here = {ctx.channel.id, getattr(ctx.channel, "parent_id", None)}
+            if channels and not here & set(channels):
+                raise ModError(f"`{root.name}` only works in " + ", ".join(f"<#{c}>" for c in channels[:5]) + ".")
+            roles = rule.get("roles", [])
+            if roles and not {r.id for r in getattr(ctx.author, "roles", [])} & set(roles):
+                raise ModError(f"`{root.name}` is limited to certain roles in this server.")
+            cooldown = rule.get("cooldown", 0)
+            if cooldown:
+                key, now = (ctx.guild.id, root.name, ctx.author.id), time.time()
+                wait = self.cooldowns.get(key, 0) + cooldown - now
+                if wait > 0:
+                    raise ModError(f"`{root.name}` is on cooldown here. Try again in {int(wait) + 1}s.")
+                if len(self.cooldowns) > 5000:
+                    self.cooldowns = {k: v for k, v in self.cooldowns.items() if v > now - 3600}
+                self.cooldowns[key] = now
         return True
+
+    @commands.Cog.listener()
+    async def on_message(self, message):
+        guild = message.guild
+        if guild is None or message.author.bot or not message.content:
+            return
+        config = self.store.data.get(str(guild.id))
+        if not config or not config.get("responders") or message.channel.id in config.get("ignored_channels", []):
+            return
+        if not isinstance(message.channel, (discord.TextChannel, discord.Thread)) or not message.channel.permissions_for(guild.me).send_messages:
+            return
+        text = message.content.lower().strip()
+        now = time.time()
+        for index, item in enumerate(config["responders"][: self.cap(guild.id, "responders")]):
+            trigger, mode = item["trigger"].lower(), item.get("match", "contains")
+            hit = text == trigger if mode == "exact" else text.startswith(trigger) if mode == "starts" else trigger in text
+            key = (guild.id, index, item["trigger"])
+            if not hit or self.reply_times.get(key, 0) + 10 > now:
+                continue
+            self.reply_times[key] = now
+            reply = item["reply"].replace("{user}", message.author.display_name).replace("{server}", guild.name)
+            kwargs = {"reference": message, "mention_author": False, "allowed_mentions": discord.AllowedMentions.none()}
+            try:
+                if item.get("embed") and self.vip_info(guild.id)["vip"]:
+                    vip = self.bot.get_cog("VIP")
+                    color = vip.embed_color(guild.id) if vip else None
+                    await message.channel.send(embed=discord.Embed(description=reply, color=color if color is not None else discord.Color.dark_grey()), **kwargs)
+                else:
+                    await message.channel.send(reply, **kwargs)
+            except discord.HTTPException:
+                pass
+            break
 
     def prefixes_for(self, message):
         base = list(DEFAULT_PREFIXES)
@@ -278,6 +365,8 @@ class Dashboard(commands.Cog):
             "commands": cmds,
             "logCategories": [{"id": key, "label": label} for key, (label, _) in LOG_CATEGORIES.items()],
             "defaultPrefixes": list(DEFAULT_PREFIXES),
+            "vip": self.vip_info(guild.id)["vip"],
+            "limits": {key: self.cap(guild.id, key) for key in LIMITS},
         }
 
     def unavailable(self, section):
@@ -322,7 +411,10 @@ class Dashboard(commands.Cog):
                     names.append(name)
             config["disabled_commands"] = names
         if "ignoredChannels" in body:
-            config["ignored_channels"] = pick_channels(guild, body["ignoredChannels"], "Ignored channels")
+            ignored = pick_channels(guild, body["ignoredChannels"], "Ignored channels")
+            if len(ignored) > self.cap(guild.id, "ignored_channels"):
+                raise ApiError(403, f"Free servers can ignore {LIMITS['ignored_channels'][0]} channels. VIP raises that to {LIMITS['ignored_channels'][1]}.")
+            config["ignored_channels"] = ignored
         self.store.save()
 
     def read_welcome(self, guild):
@@ -421,7 +513,10 @@ class Dashboard(commands.Cog):
             text = as_text(body["message"], "Level-up message", 500)
             config["message"] = text or None
         if "multiplier" in body:
-            config["multiplier"] = as_float(body["multiplier"], "XP multiplier", 0.5, 5)
+            multiplier = as_float(body["multiplier"], "XP multiplier", 0.5, 5)
+            if multiplier > self.cap(guild.id, "xp_multiplier") and multiplier != config["multiplier"]:
+                raise ApiError(403, f"Free servers can set the XP multiplier up to {LIMITS['xp_multiplier'][0]:g}x. VIP goes up to {LIMITS['xp_multiplier'][1]:g}x.")
+            config["multiplier"] = multiplier
         if "cooldown" in body:
             config["cooldown"] = as_int(body["cooldown"], "XP cooldown", 10, 600)
         if "mode" in body:
@@ -434,7 +529,8 @@ class Dashboard(commands.Cog):
             config["noxp_roles"] = pick_roles(guild, body["noxpRoles"], "No-XP roles")
         if "rewards" in body:
             rewards = {}
-            for item in as_list(body["rewards"], "Level rewards", 25):
+            allowed = self.cap(guild.id, "level_rewards")
+            for item in as_list(body["rewards"], "Level rewards", LIMITS["level_rewards"][1]):
                 if not isinstance(item, dict):
                     raise ApiError(400, "Each reward needs a level and a role.")
                 level = as_int(item.get("level"), "Reward level", 1, 1000)
@@ -442,6 +538,8 @@ class Dashboard(commands.Cog):
                 if role is None:
                     raise ApiError(400, "Pick a role for each reward.")
                 rewards[str(level)] = role
+            if len(rewards) > allowed:
+                raise ApiError(403, f"Free servers can have {LIMITS['level_rewards'][0]} level rewards. VIP allows {LIMITS['level_rewards'][1]}.")
             config["rewards"] = rewards
         cog.settings.save()
 
@@ -463,12 +561,14 @@ class Dashboard(commands.Cog):
             config["maxmentions"] = as_int(body["maxMentions"], "Mention limit", 0, 50)
         if "badWords" in body:
             words = []
-            for word in as_list(body["badWords"], "Blocked words", 100):
+            for word in as_list(body["badWords"], "Blocked words", LIMITS["badwords"][1]):
                 word = as_text(word, "A blocked word", 40).lower()
                 if not 2 <= len(word) <= 40:
                     raise ApiError(400, "Each blocked word needs 2 to 40 characters.")
                 if word not in words:
                     words.append(word)
+            if len(words) > self.cap(guild.id, "badwords"):
+                raise ApiError(403, f"Free servers can block {LIMITS['badwords'][0]} words. VIP allows {LIMITS['badwords'][1]}.")
             config["badwords"] = words
         if "ignoreChannels" in body:
             config["ignore_channels"] = pick_channels(guild, body["ignoreChannels"], "Ignored channels")
@@ -520,6 +620,230 @@ class Dashboard(commands.Cog):
         community.suggestions.save()
         extra.store.save()
 
+    # Commands: per-command rules (who can use it, where, and how often)
+    def read_commands(self, guild):
+        config = self.cfg(guild.id)
+        rules = [
+            {"command": name, "roles": [str(r) for r in rule.get("roles", [])], "channels": [str(c) for c in rule.get("channels", [])], "cooldown": rule.get("cooldown", 0)}
+            for name, rule in config["rules"].items()
+        ]
+        return {"rules": rules}
+
+    def write_commands(self, guild, body):
+        valid = {c.name for c in self.bot.commands}
+        rules = {}
+        for item in as_list(body.get("rules", []), "Command rules", LIMITS["command_rules"][1]):
+            if not isinstance(item, dict):
+                raise ApiError(400, "Each rule needs a command.")
+            name = item.get("command")
+            if name not in valid or name == "dashboard":
+                raise ApiError(400, f"`{str(name)[:30]}` isn't a command that can have rules.")
+            if name in rules:
+                raise ApiError(400, f"`{name}` has two rules. Combine them into one.")
+            rule = {
+                "roles": pick_roles(guild, item.get("roles", []), "Allowed roles", 20),
+                "channels": pick_channels(guild, item.get("channels", []), "Allowed channels", 20),
+                "cooldown": as_int(item.get("cooldown", 0), "Cooldown", 0, 3600),
+            }
+            if rule["roles"] or rule["channels"] or rule["cooldown"]:
+                rules[name] = rule
+        if len(rules) > self.cap(guild.id, "command_rules"):
+            raise ApiError(403, f"Free servers can have rules for {LIMITS['command_rules'][0]} commands. VIP allows {LIMITS['command_rules'][1]}.")
+        self.cfg(guild.id)["rules"] = rules
+        self.store.save()
+
+    # Auto-replies
+    def read_responders(self, guild):
+        return {"items": [dict(item) for item in self.cfg(guild.id)["responders"]]}
+
+    def write_responders(self, guild, body):
+        items = []
+        for item in as_list(body.get("items", []), "Auto-replies", LIMITS["responders"][1]):
+            if not isinstance(item, dict):
+                raise ApiError(400, "Each auto-reply needs a trigger and a reply.")
+            trigger = as_text(item.get("trigger"), "Trigger", 60, required=True)
+            reply = as_text(item.get("reply"), "Reply", 500, required=True)
+            match = item.get("match", "contains")
+            if match not in ("contains", "exact", "starts"):
+                raise ApiError(400, "Match must be contains, exact or starts.")
+            embed = as_bool(item.get("embed", False), "Embed")
+            if embed:
+                self.need_vip(guild.id, "Sending an auto-reply as an embed")
+            if any(i["trigger"].lower() == trigger.lower() for i in items):
+                raise ApiError(400, f"There are two auto-replies for \"{trigger[:30]}\".")
+            items.append({"trigger": trigger, "reply": reply, "match": match, "embed": embed})
+        if len(items) > self.cap(guild.id, "responders"):
+            raise ApiError(403, f"Free servers can have {LIMITS['responders'][0]} auto-replies. VIP allows {LIMITS['responders'][1]}.")
+        self.cfg(guild.id)["responders"] = items
+        self.store.save()
+
+    # Announcements (VIP): messages Risk repeats on a timer
+    def read_announcements(self, guild):
+        cog = self.bot.get_cog("VIP")
+        items = [
+            {"id": i["id"], "channel": str(i["channel"]), "everyMinutes": i["every"] // 60, "text": i["text"], "on": i.get("on", True)}
+            for i in cog.schedules(guild.id)
+        ]
+        return {"items": items, "locked": not cog.is_vip(guild.id)}
+
+    def write_announcements(self, guild, body):
+        cog = self.bot.get_cog("VIP")
+        self.need_vip(guild.id, "Scheduled announcements")
+        old = {i["id"]: i for i in cog.schedules(guild.id)}
+        items, used = [], set()
+        for item in as_list(body.get("items", []), "Announcements", LIMITS["schedules"][1]):
+            if not isinstance(item, dict):
+                raise ApiError(400, "Each announcement needs a channel, a time and a message.")
+            channel = pick_channel(guild, item.get("channel"), "Announcement channel")
+            if channel is None:
+                raise ApiError(400, "Pick a channel for each announcement.")
+            minutes = as_int(item.get("everyMinutes"), "Repeat time", 5, 43200)
+            text = as_text(item.get("text"), "Announcement", 1500, required=True)
+            number = item.get("id")
+            previous = old.get(number) if isinstance(number, int) and not isinstance(number, bool) else None
+            if previous is None or number in used:
+                number = max([*old, *used, 0]) + 1
+                previous = None
+            used.add(number)
+            due = previous["next"] if previous and previous["every"] == minutes * 60 else time.time() + minutes * 60
+            items.append({"id": number, "channel": channel, "every": minutes * 60, "text": text, "next": due, "on": as_bool(item.get("on", True), "On")})
+        if len(items) > self.cap(guild.id, "schedules"):
+            raise ApiError(403, f"VIP servers can have {LIMITS['schedules'][1]} announcements.")
+        cog.store.data["schedules"][str(guild.id)] = items
+        cog.store.save()
+
+    # VIP status and options
+    def read_vip(self, guild):
+        info = self.vip_info(guild.id)
+        cog = self.bot.get_cog("VIP")
+        color = cog.cfg(guild.id).get("color") if cog else None
+        return {
+            "active": info["vip"], "source": info["source"], "until": info["until"],
+            "color": f"#{color:06x}" if isinstance(color, int) else None,
+            "perks": list(PERKS),
+            "free": {key: low for key, (low, _) in LIMITS.items()},
+            "vipLimits": {key: high for key, (_, high) in LIMITS.items()},
+            "url": os.getenv("VIP_URL", "").strip() if os.getenv("VIP_URL", "").startswith("https://") else None,
+        }
+
+    def write_vip(self, guild, body):
+        cog = self.bot.get_cog("VIP")
+        if "color" in body:
+            value = body["color"]
+            if value in (None, ""):
+                cog.cfg(guild.id).pop("color", None)
+            else:
+                self.need_vip(guild.id, "A custom colour")
+                text = as_text(value, "Colour", 7).lstrip("#")
+                if not re.fullmatch(r"[0-9a-fA-F]{6}", text):
+                    raise ApiError(400, "The colour must be a hex value like #5865f2.")
+                cog.cfg(guild.id)["color"] = int(text, 16)
+        cog.store.save()
+
+    # Overview: read-only numbers, a setup checklist and recent changes
+    def read_overview(self, guild):
+        humans = sum(1 for m in guild.members if not m.bot)
+        config = self.cfg(guild.id)
+        values = {}
+        for name in ("welcome", "logs", "levels", "automod", "community"):
+            if self.unavailable(name) is None:
+                try:
+                    values[name] = getattr(self, f"read_{name}")(guild)
+                except Exception:
+                    pass
+        w, lg, lv, am, cm = (values.get(k) for k in ("welcome", "logs", "levels", "automod", "community"))
+        checklist = [
+            ("welcome", "Greet new members", "welcome", bool(w and w["enabled"])),
+            ("logs", "Pick a log channel", "logs", bool(lg and lg["channel"])),
+            ("automod", "Turn on an auto-moderation rule", "automod", bool(am and (am["antilink"] or am["antiinvite"] or am["antispam"] or am["badWords"]))),
+            ("levels", "Set up level rewards", "levels", bool(lv and lv["rewards"])),
+            ("autorole", "Give new members a role", "community", bool(cm and cm["autorole"])),
+            ("tickets", "Choose a ticket log channel", "community", bool(cm and cm["ticketLogChannel"])),
+            ("replies", "Add an auto-reply", "responders", bool(config["responders"])),
+            ("rules", "Set a command rule", "commands", bool(config["rules"])),
+        ]
+        vip = self.bot.get_cog("VIP")
+        schedules = len(vip.schedules(guild.id)) if vip else 0
+        return {
+            "stats": {
+                "members": guild.member_count, "people": humans, "bots": (guild.member_count or 0) - humans,
+                "textChannels": len(guild.text_channels), "voiceChannels": len(guild.voice_channels), "roles": max(len(guild.roles) - 1, 0),
+                "emojis": len(guild.emojis), "boostTier": guild.premium_tier, "boosts": guild.premium_subscription_count or 0,
+                "created": int(guild.created_at.timestamp()), "owner": guild.owner.display_name if guild.owner else None,
+            },
+            "checklist": [{"id": a, "label": b, "section": c, "done": d} for a, b, c, d in checklist],
+            "usage": {
+                "disabledCommands": len(config["disabled_commands"]), "commandRules": len(config["rules"]),
+                "responders": len(config["responders"]), "announcements": schedules,
+                "logCategories": len(LOG_CATEGORIES) - len(lg["disabled"]) if lg else None,
+            },
+            "activity": list(reversed(config["activity"][-10:])),
+            "vip": self.vip_info(guild.id)["vip"],
+        }
+
+    def record(self, guild, member, section):
+        activity = self.cfg(guild.id)["activity"]
+        activity.append({"user": str(getattr(member, "display_name", "") or member.id)[:40], "section": section, "at": int(time.time())})
+        del activity[:-30]
+        self.store.save()
+
+    # The bot's own profile in one server: nickname, avatar, banner and bio (Discord keeps these per server)
+    def read_profile(self, guild):
+        me = guild.me
+        cfg = self.cfg(guild.id)
+        avatar = getattr(me, "guild_avatar", None)
+        banner = getattr(me, "guild_banner", None)
+        return {
+            "nick": me.nick or "",
+            "bio": cfg.get("bio", ""),
+            "avatar": avatar.replace(size=256).url if avatar else None,
+            "banner": banner.replace(size=512).url if banner else None,
+            "botName": self.bot.user.name if self.bot.user else "Risk",
+            "defaultAvatar": self.bot.user.display_avatar.replace(size=256).url if self.bot.user else None,
+        }
+
+    @staticmethod
+    def decode_image(value, name):
+        """Bytes from a data URL, after checking the size and the file's real type."""
+        if not isinstance(value, str) or not value.startswith("data:image/") or ";base64," not in value:
+            raise ApiError(400, f"The {name} must be a PNG, JPG or GIF image.")
+        try:
+            raw = base64.b64decode(value.split(";base64,", 1)[1], validate=True)
+        except (binascii.Error, ValueError):
+            raise ApiError(400, f"The {name} image couldn't be read.")
+        if len(raw) > IMAGE_LIMITS[name]:
+            raise ApiError(400, f"The {name} must be under {IMAGE_LIMITS[name] // 1_000_000} MB.")
+        if not any(raw.startswith(sig) for sig, _ in IMAGE_SIGNATURES):
+            raise ApiError(400, f"The {name} must be a PNG, JPG or GIF image.")
+        return raw
+
+    async def write_profile(self, guild, body):
+        changes = {}
+        if "nick" in body:
+            nick = as_text(body["nick"], "Nickname", 32)
+            changes["nick"] = nick or None
+        if "bio" in body:
+            changes["bio"] = as_text(body["bio"], "Bio", 190)
+        for name in ("avatar", "banner"):
+            if name in body:
+                changes[name] = None if body[name] is None else self.decode_image(body[name], name)
+        if not changes:
+            raise ApiError(400, "Nothing to change.")
+        edits = dict(changes)
+        if "bio" in edits:
+            edits["bio"] = edits["bio"] or None
+        try:
+            await guild.me.edit(**edits, reason="Changed on the Risk dashboard")
+        except discord.Forbidden:
+            raise ApiError(403, "Discord says I'm not allowed to change my profile here. Give Risk the Change Nickname permission and try again.")
+        except discord.HTTPException as error:
+            if error.status == 429:
+                raise ApiError(429, "Discord limits how often a profile can change. Wait a few minutes and try again.")
+            raise ApiError(400, f"Discord refused the change: {str(getattr(error, 'text', '') or error)[:150]}")
+        if "bio" in changes:
+            self.cfg(guild.id)["bio"] = changes["bio"]
+            self.store.save()
+
     # HTTP entry point (routed from main.py)
     def check_key(self, request):
         expected = os.getenv("DASHBOARD_KEY", "")
@@ -529,9 +853,9 @@ class Dashboard(commands.Cog):
         if not hmac.compare_digest(given.encode(), expected.encode()):
             raise ApiError(401, "Bad dashboard key.")
 
-    async def read_json(self, request):
-        raw = await request.content.read(MAX_BODY + 1)
-        if len(raw) > MAX_BODY:
+    async def read_json(self, request, limit=MAX_BODY):
+        raw = await request.content.read(limit + 1)
+        if len(raw) > limit:
             raise ApiError(413, "That request is too large.")
         try:
             body = json.loads(raw or b"{}")
@@ -574,7 +898,7 @@ class Dashboard(commands.Cog):
 
         if len(parts) == 2 and method == "GET":
             settings, missing = {}, {}
-            for name in SECTIONS:
+            for name in (*READ_ONLY, *SECTIONS):
                 reason = self.unavailable(name)
                 if reason is None:
                     try:
@@ -584,10 +908,17 @@ class Dashboard(commands.Cog):
                         reason = "These settings couldn't be read. Check the bot's console for details."
                 if reason is not None:
                     missing[name] = reason
-            return {"guild": self.guild_card(guild), "meta": self.meta(guild), "settings": settings, "unavailable": missing}
+            return {"guild": self.guild_card(guild), "meta": self.meta(guild), "settings": settings, "unavailable": missing, "profile": self.read_profile(guild)}
+        if len(parts) == 3 and method == "PUT" and parts[2] == "profile":
+            body = await self.read_json(request, MAX_PROFILE_BODY)
+            await self.write_profile(guild, body)
+            self.record(guild, member, "profile")
+            await self.audit(guild, member, "profile")
+            return {"profile": self.read_profile(guild)}
         if len(parts) == 3 and method == "PUT" and parts[2] in SECTIONS:
             body = await self.read_json(request)
             await self.apply(guild, parts[2], body)
+            self.record(guild, member, parts[2])
             await self.audit(guild, member, parts[2])
             return {"settings": getattr(self, f"read_{parts[2]}")(guild)}
         raise ApiError(404, "Not found.")
@@ -659,8 +990,10 @@ class Dashboard(commands.Cog):
     def stores_for(self, section):
         """The live dicts a section writes to, so a failed update can be rolled back."""
         cog = self.bot.get_cog
-        if section == "general":
+        if section in ("general", "commands", "responders"):
             return [self.store.data]
+        if section in ("announcements", "vip"):
+            return [cog("VIP").store.data, self.store.data]
         if section == "welcome":
             return [cog("Welcome").config.data]
         if section == "logs":

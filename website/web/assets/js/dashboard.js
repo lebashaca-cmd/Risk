@@ -1,14 +1,21 @@
 import { ApiFailure, dashApi } from "./api.js";
-import { channelChoices, channelSelect, group, multiChannels, multiRoles, numberInput, roleSelect, selectInput, tagEditor, textArea, textInput, toggle, uid, } from "./dash-ui.js";
+import { channelChoices, channelSelect, group, multiChannels, multiRoles, numberInput, roleSelect, selectInput, tagEditor, textArea, textInput, toggle, uid, vipBadge, } from "./dash-ui.js";
+import { announcements, commands, overview, responders, vipSection } from "./dash-extra.js";
+import { profileCard } from "./dash-profile.js";
 import { h, mount } from "./dom.js";
 import { toast } from "./ui.js";
 const SECTION_META = [
+    { id: "overview", label: "Overview", blurb: "Your server at a glance.", readOnly: true },
     { id: "general", label: "General", blurb: "Prefix, which commands work, and where commands are ignored." },
     { id: "welcome", label: "Welcome and leave", blurb: "Messages when members join or leave." },
     { id: "logs", label: "Server logs", blurb: "Where each kind of log goes, and what is left out." },
     { id: "levels", label: "Levels", blurb: "XP speed, level-up messages and role rewards." },
     { id: "automod", label: "Auto-moderation", blurb: "Blocks links, invites, spam and listed words." },
     { id: "community", label: "Community", blurb: "Auto role, suggestions, starboard, birthdays, reports, counting and rules." },
+    { id: "commands", label: "Command rules", blurb: "Limit who can use a command, where, and how often." },
+    { id: "responders", label: "Auto-replies", blurb: "Have Risk answer messages that match a trigger." },
+    { id: "announcements", label: "Announcements", blurb: "Messages Risk repeats on a timer.", vip: true },
+    { id: "vip", label: "VIP", blurb: "Your plan, its limits and VIP extras.", vip: true },
 ];
 const clone = (value) => JSON.parse(JSON.stringify(value));
 function notice(kind, text) {
@@ -197,12 +204,18 @@ const community = (draft, meta, changed) => [
     group("Channels", "Each feature stays off until you pick a channel.", channelSelect("Suggestions", meta, draft.suggestionChannel, (v) => { draft.suggestionChannel = v; changed(); }, "Off", "Where !suggest posts go for voting."), channelSelect("Starboard", meta, draft.starboardChannel, (v) => { draft.starboardChannel = v; changed(); }, "Off", "Messages with enough ⭐ reactions are copied here."), numberInput("Stars needed", draft.starboardThreshold, (v) => { draft.starboardThreshold = v; changed(); }, 1, 25), channelSelect("Birthdays", meta, draft.birthdayChannel, (v) => { draft.birthdayChannel = v; changed(); }, "Off", "Happy-birthday messages are posted here."), channelSelect("Member reports", meta, draft.reportChannel, (v) => { draft.reportChannel = v; changed(); }, "Off", "Where !report sends reports for your staff."), channelSelect("Counting game", meta, draft.countingChannel, (v) => { draft.countingChannel = v; changed(); }, "Off", "Changing this restarts the count at 0."), channelSelect("Ticket transcripts", meta, draft.ticketLogChannel, (v) => { draft.ticketLogChannel = v; changed(); }, "Off", "Closed tickets are logged here.")),
     group("Server rules", "Shown when someone uses !rules.", textArea("Rules", draft.rules, (v) => { draft.rules = v; changed(); }, { max: 1500, rows: 7 })),
 ];
-const RENDERERS = { general, welcome, logs, levels, automod, community };
+const RENDERERS = (vip) => ({
+    overview, general, welcome, logs, levels, automod, community, commands, responders,
+    announcements: announcements(vip ?? null),
+    vip: vipSection(),
+});
 // Settings editor for one server
 function renderEditor(payload, guildId) {
     const settings = clone(payload.settings);
     const drafts = clone(payload.settings);
-    let current = "general";
+    let current = "overview";
+    const renderers = RENDERERS(payload.settings.vip);
+    const info0 = (id) => SECTION_META.find((s) => s.id === id);
     let saving = false;
     let status = { text: "", error: false };
     const root = h("div", { class: "dash-editor" });
@@ -214,9 +227,10 @@ function renderEditor(payload, guildId) {
     const discard = h("button", { type: "button", class: "btn btn-quiet" }, "Discard");
     bar.append(message, discard, save);
     const isDirty = (id) => JSON.stringify(drafts[id]) !== JSON.stringify(settings[id]);
-    const anyDirty = () => SECTION_META.some((s) => isDirty(s.id));
+    const anyDirty = () => SECTION_META.some((s) => !s.readOnly && isDirty(s.id));
     const refresh = () => {
         const dirty = isDirty(current);
+        bar.hidden = Boolean(info0(current)?.readOnly);
         save.disabled = !dirty || saving;
         discard.disabled = !dirty || saving;
         const shown = dirty && !status.error ? { text: "You have unsaved changes.", error: false } : status;
@@ -234,7 +248,7 @@ function renderEditor(payload, guildId) {
     const draw = () => {
         const info = SECTION_META.find((s) => s.id === current);
         const problem = payload.unavailable?.[current];
-        const body = problem ? [notice("info", problem)] : RENDERERS[current](drafts[current], payload.meta, refresh);
+        const body = problem ? [notice("info", problem)] : renderers[current](drafts[current], payload.meta, refresh, { go: select, guildName: payload.guild.name, guildIcon: payload.guild.icon });
         panel.replaceChildren(h("header", { class: "dash-panel-head" }, h("h2", {}, info?.label ?? ""), h("p", { class: "lede" }, info?.blurb ?? "")), ...body);
         panel.setAttribute("aria-labelledby", `tab-${current}`);
         refresh();
@@ -244,7 +258,7 @@ function renderEditor(payload, guildId) {
         draw();
     };
     for (const info of SECTION_META) {
-        const button = h("button", { type: "button", role: "tab", class: "dash-tab", id: `tab-${info.id}`, "data-section": info.id, "aria-controls": "dash-panel" }, info.label);
+        const button = h("button", { type: "button", role: "tab", class: "dash-tab", id: `tab-${info.id}`, "data-section": info.id, "aria-controls": "dash-panel" }, info.label, info.vip ? vipBadge() : null);
         button.addEventListener("click", () => select(info.id));
         nav.appendChild(button);
     }
@@ -309,6 +323,8 @@ function renderEditor(payload, guildId) {
         event.returnValue = "";
     };
     window.addEventListener("beforeunload", warn);
+    if (payload.profile)
+        root.append(profileCard(payload.profile, guildId));
     root.append(h("aside", { class: "dash-side" }, nav), h("div", { class: "dash-main" }, panel, bar));
     draw();
     return { node: root, cleanup: () => window.removeEventListener("beforeunload", warn) };
