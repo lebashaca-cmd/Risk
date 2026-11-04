@@ -15,7 +15,7 @@ const SECTION_META = [
     { id: "commands", label: "Command rules", blurb: "Limit who can use a command, where, and how often." },
     { id: "responders", label: "Auto-replies", blurb: "Have Risk answer messages that match a trigger." },
     { id: "announcements", label: "Announcements", blurb: "Messages Risk repeats on a timer.", vip: true },
-    { id: "vip", label: "VIP", blurb: "Your plan, its limits and VIP extras.", vip: true },
+    { id: "vip", label: "VIP", blurb: "Your plan and the extras VIP unlocks.", vip: true },
 ];
 const clone = (value) => JSON.parse(JSON.stringify(value));
 function notice(kind, text) {
@@ -180,8 +180,8 @@ const levels = (draft, meta, changed) => {
     };
     const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add a reward");
     add.addEventListener("click", () => {
-        if (draft.rewards.length >= 25)
-            return toast("You can set up to 25 rewards.");
+        if (draft.rewards.length >= 1000)
+            return toast("That is the most rewards one server can have.");
         const last = draft.rewards.at(-1);
         draft.rewards.push({ level: Math.min(1000, (last?.level ?? 0) + 5), role: null });
         drawRewards();
@@ -189,14 +189,14 @@ const levels = (draft, meta, changed) => {
     });
     drawRewards();
     return [
-        group("XP", "Each message earns 15 to 25 XP, multiplied by the setting below.", numberInput("XP multiplier", draft.multiplier, (v) => { draft.multiplier = v; changed(); }, 0.5, 5, 0.1, "From 0.5 to 5. Try 2 for double XP."), numberInput("Seconds between XP gains", draft.cooldown, (v) => { draft.cooldown = v; changed(); }, 10, 600, 1, "A member earns XP at most once in this time."), multiChannels("Channels that earn no XP", meta, draft.noxpChannels, (v) => { draft.noxpChannels = v; changed(); }), multiRoles("Roles that earn no XP", meta, draft.noxpRoles, (v) => { draft.noxpRoles = v; changed(); })),
+        group("XP", "Each message earns 15 to 25 XP, multiplied by the setting below.", numberInput("XP multiplier", draft.multiplier, (v) => { draft.multiplier = v; changed(); }, 0.1, 100, 0.1, "From 0.1 to 100. Try 2 for double XP."), numberInput("Seconds between XP gains", draft.cooldown, (v) => { draft.cooldown = v; changed(); }, 1, 3600, 1, "A member earns XP at most once in this time."), multiChannels("Channels that earn no XP", meta, draft.noxpChannels, (v) => { draft.noxpChannels = v; changed(); }), multiRoles("Roles that earn no XP", meta, draft.noxpRoles, (v) => { draft.noxpRoles = v; changed(); })),
         group("Level-up message", null, selectInput("Where to announce", channelChoices(meta, null, [{ value: "same", label: "In the channel where they levelled up" }, { value: "off", label: "Don't announce" }]), draft.announce, (v) => { draft.announce = v; changed(); }), textArea("Message", draft.message, (v) => { draft.message = v; changed(); }, { max: 500, rows: 3, hint: "Use {user} to mention them, {name} for their name and {level} for the new level. Leave empty for the default." })),
         group("Role rewards", "Members get a role when they reach a level.", selectInput("When a member reaches a new reward", [{ value: "stack", label: "Keep earlier reward roles" }, { value: "replace", label: "Replace earlier reward roles" }], draft.mode, (v) => { draft.mode = v === "replace" ? "replace" : "stack"; changed(); }), rewards, add),
     ];
 };
 const automod = (draft, meta, changed) => [
     group("Protections", "Members with Manage Messages or Administrator are never checked.", toggle("Block links", "Deletes messages that contain a link.", draft.antilink, (v) => { draft.antilink = v; changed(); }), toggle("Block Discord invites", "Deletes messages that advertise another server.", draft.antiinvite, (v) => { draft.antiinvite = v; changed(); }), toggle("Stop spam", "Deletes message floods (6 messages in 5 seconds) and times the sender out for 5 minutes.", draft.antispam, (v) => { draft.antispam = v; changed(); }), numberInput("Mention limit", draft.maxMentions, (v) => { draft.maxMentions = v; changed(); }, 0, 50, 1, "Deletes messages that mention more people or roles than this. Use 0 to turn it off.")),
-    group("Blocked words", "Messages that contain one of these words or phrases are deleted.", tagEditor("Words and phrases", draft.badWords, (v) => { draft.badWords = v; changed(); }, { max: 100, maxLength: 40, minLength: 2, lower: true, placeholder: "Type a word and press Enter" })),
+    group("Blocked words", "Messages that contain one of these words or phrases are deleted.", tagEditor("Words and phrases", draft.badWords, (v) => { draft.badWords = v; changed(); }, { max: 10000, maxLength: 40, minLength: 2, lower: true, importFile: true, placeholder: "Type a word and press Enter" })),
     group("Exceptions", null, multiChannels("Channels automod leaves alone", meta, draft.ignoreChannels, (v) => { draft.ignoreChannels = v; changed(); }), multiRoles("Roles automod leaves alone", meta, draft.ignoreRoles, (v) => { draft.ignoreRoles = v; changed(); })),
 ];
 const community = (draft, meta, changed) => [

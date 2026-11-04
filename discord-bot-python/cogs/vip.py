@@ -15,23 +15,21 @@ from utils.store import JsonStore
 
 import os
 
-# (free, vip) for every number the dashboard and commands limit.
+# (free, vip) for every number the dashboard and commands limit. Only schedules differ: the rest are
+# high safety ceilings so one server can't fill the bot's storage.
 LIMITS = {
-    "responders": (5, 50),
-    "command_rules": (5, 100),
-    "schedules": (0, 10),
-    "badwords": (25, 100),
-    "level_rewards": (5, 25),
-    "xp_multiplier": (2.0, 5.0),
-    "ignored_channels": (10, 50),
+    "responders": (500, 500),
+    "command_rules": (500, 500),
+    "schedules": (0, 50),
+    "badwords": (10000, 10000),
+    "level_rewards": (1000, 1000),
+    "xp_multiplier": (100.0, 100.0),
+    "ignored_channels": (500, 500),
 }
 PERKS = [
-    "Up to 50 auto-replies (free: 5)",
-    "Command rules for up to 100 commands (free: 5)",
     "Scheduled announcements in the dashboard and with !schedule",
-    "XP multiplier up to 5x (free: 2x), 25 level rewards (free: 5)",
-    "Up to 100 blocked words (free: 25)",
-    "Custom embed colour for Risk's replies in your server",
+    "Embed-style auto-replies",
+    "A custom accent colour for Risk's embeds in your server",
     "VIP-only commands: !vipembed, !serverstats, !schedule",
 ]
 MIN_INTERVAL = 300

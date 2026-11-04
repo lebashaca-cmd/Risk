@@ -27,7 +27,7 @@ except ImportError:  # an older commands_list.py on the host
 try:
     from cogs.vip import LIMITS, PERKS
 except ImportError:  # vip.py not uploaded yet: everyone is on the free plan
-    LIMITS, PERKS = {"responders": (5, 50), "command_rules": (5, 100), "schedules": (0, 10), "badwords": (25, 100), "level_rewards": (5, 25), "xp_multiplier": (2.0, 5.0), "ignored_channels": (10, 50)}, []
+    LIMITS, PERKS = {"responders": (500, 500), "command_rules": (500, 500), "schedules": (0, 50), "badwords": (10000, 10000), "level_rewards": (1000, 1000), "xp_multiplier": (100.0, 100.0), "ignored_channels": (500, 500)}, []
 try:
     from cogs.log_tools import CATEGORIES as LOG_CATEGORIES
 except ImportError:  # log_tools.py missing or old
@@ -39,7 +39,7 @@ DEFAULT_PREFIXES = ("!", "?", ",")
 NEVER_MATCHES = "​​ignored​​"
 SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "announcements", "vip")
 READ_ONLY = ("overview",)
-MAX_BODY = 20_000
+MAX_BODY = 1_000_000
 MAX_PROFILE_BODY = 7_500_000
 IMAGE_LIMITS = {"avatar": 2_000_000, "banner": 3_000_000}
 IMAGE_SIGNATURES = ((b"\x89PNG\r\n\x1a\n", "png"), (b"\xff\xd8\xff", "jpeg"), (b"GIF87a", "gif"), (b"GIF89a", "gif"))
@@ -138,7 +138,7 @@ def pick_channel(guild, value, name, need_send=True):
     return channel.id
 
 
-def pick_channels(guild, values, name, limit=50):
+def pick_channels(guild, values, name, limit=500):
     found = []
     for value in as_list(values, name, limit):
         channel = pick_channel(guild, value, name, need_send=False)
@@ -158,7 +158,7 @@ def pick_role(guild, value, name, assignable=False):
     return role.id
 
 
-def pick_roles(guild, values, name, limit=50):
+def pick_roles(guild, values, name, limit=250):
     found = []
     for value in as_list(values, name, limit):
         role = pick_role(guild, value, name)
@@ -411,10 +411,7 @@ class Dashboard(commands.Cog):
                     names.append(name)
             config["disabled_commands"] = names
         if "ignoredChannels" in body:
-            ignored = pick_channels(guild, body["ignoredChannels"], "Ignored channels")
-            if len(ignored) > self.cap(guild.id, "ignored_channels"):
-                raise ApiError(403, f"Free servers can ignore {LIMITS['ignored_channels'][0]} channels. VIP raises that to {LIMITS['ignored_channels'][1]}.")
-            config["ignored_channels"] = ignored
+            config["ignored_channels"] = pick_channels(guild, body["ignoredChannels"], "Ignored channels")
         self.store.save()
 
     def read_welcome(self, guild):
@@ -513,12 +510,9 @@ class Dashboard(commands.Cog):
             text = as_text(body["message"], "Level-up message", 500)
             config["message"] = text or None
         if "multiplier" in body:
-            multiplier = as_float(body["multiplier"], "XP multiplier", 0.5, 5)
-            if multiplier > self.cap(guild.id, "xp_multiplier") and multiplier != config["multiplier"]:
-                raise ApiError(403, f"Free servers can set the XP multiplier up to {LIMITS['xp_multiplier'][0]:g}x. VIP goes up to {LIMITS['xp_multiplier'][1]:g}x.")
-            config["multiplier"] = multiplier
+            config["multiplier"] = as_float(body["multiplier"], "XP multiplier", 0.1, LIMITS["xp_multiplier"][1])
         if "cooldown" in body:
-            config["cooldown"] = as_int(body["cooldown"], "XP cooldown", 10, 600)
+            config["cooldown"] = as_int(body["cooldown"], "XP cooldown", 1, 3600)
         if "mode" in body:
             if body["mode"] not in ("stack", "replace"):
                 raise ApiError(400, "Reward mode must be stack or replace.")
@@ -529,7 +523,6 @@ class Dashboard(commands.Cog):
             config["noxp_roles"] = pick_roles(guild, body["noxpRoles"], "No-XP roles")
         if "rewards" in body:
             rewards = {}
-            allowed = self.cap(guild.id, "level_rewards")
             for item in as_list(body["rewards"], "Level rewards", LIMITS["level_rewards"][1]):
                 if not isinstance(item, dict):
                     raise ApiError(400, "Each reward needs a level and a role.")
@@ -538,8 +531,6 @@ class Dashboard(commands.Cog):
                 if role is None:
                     raise ApiError(400, "Pick a role for each reward.")
                 rewards[str(level)] = role
-            if len(rewards) > allowed:
-                raise ApiError(403, f"Free servers can have {LIMITS['level_rewards'][0]} level rewards. VIP allows {LIMITS['level_rewards'][1]}.")
             config["rewards"] = rewards
         cog.settings.save()
 
@@ -567,8 +558,6 @@ class Dashboard(commands.Cog):
                     raise ApiError(400, "Each blocked word needs 2 to 40 characters.")
                 if word not in words:
                     words.append(word)
-            if len(words) > self.cap(guild.id, "badwords"):
-                raise ApiError(403, f"Free servers can block {LIMITS['badwords'][0]} words. VIP allows {LIMITS['badwords'][1]}.")
             config["badwords"] = words
         if "ignoreChannels" in body:
             config["ignore_channels"] = pick_channels(guild, body["ignoreChannels"], "Ignored channels")
@@ -641,14 +630,12 @@ class Dashboard(commands.Cog):
             if name in rules:
                 raise ApiError(400, f"`{name}` has two rules. Combine them into one.")
             rule = {
-                "roles": pick_roles(guild, item.get("roles", []), "Allowed roles", 20),
-                "channels": pick_channels(guild, item.get("channels", []), "Allowed channels", 20),
+                "roles": pick_roles(guild, item.get("roles", []), "Allowed roles", 250),
+                "channels": pick_channels(guild, item.get("channels", []), "Allowed channels", 500),
                 "cooldown": as_int(item.get("cooldown", 0), "Cooldown", 0, 3600),
             }
             if rule["roles"] or rule["channels"] or rule["cooldown"]:
                 rules[name] = rule
-        if len(rules) > self.cap(guild.id, "command_rules"):
-            raise ApiError(403, f"Free servers can have rules for {LIMITS['command_rules'][0]} commands. VIP allows {LIMITS['command_rules'][1]}.")
         self.cfg(guild.id)["rules"] = rules
         self.store.save()
 
@@ -672,8 +659,6 @@ class Dashboard(commands.Cog):
             if any(i["trigger"].lower() == trigger.lower() for i in items):
                 raise ApiError(400, f"There are two auto-replies for \"{trigger[:30]}\".")
             items.append({"trigger": trigger, "reply": reply, "match": match, "embed": embed})
-        if len(items) > self.cap(guild.id, "responders"):
-            raise ApiError(403, f"Free servers can have {LIMITS['responders'][0]} auto-replies. VIP allows {LIMITS['responders'][1]}.")
         self.cfg(guild.id)["responders"] = items
         self.store.save()
 
@@ -708,7 +693,7 @@ class Dashboard(commands.Cog):
             due = previous["next"] if previous and previous["every"] == minutes * 60 else time.time() + minutes * 60
             items.append({"id": number, "channel": channel, "every": minutes * 60, "text": text, "next": due, "on": as_bool(item.get("on", True), "On")})
         if len(items) > self.cap(guild.id, "schedules"):
-            raise ApiError(403, f"VIP servers can have {LIMITS['schedules'][1]} announcements.")
+            raise ApiError(403, f"A server can have up to {LIMITS['schedules'][1]} announcements.")
         cog.store.data["schedules"][str(guild.id)] = items
         cog.store.save()
 

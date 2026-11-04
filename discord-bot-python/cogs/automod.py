@@ -24,6 +24,7 @@ class AutoMod(commands.Cog):
         self.bot = bot
         self.store = JsonStore("automod")
         self.recent = defaultdict(lambda: deque(maxlen=SPAM_COUNT))
+        self.patterns = {}
 
     async def cog_check(self, ctx):
         if ctx.guild is None:
@@ -45,11 +46,33 @@ class AutoMod(commands.Cog):
         data.setdefault("ignore_roles", [])
         return data
 
-    @staticmethod
-    def word_pattern(words):
+    def word_pattern(self, words):
+        """One compiled pattern per word list, built as a trie so thousands of words stay fast."""
         if not words:
             return None
-        return re.compile(r"(?<![A-Za-z0-9])(?:" + "|".join(re.escape(w) for w in words) + r")(?![A-Za-z0-9])", re.I)
+        key = (len(words), hash(tuple(words)))
+        cached = self.patterns.get(key)
+        if cached is None:
+            trie = {}
+            for word in words:
+                node = trie
+                for char in word.lower():
+                    node = node.setdefault(char, {})
+                node[""] = True
+
+            def build(node):
+                ends = "" in node
+                branches = [re.escape(c) + build(child) for c, child in sorted(node.items()) if c != ""]
+                if not branches:
+                    return ""
+                body = branches[0] if len(branches) == 1 else "|".join(branches)
+                return "(?:" + body + ")?" if ends else ("(?:" + body + ")" if len(branches) > 1 else body)
+
+            cached = re.compile(r"(?<![A-Za-z0-9])" + build(trie) + r"(?![A-Za-z0-9])", re.I)
+            if len(self.patterns) > 200:
+                self.patterns.clear()
+            self.patterns[key] = cached
+        return cached
 
     async def punish(self, message, reason, notice):
         guild = message.guild
@@ -158,8 +181,8 @@ class AutoMod(commands.Cog):
     @commands.group(name="badwords", aliases=["blockedwords"], invoke_without_command=True)
     @commands.has_permissions(manage_guild=True)
     async def badwords(self, ctx):
-        """Manages words that get a message deleted. Actions: add, remove, list, clear. Usage: !badwords add word"""
-        await ctx.reply("Use `badwords add <word>`, `remove <word>`, `list` or `clear`.", mention_author=False)
+        """Manages words that get a message deleted. Actions: add, import, remove, list, clear. Usage: !badwords add word"""
+        await ctx.reply("Use `badwords add <word>`, `import` (attach a .txt or .env file), `remove <word>`, `list` or `clear`.", mention_author=False)
 
     @badwords.command(name="add")
     @commands.has_permissions(manage_guild=True)
@@ -173,8 +196,8 @@ class AutoMod(commands.Cog):
         if word in words:
             await ctx.reply("That word is already blocked.", mention_author=False)
             return
-        if len(words) >= 100:
-            await ctx.reply("The list is full (100 words).", mention_author=False)
+        if len(words) >= 10000:
+            await ctx.reply("The list is full (10,000 words).", mention_author=False)
             return
         words.append(word)
         self.store.save()
@@ -183,6 +206,55 @@ class AutoMod(commands.Cog):
         except discord.HTTPException:
             pass
         await ctx.send(f"Blocked a new word. The list has {len(words)}.", delete_after=8)
+
+    @badwords.command(name="import", aliases=["upload", "file"])
+    @commands.has_permissions(manage_guild=True)
+    async def badwords_import(self, ctx):
+        """Blocks every word in an attached .txt or .env file (one per line, or comma separated). Usage: !badwords import (attach the file)"""
+        files = [a for a in ctx.message.attachments if a.filename.lower().endswith((".txt", ".env"))]
+        if not files:
+            await ctx.reply("Attach a `.txt` or `.env` file to the same message. Put one word per line, or separate words with commas.", mention_author=False)
+            return
+        file = files[0]
+        if file.size > 1_000_000:
+            await ctx.reply("That file is over 1 MB. Split it into smaller files.", mention_author=False)
+            return
+        try:
+            text = (await file.read()).decode("utf-8-sig")
+        except (UnicodeDecodeError, discord.HTTPException):
+            await ctx.reply("I couldn't read that as a text file.", mention_author=False)
+            return
+        words = self.cfg(ctx.guild.id)["badwords"]
+        have, added, skipped, full = set(words), 0, 0, 0
+        for line in text.splitlines():
+            line = line.strip()
+            if not line or line.startswith(("#", "//")):
+                continue
+            line = re.sub(r"^export\s+", "", line)
+            match = re.match(r"^[A-Za-z_][\w.-]*\s*=(.*)$", line)
+            if match:
+                line = match.group(1).strip()
+            for part in re.split(r"[,;]", line):
+                word = part.strip().strip("\"'").strip().lower()
+                if not word:
+                    continue
+                if not 2 <= len(word) <= 40:
+                    skipped += 1
+                elif word in have:
+                    continue
+                elif len(words) >= 10000:
+                    full += 1
+                else:
+                    words.append(word)
+                    have.add(word)
+                    added += 1
+        self.store.save()
+        try:
+            await ctx.message.delete()
+        except discord.HTTPException:
+            pass
+        extra = (f" {skipped} skipped (2 to 40 characters only)." if skipped else "") + (f" {full} didn't fit (limit 10,000)." if full else "")
+        await ctx.send(f"Blocked {added} new word(s). The list has {len(words)}.{extra}", delete_after=15)
 
     @badwords.command(name="remove", aliases=["delete"])
     @commands.has_permissions(manage_guild=True)

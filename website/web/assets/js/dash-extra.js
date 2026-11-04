@@ -58,11 +58,11 @@ export const overview = (draft, _meta, _changed, ctx) => {
 export const commands = (draft, meta, changed) => {
     const list = h("div", { class: "dash-rules" });
     const count = h("p", { class: "dash-hint", role: "status" });
-    const limit = meta.limits["command_rules"] ?? 5;
+    const limit = meta.limits["command_rules"] ?? 500;
     const names = meta.commands.map((c) => c.name);
     const draw = () => {
         list.replaceChildren();
-        count.textContent = `${draft.rules.length} of ${limit} rules used${meta.vip ? "" : ". VIP raises this to 100."}`;
+        count.textContent = `${draft.rules.length} ${draft.rules.length === 1 ? "rule" : "rules"}.`;
         if (draft.rules.length === 0)
             list.appendChild(h("p", { class: "dash-empty" }, "No rules yet. Everyone can use every switched-on command anywhere."));
         draft.rules.forEach((rule, index) => {
@@ -80,7 +80,7 @@ export const commands = (draft, meta, changed) => {
     const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add a rule");
     add.addEventListener("click", () => {
         if (draft.rules.length >= limit)
-            return toast(meta.vip ? `You can set up to ${limit} rules.` : `Free servers get ${limit} rules. VIP allows 100.`);
+            return toast(`That is the most rules one server can have (${limit}).`);
         const taken = new Set(draft.rules.map((r) => r.command));
         const first = names.find((n) => !taken.has(n));
         if (!first)
@@ -101,10 +101,10 @@ const MATCHES = [
 export const responders = (draft, meta, changed) => {
     const list = h("div", { class: "dash-rules" });
     const count = h("p", { class: "dash-hint", role: "status" });
-    const limit = meta.limits["responders"] ?? 5;
+    const limit = meta.limits["responders"] ?? 500;
     const draw = () => {
         list.replaceChildren();
-        count.textContent = `${draft.items.length} of ${limit} auto-replies used${meta.vip ? "" : ". VIP raises this to 50."}`;
+        count.textContent = `${draft.items.length} ${draft.items.length === 1 ? "auto-reply" : "auto-replies"}.`;
         if (draft.items.length === 0)
             list.appendChild(h("p", { class: "dash-empty" }, "No auto-replies yet."));
         draft.items.forEach((item, index) => {
@@ -121,7 +121,7 @@ export const responders = (draft, meta, changed) => {
     const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add an auto-reply");
     add.addEventListener("click", () => {
         if (draft.items.length >= limit)
-            return toast(meta.vip ? `You can set up to ${limit} auto-replies.` : `Free servers get ${limit} auto-replies. VIP allows 50.`);
+            return toast(`That is the most auto-replies one server can have (${limit}).`);
         draft.items.push({ trigger: "", reply: "", match: "contains", embed: false });
         draw();
         changed();
@@ -136,7 +136,7 @@ export const announcements = (vip) => (draft, meta, changed) => {
     const count = h("p", { class: "dash-hint", role: "status" });
     const draw = () => {
         list.replaceChildren();
-        count.textContent = `${draft.items.length} of ${limit || 10} announcements used`;
+        count.textContent = `${draft.items.length} of ${limit || 50} announcements.`;
         if (draft.items.length === 0)
             list.appendChild(h("p", { class: "dash-empty" }, "No announcements yet."));
         draft.items.forEach((item, index) => {
@@ -167,17 +167,7 @@ export const announcements = (vip) => (draft, meta, changed) => {
 export const vipSection = () => (draft, _meta, changed) => {
     const status = draft.active
         ? h("div", { class: "dash-vipcard is-on" }, h("h3", {}, vipBadge(), " is on for this server"), h("p", {}, draft.until ? `Until ${new Date(draft.until * 1000).toLocaleDateString()}.` : "With no end date."))
-        : h("div", { class: "dash-vipcard" }, h("h3", {}, "This server is on the free plan"), h("p", {}, "VIP raises limits and unlocks extras."), upsell(draft, "Get VIP to unlock everything below."));
-    const rows = [
-        ["Auto-replies", "responders"],
-        ["Command rules", "command_rules"],
-        ["Announcements", "schedules"],
-        ["Blocked words", "badwords"],
-        ["Level rewards", "level_rewards"],
-        ["XP multiplier", "xp_multiplier"],
-        ["Ignored channels", "ignored_channels"],
-    ];
-    const table = h("table", { class: "dash-table" }, h("thead", {}, h("tr", {}, h("th", { scope: "col" }, "Feature"), h("th", { scope: "col" }, "Free"), h("th", { scope: "col" }, "VIP"))), h("tbody", {}, ...rows.map(([label, key]) => h("tr", {}, h("th", { scope: "row" }, label), h("td", {}, key === "schedules" ? "None" : String(draft.free[key] ?? "")), h("td", {}, String(draft.vipLimits[key] ?? ""))))));
+        : h("div", { class: "dash-vipcard" }, h("h3", {}, "This server is on the free plan"), h("p", {}, "VIP unlocks a few extras. Nothing in the regular settings is limited."), upsell(draft, "Get VIP to unlock everything below."));
     const colorValue = draft.color ?? "#5865f2";
     const colorInput = h("input", { type: "color", class: "dash-color", id: "vip-color", value: colorValue, "aria-label": "Accent colour" });
     const clear = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Use the default");
@@ -197,7 +187,6 @@ export const vipSection = () => (draft, _meta, changed) => {
     return [
         status,
         group("What VIP includes", null, h("ul", { class: "dash-perks" }, ...draft.perks.map((perk) => h("li", {}, perk)))),
-        group("Limits", "Settings you already saved stay if VIP ends, but you can't add past the free limits and VIP-only features stop running.", table),
         group("Appearance", null, lockedColour),
     ];
 };

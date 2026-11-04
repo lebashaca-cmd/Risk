@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T02:48:40+00:00",
+  "generatedAt": "2026-11-04T21:50:03+00:00",
   "prefixes": [
     "!",
     "?",
@@ -2662,7 +2662,7 @@
       "name": "xpmultiplier",
       "kind": "prefix",
       "category": "Levels",
-      "description": "Sets how much XP each message earns, from 0.5 to 5.",
+      "description": "Sets how much XP each message earns, from 0.1 to 100.",
       "examples": [
         "2"
       ],
@@ -2749,6 +2749,46 @@
       "permission": "Manage Server"
     },
     {
+      "name": "streamers",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Ranks members by total time streamed.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "streaming",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows who is streaming right now.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "streamrole",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Picks a role to ping when someone starts streaming (leave empty to stop pinging).",
+      "examples": [
+        "@Streams"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "streamstats",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows a member's stream count, total time and last stream.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "suggest",
       "kind": "prefix",
       "category": "Community",
@@ -2777,6 +2817,76 @@
         ""
       ],
       "permission": null
+    },
+    {
+      "name": "tiktokadd",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Watches a TikTok account and posts when it goes live and ends.",
+      "examples": [
+        "@name"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "tiktoklist",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists the TikTok accounts this server watches.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "tiktokremove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Stops watching a TikTok account.",
+      "examples": [
+        "@name"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "tiktoktest",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Checks one TikTok account right now and says what Risk sees.",
+      "examples": [
+        "@name"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "twitchadd",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Watches a Twitch channel and posts when it goes live and offline.",
+      "examples": [
+        "shroud"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "twitchlist",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists the Twitch channels this server watches.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "twitchremove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Stops watching a Twitch channel.",
+      "examples": [
+        "shroud"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "verifysetup",
