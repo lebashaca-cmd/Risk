@@ -38,6 +38,7 @@ CATEGORY_BY_FILE = {
     "economy_more": "Economy",
     "dashboard": "Info",
     "vip": "VIP",
+    "streams": "Community",
     "levels": "Levels",
     "stats": "Levels",
     "community": "Community",

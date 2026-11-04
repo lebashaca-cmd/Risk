@@ -331,9 +331,9 @@ class Levels(commands.Cog):
     @commands.command(name="xpmultiplier")
     @commands.has_permissions(manage_guild=True)
     async def xpmultiplier(self, ctx, value: float):
-        """Sets how much XP each message earns, from 0.5 to 5. Usage: !xpmultiplier 2"""
-        if not 0.5 <= value <= 5:
-            await ctx.reply("Pick a multiplier from 0.5 to 5.", mention_author=False)
+        """Sets how much XP each message earns, from 0.1 to 100. Usage: !xpmultiplier 2"""
+        if not 0.1 <= value <= 100:
+            await ctx.reply("Pick a multiplier from 0.1 to 100.", mention_author=False)
             return
         self.cfg(ctx.guild.id)["multiplier"] = round(value, 2)
         self.settings.save()
@@ -343,8 +343,8 @@ class Levels(commands.Cog):
     @commands.has_permissions(manage_guild=True)
     async def xpcooldown(self, ctx, seconds: int):
         """Sets how many seconds a member waits between XP gains. Usage: !xpcooldown 45"""
-        if not 10 <= seconds <= 600:
-            await ctx.reply("Pick between 10 and 600 seconds.", mention_author=False)
+        if not 1 <= seconds <= 3600:
+            await ctx.reply("Pick between 1 and 3600 seconds.", mention_author=False)
             return
         self.cfg(ctx.guild.id)["cooldown"] = seconds
         self.settings.save()
@@ -386,8 +386,8 @@ class Levels(commands.Cog):
             await ctx.reply("That role is above your highest role.", mention_author=False)
             return
         config = self.cfg(ctx.guild.id)
-        if len(config["rewards"]) >= 25 and str(level) not in config["rewards"]:
-            await ctx.reply("You can have up to 25 level rewards.", mention_author=False)
+        if len(config["rewards"]) >= 1000 and str(level) not in config["rewards"]:
+            await ctx.reply("You can have up to 1,000 level rewards.", mention_author=False)
             return
         config["rewards"][str(level)] = role.id
         self.settings.save()

@@ -36,7 +36,7 @@ const SECTION_META: { id: SectionId; label: string; blurb: string; vip?: boolean
   { id: "commands", label: "Command rules", blurb: "Limit who can use a command, where, and how often." },
   { id: "responders", label: "Auto-replies", blurb: "Have Risk answer messages that match a trigger." },
   { id: "announcements", label: "Announcements", blurb: "Messages Risk repeats on a timer.", vip: true },
-  { id: "vip", label: "VIP", blurb: "Your plan, its limits and VIP extras.", vip: true },
+  { id: "vip", label: "VIP", blurb: "Your plan and the extras VIP unlocks.", vip: true },
 ];
 
 const clone = <T,>(value: T): T => JSON.parse(JSON.stringify(value)) as T;
@@ -213,7 +213,7 @@ const levels: Renderer<"levels"> = (draft, meta, changed) => {
   };
   const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add a reward");
   add.addEventListener("click", () => {
-    if (draft.rewards.length >= 25) return toast("You can set up to 25 rewards.");
+    if (draft.rewards.length >= 1000) return toast("That is the most rewards one server can have.");
     const last = draft.rewards.at(-1);
     draft.rewards.push({ level: Math.min(1000, (last?.level ?? 0) + 5), role: null });
     drawRewards();
@@ -224,8 +224,8 @@ const levels: Renderer<"levels"> = (draft, meta, changed) => {
     group(
       "XP",
       "Each message earns 15 to 25 XP, multiplied by the setting below.",
-      numberInput("XP multiplier", draft.multiplier, (v) => { draft.multiplier = v; changed(); }, 0.5, 5, 0.1, "From 0.5 to 5. Try 2 for double XP."),
-      numberInput("Seconds between XP gains", draft.cooldown, (v) => { draft.cooldown = v; changed(); }, 10, 600, 1, "A member earns XP at most once in this time."),
+      numberInput("XP multiplier", draft.multiplier, (v) => { draft.multiplier = v; changed(); }, 0.1, 100, 0.1, "From 0.1 to 100. Try 2 for double XP."),
+      numberInput("Seconds between XP gains", draft.cooldown, (v) => { draft.cooldown = v; changed(); }, 1, 3600, 1, "A member earns XP at most once in this time."),
       multiChannels("Channels that earn no XP", meta, draft.noxpChannels, (v) => { draft.noxpChannels = v; changed(); }),
       multiRoles("Roles that earn no XP", meta, draft.noxpRoles, (v) => { draft.noxpRoles = v; changed(); }),
     ),
@@ -254,7 +254,7 @@ const automod: Renderer<"automod"> = (draft, meta, changed) => [
     toggle("Stop spam", "Deletes message floods (6 messages in 5 seconds) and times the sender out for 5 minutes.", draft.antispam, (v) => { draft.antispam = v; changed(); }),
     numberInput("Mention limit", draft.maxMentions, (v) => { draft.maxMentions = v; changed(); }, 0, 50, 1, "Deletes messages that mention more people or roles than this. Use 0 to turn it off."),
   ),
-  group("Blocked words", "Messages that contain one of these words or phrases are deleted.", tagEditor("Words and phrases", draft.badWords, (v) => { draft.badWords = v; changed(); }, { max: 100, maxLength: 40, minLength: 2, lower: true, placeholder: "Type a word and press Enter" })),
+  group("Blocked words", "Messages that contain one of these words or phrases are deleted.", tagEditor("Words and phrases", draft.badWords, (v) => { draft.badWords = v; changed(); }, { max: 10000, maxLength: 40, minLength: 2, lower: true, importFile: true, placeholder: "Type a word and press Enter" })),
   group(
     "Exceptions",
     null,

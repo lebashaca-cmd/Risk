@@ -349,8 +349,8 @@ class Dashboard:
             raise web.HTTPForbidden(reason="You don't manage that server.")
         if section not in SECTIONS:
             raise web.HTTPNotFound(reason="Unknown settings section.")
-        if request.content_length is not None and request.content_length > 20_000:
-            raise web.HTTPRequestEntityTooLarge(max_size=20_000, actual_size=request.content_length)
+        if request.content_length is not None and request.content_length > 1_000_000:
+            raise web.HTTPRequestEntityTooLarge(max_size=1_000_000, actual_size=request.content_length)
         try:
             body = await request.json()
         except ValueError:

@@ -98,7 +98,7 @@ Discord's firewall sometimes blocks the shared outgoing addresses of hosts like 
 
 ### VIP
 
-VIP is a per-server upgrade: higher limits (auto-replies, command rules, blocked words, level rewards, XP multiplier) and extras (announcements, embed auto-replies, an accent colour, `!vipembed`, `!serverstats`, `!schedule`). It isn't tied to payments. You give it out:
+VIP is a per-server upgrade that unlocks a few extras: announcements, embed auto-replies, an accent colour, `!vipembed`, `!serverstats` and `!schedule`. Regular settings (blocked words, level rewards, auto-replies, command rules, XP multiplier) are not limited by plan. It isn't tied to payments. You give it out:
 
 - `!vipgrant <server id> [days] [note]` (bot owner only; 0 or no days means no end date), `!viprevoke <server id>`, `!viplist`
 - or set `VIP_GUILD_IDS` on the bot host to a comma-separated list of server ids
@@ -109,6 +109,20 @@ Upload `cogs/vip.py` with the other bot files. The dashboard also needs the new 
 ### Bot profile
 
 The card at the top of a server's dashboard changes Risk's display name, avatar, banner and bio in that one server (Discord stores these per server). Discord has one online status for the whole bot, so status can't be set per server.
+
+### Blocked word lists
+
+In the dashboard, Auto-moderation has an "Import from a file" button for `.txt` or `.env` files (one word per line, or separated by commas; `KEY=a,b` lines use the value; `#` lines are skipped). In Discord, attach the file to `!badwords import`.
+
+### Stream alerts
+
+`!streamalerts #channel` posts when someone starts and stops streaming, with how long it lasted. Sources, all free:
+
+- **Go Live** (screen share in a voice channel): works right away.
+- **Discord "Streaming" status** (a linked Twitch or YouTube account): turn on the Presence intent in the Developer Portal (Bot, Privileged Gateway Intents) and set `STREAM_PRESENCE=1` on the bot host. Without both, the bot stays as it is now.
+- **Twitch channels** by name: make a free app at dev.twitch.tv/console, set `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` on the bot host, then `!twitchadd <channel>`. Risk checks every 60 seconds.
+
+Other commands: `!streamrole`, `!streaming`, `!streamstats`, `!streamers`, `!twitchremove`, `!twitchlist`.
 
 ### Notes
 

@@ -164,18 +164,50 @@ export function multiRoles(label: string, meta: Meta, values: string[], onChange
   return multiPicker(label, meta.roles.map((r) => ({ value: r.id, label: `@${r.name}` })), values, onChange, hint);
 }
 
-/** Free-text tags: type a value and press Enter or Add. */
-export function tagEditor(label: string, values: string[], onChange: (values: string[]) => void, options: { max: number; maxLength: number; minLength?: number; placeholder?: string; hint?: string; lower?: boolean }): HTMLElement {
+const SHOWN_TAGS = 200;
+
+/** Pulls words out of a .txt or .env file: one per line, or comma separated. KEY=value lines use the value. */
+export function wordsFromText(text: string, minLength: number, maxLength: number, lower: boolean): { words: string[]; skipped: number } {
+  const words: string[] = [];
+  let skipped = 0;
+  for (let line of text.replace(/^\uFEFF/, "").split(/\r?\n/)) {
+    line = line.trim();
+    if (!line || line.startsWith("#") || line.startsWith("//")) continue;
+    line = line.replace(/^export\s+/, "");
+    const assignment = /^[A-Za-z_][\w.-]*\s*=(.*)$/.exec(line);
+    if (assignment) line = (assignment[1] ?? "").trim().replace(/^(["'])(.*)\1$/, "$2");
+    for (const part of line.split(/[,;]/)) {
+      let word = part.trim().replace(/^(["'])(.*)\1$/, "$2").trim();
+      if (lower) word = word.toLowerCase();
+      if (!word) continue;
+      if (word.length < minLength || word.length > maxLength) {
+        skipped += 1;
+        continue;
+      }
+      words.push(word);
+    }
+  }
+  return { words, skipped };
+}
+
+/** Free-text tags: type a value and press Enter or Add. With `importFile`, also load many at once from a .txt or .env file. */
+export function tagEditor(label: string, values: string[], onChange: (values: string[]) => void, options: { max: number; maxLength: number; minLength?: number; placeholder?: string; hint?: string; lower?: boolean; importFile?: boolean }): HTMLElement {
   const id = uid("tg");
   const list = h("div", { class: "dash-chips", "aria-live": "polite" });
   const input = h("input", { type: "text", id, class: "dash-input", maxlength: options.maxLength, placeholder: options.placeholder ?? "", autocomplete: "off", "aria-describedby": options.hint ? `${id}-hint` : null });
   const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add");
   const note = h("p", { class: "dash-hint dash-note", role: "status" });
+  const count = h("p", { class: "dash-hint" });
+  const find = h("input", { type: "search", class: "dash-input", placeholder: "Search the list", "aria-label": `Search ${label.toLowerCase()}`, autocomplete: "off" });
+  let query = "";
   const draw = (): void => {
     list.replaceChildren();
+    const matches = query ? values.filter((v) => v.includes(query)) : values;
     if (values.length === 0) list.appendChild(h("span", { class: "dash-empty" }, "Nothing added."));
-    for (const value of values) {
-      list.appendChild(
+    else if (matches.length === 0) list.appendChild(h("span", { class: "dash-empty" }, "Nothing matches."));
+    const fragment = document.createDocumentFragment();
+    for (const value of matches.slice(0, SHOWN_TAGS)) {
+      fragment.appendChild(
         chip(value, () => {
           values = values.filter((v) => v !== value);
           onChange(values);
@@ -183,6 +215,32 @@ export function tagEditor(label: string, values: string[], onChange: (values: st
         }),
       );
     }
+    list.appendChild(fragment);
+    count.textContent = `${values.length} in the list.` + (matches.length > SHOWN_TAGS ? ` Showing the first ${SHOWN_TAGS}${query ? " matches" : ". Search to find the rest"}.` : "");
+    find.hidden = values.length <= SHOWN_TAGS && !query;
+  };
+  const merge = (incoming: string[]): { added: number; duplicates: number; full: number } => {
+    const have = new Set(values);
+    const fresh: string[] = [];
+    let duplicates = 0;
+    let full = 0;
+    for (const word of incoming) {
+      if (have.has(word)) {
+        duplicates += 1;
+        continue;
+      }
+      if (values.length + fresh.length >= options.max) {
+        full += 1;
+        continue;
+      }
+      have.add(word);
+      fresh.push(word);
+    }
+    if (fresh.length) {
+      values = [...values, ...fresh];
+      onChange(values);
+    }
+    return { added: fresh.length, duplicates, full };
   };
   const commit = (): void => {
     let text = input.value.trim();
@@ -213,8 +271,58 @@ export function tagEditor(label: string, values: string[], onChange: (values: st
       commit();
     }
   });
+  find.addEventListener("input", () => {
+    query = options.lower ? find.value.trim().toLowerCase() : find.value.trim();
+    draw();
+  });
+
+  const tools = h("div", { class: "dash-add" });
+  if (options.importFile) {
+    const file = h("input", { type: "file", accept: ".txt,.env,text/plain", class: "sr-only", "aria-label": `Import ${label.toLowerCase()} from a file` });
+    const choose = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Import from a file");
+    const clear = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Clear all");
+    choose.addEventListener("click", () => file.click());
+    file.addEventListener("change", async () => {
+      const chosen = file.files?.[0];
+      file.value = "";
+      if (!chosen) return;
+      if (chosen.size > 1_000_000) {
+        note.textContent = "That file is over 1 MB. Split it into smaller files.";
+        return;
+      }
+      let text: string;
+      try {
+        text = await chosen.text();
+      } catch {
+        note.textContent = "That file couldn't be read.";
+        return;
+      }
+      if (text.includes("\u0000")) {
+        note.textContent = "That doesn't look like a text file.";
+        return;
+      }
+      const found = wordsFromText(text, options.minLength ?? 1, options.maxLength, Boolean(options.lower));
+      const result = merge(found.words);
+      draw();
+      const parts = [`Added ${result.added}.`];
+      if (result.duplicates) parts.push(`${result.duplicates} were already on the list.`);
+      if (found.skipped) parts.push(`${found.skipped} skipped (needs ${options.minLength ?? 1} to ${options.maxLength} characters).`);
+      if (result.full) parts.push(`${result.full} didn't fit (the list holds ${options.max}).`);
+      if (!found.words.length && !found.skipped) parts.push("The file had no words in it.");
+      note.textContent = parts.join(" ") + (result.added ? " Save to apply them." : "");
+    });
+    clear.addEventListener("click", () => {
+      if (values.length === 0) return;
+      if (!window.confirm(`Remove all ${values.length} from the list? You can still discard before saving.`)) return;
+      values = [];
+      onChange(values);
+      note.textContent = "";
+      draw();
+    });
+    tools.append(choose, clear, file);
+  }
   draw();
-  return labelled(id, label, h("div", { class: "dash-multi" }, list, h("div", { class: "dash-add" }, input, add), note), options.hint);
+  return labelled(id, label, h("div", { class: "dash-multi" }, find, list, count, h("div", { class: "dash-add" }, input, add), tools, note), options.hint ? options.hint : options.importFile ? "Import a .txt or .env file with one word per line, or words separated by commas. Lines starting with # are ignored." : undefined);
 }
 
 /** Disables every control inside an element (used for features a server hasn't unlocked). */
