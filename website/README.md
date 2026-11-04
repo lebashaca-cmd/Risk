@@ -122,7 +122,9 @@ In the dashboard, Auto-moderation has an "Import from a file" button for `.txt` 
 - **Discord "Streaming" status** (a linked Twitch or YouTube account): turn on the Presence intent in the Developer Portal (Bot, Privileged Gateway Intents) and set `STREAM_PRESENCE=1` on the bot host. Without both, the bot stays as it is now.
 - **Twitch channels** by name: make a free app at dev.twitch.tv/console, set `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` on the bot host, then `!twitchadd <channel>`. Risk checks every 60 seconds.
 
-Other commands: `!streamrole`, `!streaming`, `!streamstats`, `!streamers`, `!twitchremove`, `!twitchlist`.
+- **TikTok accounts** by name: `!tiktokadd @name`. No keys needed, but TikTok has no public API, so this reads the same page data its website uses. TikTok can change it or block a host. Run `!tiktoktest @name` while the account is live to check it works from your bot host. Risk checks every 90 seconds (up to 25 accounts per server).
+
+Other commands: `!tiktokremove`, `!tiktoklist`, `!streamrole`, `!streaming`, `!streamstats`, `!streamers`, `!twitchremove`, `!twitchlist`.
 
 ### Notes
 

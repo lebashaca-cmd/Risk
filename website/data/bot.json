@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T21:44:32+00:00",
+  "generatedAt": "2026-11-04T21:50:03+00:00",
   "prefixes": [
     "!",
     "?",
@@ -2817,6 +2817,46 @@
         ""
       ],
       "permission": null
+    },
+    {
+      "name": "tiktokadd",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Watches a TikTok account and posts when it goes live and ends.",
+      "examples": [
+        "@name"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "tiktoklist",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists the TikTok accounts this server watches.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "tiktokremove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Stops watching a TikTok account.",
+      "examples": [
+        "@name"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "tiktoktest",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Checks one TikTok account right now and says what Risk sees.",
+      "examples": [
+        "@name"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "twitchadd",

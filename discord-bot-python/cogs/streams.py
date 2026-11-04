@@ -5,7 +5,10 @@ Sources (all free):
 - Discord "Streaming" status (a linked Twitch or YouTube account). Needs the Presence intent: turn it on in the
   Developer Portal (Bot, Privileged Gateway Intents) and set STREAM_PRESENCE=1 on the bot host.
 - Twitch channels by name (`!twitchadd`). Needs a free Twitch app: set TWITCH_CLIENT_ID and TWITCH_CLIENT_SECRET.
+- TikTok accounts by name (`!tiktokadd`). TikTok has no public API, so this reads the same page data the website uses.
+  It needs no keys but is unofficial: TikTok can change it or block a host, and `!tiktoktest` shows what Risk sees.
 """
+import asyncio
 import os
 import time
 from datetime import datetime, timezone
@@ -19,6 +22,13 @@ from utils.store import JsonStore
 
 TWITCH_POLL = 60
 MAX_TWITCH = 100
+MAX_TIKTOK = 25
+TIKTOK_POLL = 90
+TIKTOK_HEADERS = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "en-US,en;q=0.9",
+}
 
 
 def duration(seconds):
@@ -38,7 +48,7 @@ class Streams(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.store = JsonStore("streams")
-        for key in ("guilds", "stats", "twitch_live"):
+        for key in ("guilds", "stats", "twitch_live", "tiktok_live"):
             self.store.data.setdefault(key, {})
         self.live = {}  # (guild id, user id, source) -> {"start": ts, "title": str}
         self.token = None
@@ -46,9 +56,11 @@ class Streams(commands.Cog):
 
     async def cog_load(self):
         self.twitch_loop.start()
+        self.tiktok_loop.start()
 
     def cog_unload(self):
         self.twitch_loop.cancel()
+        self.tiktok_loop.cancel()
 
     async def cog_command_error(self, ctx, error):
         if not await explain_error(ctx, error):
@@ -59,6 +71,7 @@ class Streams(commands.Cog):
         data.setdefault("channel", None)
         data.setdefault("role", None)
         data.setdefault("twitch", [])
+        data.setdefault("tiktok", [])
         return data
 
     # Recording and announcing
@@ -214,6 +227,134 @@ class Streams(commands.Cog):
     async def before_twitch(self):
         await self.bot.wait_until_ready()
 
+    # Source 4: TikTok (unofficial)
+    @staticmethod
+    def parse_tiktok(payload):
+        """True or False when the answer is clear, None when it can't be read."""
+        if not isinstance(payload, dict):
+            return None
+        user = (payload.get("data") or {}).get("user")
+        if not isinstance(user, dict) or "status" not in user:
+            return None
+        return user["status"] == 2
+
+    async def tiktok_live(self, session, name):
+        url = "https://www.tiktok.com/api-live/user/room/"
+        async with session.get(url, params={"aid": 1988, "uniqueId": name, "sourceType": 54}, headers=TIKTOK_HEADERS) as resp:
+            if resp.status != 200:
+                raise RuntimeError(f"TikTok answered {resp.status}")
+            try:
+                payload = await resp.json(content_type=None)
+            except ValueError:
+                raise RuntimeError("TikTok answered with something that isn't data (the host may be blocked)")
+        return self.parse_tiktok(payload)
+
+    async def tiktok_check(self):
+        wanted = sorted({name for cfg in self.store.data["guilds"].values() for name in cfg.get("tiktok", [])})
+        if not wanted:
+            return
+        results = {}
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+            for name in wanted:
+                try:
+                    results[name] = await self.tiktok_live(session, name)
+                except (RuntimeError, aiohttp.ClientError) as error:
+                    print(f"[streams] TikTok check for {name} failed: {error}")
+                await asyncio.sleep(1.5)
+        for gid, cfg in list(self.store.data["guilds"].items()):
+            guild = self.bot.get_guild(int(gid))
+            if guild is None:
+                continue
+            state = self.store.data["tiktok_live"].setdefault(gid, {})
+            for name in cfg.get("tiktok", []):
+                live = results.get(name)
+                if live is True and name not in state:
+                    state[name] = {"start": time.time()}
+                    embed = discord.Embed(title=f"{name} is live on TikTok", url=f"https://www.tiktok.com/@{name}/live", description="Tap the title to watch.", color=discord.Color.from_rgb(254, 44, 85))
+                    await self.announce(guild, embed, ping=True)
+                    self.store.save()
+                elif live is False and name in state:
+                    length = time.time() - state.pop(name)["start"]
+                    self.record(guild.id, f"tiktok:{name}", length)
+                    embed = discord.Embed(title=f"{name} ended their TikTok live", url=f"https://www.tiktok.com/@{name}", description=f"Live for about **{duration(length)}** (counted from when I noticed).", color=discord.Color.dark_grey())
+                    await self.announce(guild, embed)
+                    self.store.save()
+
+    @tasks.loop(seconds=TIKTOK_POLL)
+    async def tiktok_loop(self):
+        try:
+            await self.tiktok_check()
+        except Exception as error:  # never let this loop die
+            print(f"[streams] TikTok loop error: {error}")
+
+    @tiktok_loop.before_loop
+    async def before_tiktok(self):
+        await self.bot.wait_until_ready()
+
+    @staticmethod
+    def tiktok_name(text):
+        text = text.strip().rsplit("/", 1)[-1] if "tiktok.com" in text and "@" not in text else text.strip()
+        name = text.split("@")[-1].split("/")[0].split("?")[0].lower()
+        return name if 2 <= len(name) <= 24 and name.replace("_", "").replace(".", "").isalnum() else None
+
+    @commands.command(name="tiktokadd")
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def tiktokadd(self, ctx, account: str):
+        """Watches a TikTok account and posts when it goes live and ends. Usage: !tiktokadd @name"""
+        name = self.tiktok_name(account)
+        if not name:
+            raise ModError("Give the TikTok username, like `@name`.")
+        config = self.cfg(ctx.guild.id)
+        if not config["channel"]:
+            raise ModError("Pick an alert channel first with `streamalerts #channel`.")
+        if name in config["tiktok"]:
+            raise ModError("I'm already watching that account.")
+        if len(config["tiktok"]) >= MAX_TIKTOK:
+            raise ModError(f"This server watches {MAX_TIKTOK} TikTok accounts already.")
+        config["tiktok"].append(name)
+        self.store.save()
+        await ctx.reply(f"Watching **@{name}** on TikTok. I check every {TIKTOK_POLL} seconds. TikTok has no official API, so run `tiktoktest {name}` while they're live to make sure it works on this host.", mention_author=False)
+
+    @commands.command(name="tiktokremove")
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    async def tiktokremove(self, ctx, account: str):
+        """Stops watching a TikTok account. Usage: !tiktokremove @name"""
+        name = self.tiktok_name(account)
+        config = self.cfg(ctx.guild.id)
+        if name not in config["tiktok"]:
+            raise ModError("I'm not watching that account.")
+        config["tiktok"].remove(name)
+        self.store.data["tiktok_live"].get(str(ctx.guild.id), {}).pop(name, None)
+        self.store.save()
+        await ctx.reply("Stopped watching it.", mention_author=False)
+
+    @commands.command(name="tiktoklist")
+    @commands.guild_only()
+    async def tiktoklist(self, ctx):
+        """Lists the TikTok accounts this server watches. Usage: !tiktoklist"""
+        names = self.cfg(ctx.guild.id)["tiktok"]
+        await ctx.reply(", ".join(f"[@{n}](https://www.tiktok.com/@{n})" for n in names) or "No TikTok accounts are watched. Add one with `tiktokadd`.", mention_author=False, suppress_embeds=True)
+
+    @commands.command(name="tiktoktest")
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 10, commands.BucketType.guild)
+    async def tiktoktest(self, ctx, account: str):
+        """Checks one TikTok account right now and says what Risk sees. Usage: !tiktoktest @name"""
+        name = self.tiktok_name(account)
+        if not name:
+            raise ModError("Give the TikTok username, like `@name`.")
+        async with aiohttp.ClientSession(timeout=aiohttp.ClientTimeout(total=15)) as session:
+            try:
+                live = await self.tiktok_live(session, name)
+            except (RuntimeError, aiohttp.ClientError) as error:
+                raise ModError(f"TikTok check failed: {str(error)[:150]}. Alerts for TikTok won't work from this host.")
+        if live is None:
+            raise ModError("TikTok answered, but not in a form I understand. TikTok may have changed it, or the account doesn't exist.")
+        await ctx.reply(f"**@{name}** is {'live right now' if live else 'not live right now'}.", mention_author=False)
+
     # Commands
     @commands.group(name="streamalerts", aliases=["streamalert"], invoke_without_command=True)
     @commands.guild_only()
@@ -301,6 +442,8 @@ class Streams(commands.Cog):
                 lines.append(f"<@{uid}> on {source}, for {duration(time.time() - info['start'])}" + (f" - {info['title'][:60]}" if info["title"] else ""))
         for name, info in self.store.data["twitch_live"].get(str(ctx.guild.id), {}).items():
             lines.append(f"[{info['name']}](https://twitch.tv/{name}) on Twitch, for {duration(time.time() - info['start'])}")
+        for name in self.store.data["tiktok_live"].get(str(ctx.guild.id), {}):
+            lines.append(f"[@{name}](https://www.tiktok.com/@{name}/live) on TikTok")
         embed = discord.Embed(title="Live now", description="\n".join(lines) or "Nobody is streaming right now.", color=discord.Color.from_rgb(145, 70, 255))
         await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
 
@@ -330,7 +473,12 @@ class Streams(commands.Cog):
             raise ModError("Nobody has streamed since I started tracking.")
         lines = []
         for place, (key, s) in enumerate(ranked, 1):
-            who = f"[{key[7:]}](https://twitch.tv/{key[7:]})" if key.startswith("twitch:") else f"<@{key}>"
+            if key.startswith("twitch:"):
+                who = f"[{key[7:]}](https://twitch.tv/{key[7:]})"
+            elif key.startswith("tiktok:"):
+                who = f"[@{key[7:]}](https://www.tiktok.com/@{key[7:]})"
+            else:
+                who = f"<@{key}>"
             lines.append(f"**{place}.** {who} - {duration(s['seconds'])} over {s['count']} stream(s)")
         await ctx.reply(embed=discord.Embed(title="Top streamers", description="\n".join(lines), color=discord.Color.from_rgb(145, 70, 255)), mention_author=False, allowed_mentions=NO_MENTIONS)
 
