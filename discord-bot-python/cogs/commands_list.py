@@ -28,6 +28,7 @@ CATEGORY_BY_COG = {
     "Community": "Community",
     "CommunityExtra": "Community",
     "Dashboard": "Info",
+    "VIP": "VIP",
     "Giveaway": "Community",
     "Tickets": "Tickets",
     "TicketTools": "Tickets",

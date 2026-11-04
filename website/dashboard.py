@@ -20,7 +20,8 @@ OAUTH_TTL = 600
 MAX_SESSIONS = 2000
 MANAGE_GUILD = 0x20
 ADMINISTRATOR = 0x8
-SECTIONS = {"general", "welcome", "logs", "levels", "automod", "community"}
+SECTIONS = {"general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "announcements", "vip"}
+PROFILE_MAX = 7_500_000
 SESSION_COOKIE = "risk_session"
 STATE_COOKIE = "risk_oauth"
 PRESENCE_TTL = 20
@@ -273,12 +274,12 @@ class Dashboard:
         return response
 
     # Bot calls
-    async def ask_bot(self, request, method, path, user_id=None, body=None):
+    async def ask_bot(self, request, method, path, user_id=None, body=None, timeout=10):
         headers = {"X-Dashboard-Key": self.key}
         if user_id:
             headers["X-Dashboard-User"] = user_id
         try:
-            async with request.app["session"].request(method, f"{self.bot_api}/dash/{path}", headers=headers, json=body, allow_redirects=False, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+            async with request.app["session"].request(method, f"{self.bot_api}/dash/{path}", headers=headers, json=body, allow_redirects=False, timeout=aiohttp.ClientTimeout(total=timeout)) as resp:
                 try:
                     payload = await resp.json(content_type=None)
                 except ValueError:
@@ -359,7 +360,25 @@ class Dashboard:
         status, payload = await self.ask_bot(request, "PUT", f"guild/{gid}/{quote(section)}", session.user["id"], body)
         return self.reply(payload, status)
 
+    async def save_profile(self, request):
+        self.check_write(request)
+        _, session = self.require(request)
+        gid = request.match_info["gid"]
+        if gid not in session.guilds:
+            raise web.HTTPForbidden(reason="You don't manage that server.")
+        if request.content_length is not None and request.content_length > PROFILE_MAX:
+            raise web.HTTPRequestEntityTooLarge(max_size=PROFILE_MAX, actual_size=request.content_length)
+        try:
+            body = await request.json()
+        except ValueError:
+            raise web.HTTPBadRequest(reason="The request wasn't valid JSON.")
+        if not isinstance(body, dict):
+            raise web.HTTPBadRequest(reason="The request must be a JSON object.")
+        status, payload = await self.ask_bot(request, "PUT", f"guild/{gid}/profile", session.user["id"], body, timeout=30)
+        return self.reply(payload, status)
+
     def add_routes(self, app):
+        app.router.add_put("/api/dash/guild/{gid:\\d+}/profile", self.save_profile)
         app.router.add_get("/api/auth/login", self.login)
         app.router.add_get("/api/auth/callback", self.callback)
         app.router.add_get("/api/auth/me", self.me)

@@ -96,6 +96,20 @@ Without `DASHBOARD_HOST` the dashboard still works on the main address at `/dash
 
 Discord's firewall sometimes blocks the shared outgoing addresses of hosts like Render (the sign-in then fails with an HTML "429" or "403" page). So the site hands Discord's login code to the bot, and the bot talks to Discord from its own address. The site tries the bot first. If the bot has no secret and the site does (`DISCORD_CLIENT_SECRET` on Render), the site falls back to calling Discord itself.
 
+### VIP
+
+VIP is a per-server upgrade: higher limits (auto-replies, command rules, blocked words, level rewards, XP multiplier) and extras (announcements, embed auto-replies, an accent colour, `!vipembed`, `!serverstats`, `!schedule`). It isn't tied to payments. You give it out:
+
+- `!vipgrant <server id> [days] [note]` (bot owner only; 0 or no days means no end date), `!viprevoke <server id>`, `!viplist`
+- or set `VIP_GUILD_IDS` on the bot host to a comma-separated list of server ids
+- optional `VIP_URL` (https) is shown as the "Get VIP" link on the dashboard and in `!vip`
+
+Upload `cogs/vip.py` with the other bot files. The dashboard also needs the new `main.py` (bigger request size, for profile pictures).
+
+### Bot profile
+
+The card at the top of a server's dashboard changes Risk's display name, avatar, banner and bio in that one server (Discord stores these per server). Discord has one online status for the whole bot, so status can't be set per server.
+
 ### Notes
 
 - Sign-ins are kept in the site's memory, so a Render restart or sleep signs everyone out. They sign back in with one click.

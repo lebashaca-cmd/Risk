@@ -548,3 +548,65 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 .dash [hidden] { display: none !important; }
 .dash-tab.is-off { opacity: 0.55; }
 .dash-tab.is-off::after { content: "needs update"; margin-left: 0.5rem; font-size: 0.7rem; color: var(--fog); }
+
+/* Dashboard: bot profile, overview, VIP */
+.pf { grid-column: 1 / -1; display: grid; gap: 1.25rem; padding-bottom: 1.75rem; border-bottom: 1px solid var(--edge); }
+.pf-grid { display: grid; gap: 1.75rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+@media (min-width: 52rem) { .pf-grid { grid-template-columns: minmax(0, 1fr) 20rem; } .pf-card { position: sticky; top: calc(var(--header-h) + 1rem); } }
+.pf-form { display: grid; gap: 1.1rem; max-width: 36rem; }
+.pf-label { display: block; font-size: 0.9rem; margin-bottom: 0.4rem; }
+.pf-pick { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+.pf-actions { display: flex; gap: 0.6rem; align-items: center; flex-wrap: wrap; }
+.pf-actions .dash-savemsg { flex: 1 1 10rem; margin: 0; }
+.pf-card { border-radius: 16px; overflow: hidden; background: var(--panel); border: 1px solid var(--edge-strong); box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35); }
+.pf-banner { height: 7rem; background: linear-gradient(135deg, #3a3a3f, #232326); background-size: cover; background-position: center; }
+.pf-avatar { position: relative; width: 5.5rem; height: 5.5rem; margin: -2.75rem 0 0 1.1rem; border-radius: 50%; border: 5px solid var(--panel); background: var(--panel-deep); }
+.pf-avatar-img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; display: block; }
+.pf-app { position: absolute; right: -0.9rem; bottom: 0.2rem; font-size: 0.6rem; font-weight: 600; padding: 0.1rem 0.35rem; border-radius: 5px; background: #fff; color: #131314; }
+.pf-body { padding: 0.6rem 1.1rem 1.2rem; display: grid; gap: 0.25rem; }
+.pf-name { font-size: 1.25rem; overflow-wrap: anywhere; }
+.pf-handle { color: var(--mist); font-size: 0.85rem; }
+.pf-bio { margin-top: 0.5rem; padding-top: 0.6rem; border-top: 1px solid var(--edge); font-size: 0.9rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.pf-bio.is-empty { color: var(--fog); }
+
+.dash-vip { display: inline-block; margin-left: 0.45rem; padding: 0.05rem 0.4rem; border-radius: 6px; font-size: 0.65rem; font-weight: 600; letter-spacing: 0.04em; background: #fff; color: #131314; vertical-align: middle; }
+.dash-upsell { display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; padding: 1rem 1.2rem; border: 1px dashed var(--edge-strong); border-radius: 14px; max-width: 44rem; }
+.dash-upsell p { margin: 0; }
+.is-locked { opacity: 0.55; }
+.dash-card { display: grid; gap: 1rem; padding: 1.1rem 1.2rem; border: 1px solid var(--edge); border-radius: 14px; background: var(--glass); max-width: 44rem; }
+.dash-card-actions { display: flex; justify-content: flex-end; }
+.dash-rules { display: grid; gap: 1rem; }
+.dash-color { width: 3rem; height: 2.4rem; padding: 0; border: 1px solid var(--edge-strong); border-radius: 8px; background: transparent; cursor: pointer; }
+.dash-perks { margin: 0; padding-left: 1.1rem; display: grid; gap: 0.35rem; }
+.dash-vipcard { padding: 1.2rem 1.4rem; border-radius: 14px; border: 1px solid var(--edge-strong); background: var(--glass); max-width: 44rem; display: grid; gap: 0.6rem; }
+.dash-vipcard.is-on { background: linear-gradient(135deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0.03)); }
+.dash-vipcard h3, .dash-vipcard p { margin: 0; }
+.dash-table { border-collapse: collapse; width: 100%; max-width: 44rem; font-size: 0.92rem; }
+.dash-table th, .dash-table td { text-align: left; padding: 0.55rem 0.7rem; border-bottom: 1px solid var(--edge); }
+.dash-table thead th { color: var(--mist); font-weight: 500; }
+
+.dash-banner { display: flex; gap: 1.1rem; align-items: center; padding: 1.2rem 1.4rem; border-radius: 16px; border: 1px solid var(--edge-strong); background: linear-gradient(120deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.02)); max-width: 44rem; }
+.dash-banner-icon { width: 4rem; height: 4rem; border-radius: 16px; object-fit: cover; flex: none; }
+.dash-banner-text { display: grid; gap: 0.35rem; min-width: 0; flex: 1; }
+.dash-banner-text h3, .dash-banner-text p { margin: 0; overflow-wrap: anywhere; }
+.dash-meter { display: flex; gap: 4px; }
+.dash-meter i { flex: 1; height: 6px; border-radius: 3px; background: rgba(255, 255, 255, 0.14); }
+.dash-meter i.is-done { background: #fff; }
+.dash-tiles { display: grid; gap: 0.8rem; grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); max-width: 44rem; }
+.dash-tile { display: grid; gap: 0.1rem; padding: 0.9rem 1rem; border: 1px solid var(--edge); border-radius: 14px; background: var(--glass); }
+.dash-tile strong { font-size: 1.5rem; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.dash-tile span { color: var(--mist); font-size: 0.85rem; }
+.dash-tile small { color: var(--fog); font-size: 0.75rem; }
+.dash-steps, .dash-feed { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.4rem; }
+.dash-steps li { display: flex; align-items: center; gap: 0.75rem; padding: 0.45rem 0; border-bottom: 1px solid var(--edge); }
+.dash-step-label { flex: 1; }
+.dash-steps li.is-done .dash-step-label { color: var(--mist); }
+.dash-check { width: 1.3rem; height: 1.3rem; border-radius: 50%; border: 1px solid var(--edge-strong); display: grid; place-items: center; font-size: 0.75rem; flex: none; }
+.dash-steps li.is-done .dash-check { background: #fff; color: #131314; border-color: #fff; }
+.dash-twin { display: grid; gap: 1.5rem; grid-template-columns: minmax(0, 1fr); max-width: 44rem; }
+@media (min-width: 40rem) { .dash-twin { grid-template-columns: 1fr 1fr; } .dash-twin .dash-group { max-width: none; } }
+.dash-usage { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem 1rem; margin: 0; }
+.dash-usage dt { color: var(--mist); }
+.dash-usage dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.dash-feed li { display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.9rem; }
+.dash-when { color: var(--fog); margin-left: auto; font-size: 0.8rem; }

@@ -48,5 +48,6 @@ export const dashApi = {
     me: () => send("GET", "/api/auth/me"),
     guild: (id) => send("GET", `/api/dash/guild/${encodeURIComponent(id)}`),
     save: (id, section, body) => send("PUT", `/api/dash/guild/${encodeURIComponent(id)}/${section}`, body),
+    saveProfile: (id, body) => send("PUT", `/api/dash/guild/${encodeURIComponent(id)}/profile`, body),
     logout: () => send("POST", "/api/auth/logout"),
 };

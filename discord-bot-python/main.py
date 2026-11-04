@@ -66,7 +66,7 @@ async def dashboard_handler(request):
 
 
 async def start_status_server():
-    app = web.Application(client_max_size=64 * 1024)
+    app = web.Application(client_max_size=8 * 1024 * 1024)
     app.router.add_route('*', '/dash/{tail:.*}', dashboard_handler)
     app.router.add_get('/', status_handler)
     app.router.add_get('/status', status_handler)
