@@ -854,7 +854,10 @@ class Dashboard(commands.Cog):
             raise ApiError(401, "Bad dashboard key.")
 
     async def read_json(self, request, limit=MAX_BODY):
-        raw = await request.content.read(limit + 1)
+        if request.content_length is not None and request.content_length > limit:
+            raise ApiError(413, "That request is too large.")
+        # read() waits for the whole body; content.read(n) can return just the first chunk of a big upload.
+        raw = await request.read()
         if len(raw) > limit:
             raise ApiError(413, "That request is too large.")
         try:
