@@ -24,6 +24,14 @@ Notes on the Risk Discord bot and its website and dashboard, written 2026-11-05 
 - [Lookups](Lookups.md): the Nerve API commands and what is still to add
 - [Commands by category](commands/INDEX.md): all 343 commands, generated from the bot
 
+## More sections
+
+- [Cogs](cogs/INDEX.md): one note per bot file with its commands, data files, loops and listeners
+- [Dashboard sections](dashboard/INDEX.md): one note per tab, the API, validation rules, sign-in flow, frontend
+- [Website](website/file-map.md): file map and server behaviour
+- [Guides](guides/developer-portal-setup.md): Developer Portal, Twitch app, upload to the host, add a command, add a dashboard section, git workflow, backups, writing tests, regenerating the command list
+- [Reference](reference/Command-Index-A-Z.md): command index, permissions index, environment variables, data files, security model, intents, Discord limits, glossary, FAQ, runbooks, roadmap
+
 ## Working on it
 
 - [Testing](Testing.md): the test scripts and what each one proves
@@ -32,3 +40,6 @@ Notes on the Risk Discord bot and its website and dashboard, written 2026-11-05 
 - [Open items](Open-Items.md): what is waiting on you or on later work
 
 Related: [Open items](Open-Items.md)
+- [website/](website/INDEX.md)
+- [guides/](guides/INDEX.md)
+- [reference/](reference/INDEX.md)
