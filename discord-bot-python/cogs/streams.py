@@ -195,6 +195,18 @@ class Streams(commands.Cog):
                         found[item["user_login"].lower()] = item
         return found
 
+    def twitch_embed(self, name, item):
+        embed = discord.Embed(title=f"{item['user_name']} is live", url=f"https://twitch.tv/{name}", description=item.get("title", "")[:300] or None, color=discord.Color.from_rgb(145, 70, 255))
+        embed.set_author(name="Twitch")
+        embed.add_field(name="Watch", value=f"[twitch.tv/{name}](https://twitch.tv/{name})")
+        if item.get("game_name"):
+            embed.add_field(name="Playing", value=item["game_name"])
+        embed.add_field(name="Viewers", value=str(item.get("viewer_count", 0)))
+        thumb = item.get("thumbnail_url", "").replace("{width}", "640").replace("{height}", "360")
+        if self.cover(thumb):
+            embed.set_image(url=self.cover(thumb))
+        return embed
+
     async def twitch_check(self):
         wanted = {name for cfg in self.store.data["guilds"].values() for name in cfg.get("twitch", [])}
         if not wanted:
@@ -210,15 +222,7 @@ class Streams(commands.Cog):
                 if item and name not in state:
                     started = datetime.fromisoformat(item["started_at"].replace("Z", "+00:00")).timestamp()
                     state[name] = {"start": started, "name": item["user_name"]}
-                    embed = discord.Embed(title=f"{item['user_name']} is live", url=f"https://twitch.tv/{name}", description=item.get("title", "")[:300] or None, color=discord.Color.from_rgb(145, 70, 255))
-                    embed.set_author(name="Twitch")
-                    embed.add_field(name="Watch", value=f"[twitch.tv/{name}](https://twitch.tv/{name})")
-                    if item.get("game_name"):
-                        embed.add_field(name="Playing", value=item["game_name"])
-                    embed.add_field(name="Viewers", value=str(item.get("viewer_count", 0)))
-                    thumb = item.get("thumbnail_url", "").replace("{width}", "640").replace("{height}", "360")
-                    if self.cover(thumb):
-                        embed.set_image(url=self.cover(thumb))
+                    embed = self.twitch_embed(name, item)
                     await self.announce(guild, embed, ping=True)
                     self.store.save()
                 elif not item and name in state:
@@ -278,6 +282,15 @@ class Streams(commands.Cog):
         self.tiktok_seen[name] = self.tiktok_extras(payload)
         return self.parse_tiktok(payload)
 
+    def tiktok_embed(self, name):
+        extras = self.tiktok_seen.get(name, {})
+        embed = discord.Embed(title=f"{name} is live", url=f"https://www.tiktok.com/@{name}/live", description=extras.get("title") or None, color=discord.Color.from_rgb(254, 44, 85))
+        embed.set_author(name="TikTok")
+        embed.add_field(name="Watch", value=f"[tiktok.com/@{name}](https://www.tiktok.com/@{name}/live)")
+        if extras.get("cover"):
+            embed.set_image(url=extras["cover"])
+        return embed
+
     async def tiktok_check(self):
         wanted = sorted({name for cfg in self.store.data["guilds"].values() for name in cfg.get("tiktok", [])})
         if not wanted:
@@ -299,12 +312,7 @@ class Streams(commands.Cog):
                 live = results.get(name)
                 if live is True and name not in state:
                     state[name] = {"start": time.time()}
-                    extras = self.tiktok_seen.get(name, {})
-                    embed = discord.Embed(title=f"{name} is live", url=f"https://www.tiktok.com/@{name}/live", description=extras.get("title") or None, color=discord.Color.from_rgb(254, 44, 85))
-                    embed.set_author(name="TikTok")
-                    embed.add_field(name="Watch", value=f"[tiktok.com/@{name}](https://www.tiktok.com/@{name}/live)")
-                    if extras.get("cover"):
-                        embed.set_image(url=extras["cover"])
+                    embed = self.tiktok_embed(name)
                     await self.announce(guild, embed, ping=True)
                     self.store.save()
                 elif live is False and name in state:
@@ -387,7 +395,54 @@ class Streams(commands.Cog):
                 raise ModError(f"TikTok check failed: {str(error)[:150]}. Alerts for TikTok won't work from this host.")
         if live is None:
             raise ModError("TikTok answered, but not in a form I understand. TikTok may have changed it, or the account doesn't exist.")
-        await ctx.reply(f"**@{name}** is {'live right now' if live else 'not live right now'}.", mention_author=False)
+        if live:
+            await ctx.reply(f"**@{name}** is live right now. This is what an alert looks like:", embed=self.tiktok_embed(name), mention_author=False)
+        else:
+            await ctx.reply(f"**@{name}** is not live right now.", mention_author=False)
+
+    @commands.command(name="twitchtest")
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 10, commands.BucketType.guild)
+    async def twitchtest(self, ctx, login: str):
+        """Checks one Twitch channel right now and shows what the alert looks like. Usage: !twitchtest shroud"""
+        if not self.twitch_ready:
+            raise ModError("Twitch checks need `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` set on the bot host.")
+        login = login.strip().lower().rsplit("/", 1)[-1]
+        if not login.replace("_", "").isalnum() or not 3 <= len(login) <= 25:
+            raise ModError("Give the channel name, like `shroud`.")
+        try:
+            found = await self.twitch_streams([login])
+        except (RuntimeError, aiohttp.ClientError) as error:
+            raise ModError(f"Twitch check failed: {str(error)[:150]}")
+        if login in found:
+            await ctx.reply(f"**{login}** is live right now. This is what an alert looks like:", embed=self.twitch_embed(login, found[login]), mention_author=False)
+        else:
+            await ctx.reply(f"**{login}** is not live right now.", mention_author=False)
+
+    @commands.command(name="streamtest")
+    @commands.guild_only()
+    @commands.has_permissions(manage_guild=True)
+    @commands.cooldown(1, 15, commands.BucketType.guild)
+    async def streamtest(self, ctx):
+        """Posts a sample 'is live' and 'stopped' alert in the alert channel. Usage: !streamtest"""
+        config = self.cfg(ctx.guild.id)
+        channel = ctx.guild.get_channel(config["channel"]) if config["channel"] else None
+        if not isinstance(channel, discord.TextChannel):
+            raise ModError("Pick an alert channel first with `streamalerts #channel`.")
+        if not channel.permissions_for(ctx.guild.me).send_messages or not channel.permissions_for(ctx.guild.me).embed_links:
+            raise ModError(f"I can't send embeds in {channel.mention}.")
+        member = ctx.author
+        live = discord.Embed(title=f"{member.display_name} is live", url="https://www.twitch.tv/", description="Sample stream title", color=discord.Color.from_rgb(145, 70, 255))
+        live.set_author(name=member.display_name, icon_url=member.display_avatar.url)
+        live.add_field(name="Where", value="Test")
+        live.add_field(name="Watch", value="[Open the stream](https://www.twitch.tv/)")
+        live.set_footer(text="This is a test alert")
+        done = discord.Embed(title=f"{member.display_name} stopped streaming", description="Streamed for **1h 24m**.", color=discord.Color.dark_grey())
+        done.set_footer(text="This is a test alert")
+        await channel.send(embed=live, allowed_mentions=NO_MENTIONS)
+        await channel.send(embed=done, allowed_mentions=NO_MENTIONS)
+        await ctx.reply(f"Sent a sample alert to {channel.mention}.", mention_author=False)
 
     # Commands
     @commands.group(name="streamalerts", aliases=["streamalert"], invoke_without_command=True)
