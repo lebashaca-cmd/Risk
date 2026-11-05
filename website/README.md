@@ -124,7 +124,7 @@ In the dashboard, Auto-moderation has an "Import from a file" button for `.txt` 
 
 - **TikTok accounts** by name: `!tiktokadd @name`. No keys needed, but TikTok has no public API, so this reads the same page data its website uses. TikTok can change it or block a host. Run `!tiktoktest @name` while the account is live to check it works from your bot host. Risk checks every 90 seconds (up to 25 accounts per server).
 
-Other commands: `!tiktokremove`, `!tiktoklist`, `!streamrole`, `!streaming`, `!streamstats`, `!streamers`, `!twitchremove`, `!twitchlist`.
+Test commands: `!streamtest` (sample alert), `!twitchtest <channel>`, `!tiktoktest @name`. Other commands: `!tiktokremove`, `!tiktoklist`, `!streamrole`, `!streaming`, `!streamstats`, `!streamers`, `!twitchremove`, `!twitchlist`.
 
 ### Notes
 

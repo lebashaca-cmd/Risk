@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-04T21:58:34+00:00",
+  "generatedAt": "2026-11-05T03:22:48+00:00",
   "prefixes": [
     "!",
     "?",
@@ -2799,6 +2799,16 @@
       "permission": null
     },
     {
+      "name": "streamtest",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a sample 'is live' and 'stopped' alert in the alert channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "suggest",
       "kind": "prefix",
       "category": "Community",
@@ -2893,6 +2903,16 @@
       "kind": "prefix",
       "category": "Community",
       "description": "Stops watching a Twitch channel.",
+      "examples": [
+        "shroud"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "twitchtest",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Checks one Twitch channel right now and shows what the alert looks like.",
       "examples": [
         "shroud"
       ],
