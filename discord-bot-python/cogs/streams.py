@@ -10,6 +10,7 @@ Sources (all free):
 """
 import asyncio
 import os
+import re
 import time
 from datetime import datetime, timezone
 
@@ -53,6 +54,7 @@ class Streams(commands.Cog):
         self.live = {}  # (guild id, user id, source) -> {"start": ts, "title": str}
         self.token = None
         self.token_until = 0
+        self.tiktok_seen = {}
 
     async def cog_load(self):
         self.twitch_loop.start()
@@ -97,16 +99,23 @@ class Streams(commands.Cog):
         except discord.HTTPException:
             pass
 
-    async def started(self, member, source, title, where=None):
+    @staticmethod
+    def cover(url):
+        """A live cover URL with a changing suffix so Discord doesn't show a stale picture."""
+        return f"{url}{'&' if '?' in url else '?'}t={int(time.time() // 60)}" if isinstance(url, str) and url.startswith("https://") else None
+
+    async def started(self, member, source, title, where=None, link=None, image=None):
         key = (member.guild.id, member.id, source)
         if key in self.live:
             return
         self.live[key] = {"start": time.time(), "title": title}
-        embed = discord.Embed(title=f"{member.display_name} started streaming", color=discord.Color.from_rgb(145, 70, 255))
-        embed.set_thumbnail(url=member.display_avatar.url)
+        embed = discord.Embed(title=f"{member.display_name} is live", url=link if isinstance(link, str) and link.startswith("https://") else None, description=(title or "")[:300] or None, color=discord.Color.from_rgb(145, 70, 255))
+        embed.set_author(name=member.display_name, icon_url=member.display_avatar.url)
         embed.add_field(name="Where", value=where or source)
-        if title:
-            embed.add_field(name="Title", value=title[:200], inline=False)
+        if link:
+            embed.add_field(name="Watch", value=f"[Open the stream]({link})")
+        if self.cover(image):
+            embed.set_image(url=self.cover(image))
         await self.announce(member.guild, embed, ping=True)
 
     async def ended(self, member, source, where=None):
@@ -128,7 +137,7 @@ class Streams(commands.Cog):
         was = bool(before.channel and before.self_stream)
         now = bool(after.channel and after.self_stream)
         if now and not was:
-            await self.started(member, "Go Live", None, f"Go Live in {after.channel.name}")
+            await self.started(member, "Go Live", None, f"Go Live in {after.channel.name}", link=f"https://discord.com/channels/{member.guild.id}/{after.channel.id}")
         elif was and not now:
             await self.ended(member, "Go Live", f"Go Live in {before.channel.name}")
 
@@ -141,7 +150,11 @@ class Streams(commands.Cog):
         old = next((a for a in before.activities if isinstance(a, discord.Streaming)), None)
         new = next((a for a in after.activities if isinstance(a, discord.Streaming)), None)
         if new and not old:
-            await self.started(member, new.platform or "Streaming", new.name or None, f"{new.platform or 'Streaming'}" + (f" - {new.url}" if new.url else ""))
+            image = None
+            match = re.match(r"https://(?:www\.)?twitch\.tv/([A-Za-z0-9_]{3,25})/?$", new.url or "")
+            if match:
+                image = f"https://static-cdn.jtvnw.net/previews-ttv/live_user_{match.group(1).lower()}-640x360.jpg"
+            await self.started(member, new.platform or "Streaming", new.name or None, new.platform or "Streaming", link=new.url, image=image)
         elif old and not new:
             await self.ended(member, old.platform or "Streaming", old.platform or "Streaming")
 
@@ -197,13 +210,15 @@ class Streams(commands.Cog):
                 if item and name not in state:
                     started = datetime.fromisoformat(item["started_at"].replace("Z", "+00:00")).timestamp()
                     state[name] = {"start": started, "name": item["user_name"]}
-                    embed = discord.Embed(title=f"{item['user_name']} is live on Twitch", url=f"https://twitch.tv/{name}", description=item.get("title", "")[:300], color=discord.Color.from_rgb(145, 70, 255))
+                    embed = discord.Embed(title=f"{item['user_name']} is live", url=f"https://twitch.tv/{name}", description=item.get("title", "")[:300] or None, color=discord.Color.from_rgb(145, 70, 255))
+                    embed.set_author(name="Twitch")
+                    embed.add_field(name="Watch", value=f"[twitch.tv/{name}](https://twitch.tv/{name})")
                     if item.get("game_name"):
                         embed.add_field(name="Playing", value=item["game_name"])
                     embed.add_field(name="Viewers", value=str(item.get("viewer_count", 0)))
-                    thumb = item.get("thumbnail_url", "").replace("{width}", "440").replace("{height}", "248")
-                    if thumb.startswith("https://"):
-                        embed.set_image(url=thumb)
+                    thumb = item.get("thumbnail_url", "").replace("{width}", "640").replace("{height}", "360")
+                    if self.cover(thumb):
+                        embed.set_image(url=self.cover(thumb))
                     await self.announce(guild, embed, ping=True)
                     self.store.save()
                 elif not item and name in state:
@@ -238,6 +253,19 @@ class Streams(commands.Cog):
             return None
         return user["status"] == 2
 
+    @staticmethod
+    def tiktok_extras(payload):
+        """Best-effort cover and title for a live TikTok room. Missing pieces are fine."""
+        data = (payload or {}).get("data") or {}
+        room = data.get("liveRoom") if isinstance(data.get("liveRoom"), dict) else {}
+        user = data.get("user") if isinstance(data.get("user"), dict) else {}
+        cover = room.get("coverUrl") or user.get("roomCover")
+        if not cover:
+            urls = ((room.get("cover") or {}).get("url_list") if isinstance(room.get("cover"), dict) else None) or []
+            cover = urls[0] if urls else None
+        cover = cover or user.get("avatarLarger")
+        return {"cover": cover if isinstance(cover, str) and cover.startswith("https://") else None, "title": str(room.get("title") or "")[:300]}
+
     async def tiktok_live(self, session, name):
         url = "https://www.tiktok.com/api-live/user/room/"
         async with session.get(url, params={"aid": 1988, "uniqueId": name, "sourceType": 54}, headers=TIKTOK_HEADERS) as resp:
@@ -247,6 +275,7 @@ class Streams(commands.Cog):
                 payload = await resp.json(content_type=None)
             except ValueError:
                 raise RuntimeError("TikTok answered with something that isn't data (the host may be blocked)")
+        self.tiktok_seen[name] = self.tiktok_extras(payload)
         return self.parse_tiktok(payload)
 
     async def tiktok_check(self):
@@ -270,7 +299,12 @@ class Streams(commands.Cog):
                 live = results.get(name)
                 if live is True and name not in state:
                     state[name] = {"start": time.time()}
-                    embed = discord.Embed(title=f"{name} is live on TikTok", url=f"https://www.tiktok.com/@{name}/live", description="Tap the title to watch.", color=discord.Color.from_rgb(254, 44, 85))
+                    extras = self.tiktok_seen.get(name, {})
+                    embed = discord.Embed(title=f"{name} is live", url=f"https://www.tiktok.com/@{name}/live", description=extras.get("title") or None, color=discord.Color.from_rgb(254, 44, 85))
+                    embed.set_author(name="TikTok")
+                    embed.add_field(name="Watch", value=f"[tiktok.com/@{name}](https://www.tiktok.com/@{name}/live)")
+                    if extras.get("cover"):
+                        embed.set_image(url=extras["cover"])
                     await self.announce(guild, embed, ping=True)
                     self.store.save()
                 elif live is False and name in state:
