@@ -116,7 +116,7 @@ In the dashboard, Auto-moderation has an "Import from a file" button for `.txt` 
 
 ### Stream alerts
 
-`!streamalerts #channel` posts when someone starts and stops streaming, with how long it lasted. Sources, all free:
+`!streamalerts #channel @StreamPing` posts when someone starts and stops streaming, with how long it lasted. The role at the end is optional and gets pinged on every "is live" alert; `!twitchadd` and `!tiktokadd` also take a role at the end to ping a different role for just that streamer. Sources, all free:
 
 - **Go Live** (screen share in a voice channel): works right away.
 - **Discord "Streaming" status** (a linked Twitch or YouTube account): turn on the Presence intent in the Developer Portal (Bot, Privileged Gateway Intents) and set `STREAM_PRESENCE=1` on the bot host. Without both, the bot stays as it is now.

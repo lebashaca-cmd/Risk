@@ -74,6 +74,7 @@ class Streams(commands.Cog):
         data.setdefault("role", None)
         data.setdefault("twitch", [])
         data.setdefault("tiktok", [])
+        data.setdefault("roles", {})
         return data
 
     # Recording and announcing
@@ -85,14 +86,14 @@ class Streams(commands.Cog):
         stats["last"] = int(time.time())
         self.store.save()
 
-    async def announce(self, guild, embed, ping=False):
+    async def announce(self, guild, embed, ping=False, role_id=None):
         config = self.cfg(guild.id)
         channel = guild.get_channel(config["channel"]) if config["channel"] else None
         if not isinstance(channel, discord.TextChannel) or not channel.permissions_for(guild.me).send_messages:
             return
-        role = guild.get_role(config["role"]) if ping and config["role"] else None
+        role = guild.get_role(role_id or config["role"]) if ping and (role_id or config["role"]) else None
         try:
-            if role and role.mentionable:
+            if role and (role.mentionable or guild.me.guild_permissions.mention_everyone):
                 await channel.send(role.mention, embed=embed, allowed_mentions=discord.AllowedMentions(roles=[role]))
             else:
                 await channel.send(embed=embed, allowed_mentions=NO_MENTIONS)
@@ -223,7 +224,7 @@ class Streams(commands.Cog):
                     started = datetime.fromisoformat(item["started_at"].replace("Z", "+00:00")).timestamp()
                     state[name] = {"start": started, "name": item["user_name"]}
                     embed = self.twitch_embed(name, item)
-                    await self.announce(guild, embed, ping=True)
+                    await self.announce(guild, embed, ping=True, role_id=cfg["roles"].get(f"twitch:{name}"))
                     self.store.save()
                 elif not item and name in state:
                     info = state.pop(name)
@@ -313,7 +314,7 @@ class Streams(commands.Cog):
                 if live is True and name not in state:
                     state[name] = {"start": time.time()}
                     embed = self.tiktok_embed(name)
-                    await self.announce(guild, embed, ping=True)
+                    await self.announce(guild, embed, ping=True, role_id=cfg["roles"].get(f"tiktok:{name}"))
                     self.store.save()
                 elif live is False and name in state:
                     length = time.time() - state.pop(name)["start"]
@@ -342,8 +343,8 @@ class Streams(commands.Cog):
     @commands.command(name="tiktokadd")
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    async def tiktokadd(self, ctx, account: str):
-        """Watches a TikTok account and posts when it goes live and ends. Usage: !tiktokadd @name"""
+    async def tiktokadd(self, ctx, account: str, ping: discord.Role = None):
+        """Watches a TikTok account and posts when it goes live and ends. Usage: !tiktokadd @name @StreamPing"""
         name = self.tiktok_name(account)
         if not name:
             raise ModError("Give the TikTok username, like `@name`.")
@@ -354,9 +355,12 @@ class Streams(commands.Cog):
             raise ModError("I'm already watching that account.")
         if len(config["tiktok"]) >= MAX_TIKTOK:
             raise ModError(f"This server watches {MAX_TIKTOK} TikTok accounts already.")
+        self.check_role(ctx, ping)
         config["tiktok"].append(name)
+        if ping:
+            config["roles"][f"tiktok:{name}"] = ping.id
         self.store.save()
-        await ctx.reply(f"Watching **@{name}** on TikTok. I check every {TIKTOK_POLL} seconds. TikTok has no official API, so run `tiktoktest {name}` while they're live to make sure it works on this host.", mention_author=False)
+        await ctx.reply(f"Watching **@{name}** on TikTok. I check every {TIKTOK_POLL} seconds." + (f" I'll ping {ping.mention} when they go live." if ping else "") + f" TikTok has no official API, so run `tiktoktest {name}` while they're live to make sure it works on this host.", mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="tiktokremove")
     @commands.guild_only()
@@ -368,6 +372,7 @@ class Streams(commands.Cog):
         if name not in config["tiktok"]:
             raise ModError("I'm not watching that account.")
         config["tiktok"].remove(name)
+        config["roles"].pop(f"tiktok:{name}", None)
         self.store.data["tiktok_live"].get(str(ctx.guild.id), {}).pop(name, None)
         self.store.save()
         await ctx.reply("Stopped watching it.", mention_author=False)
@@ -440,25 +445,38 @@ class Streams(commands.Cog):
         live.set_footer(text="This is a test alert")
         done = discord.Embed(title=f"{member.display_name} stopped streaming", description="Streamed for **1h 24m**.", color=discord.Color.dark_grey())
         done.set_footer(text="This is a test alert")
-        await channel.send(embed=live, allowed_mentions=NO_MENTIONS)
+        role = ctx.guild.get_role(config["role"]) if config["role"] else None
+        if role and (role.mentionable or ctx.guild.me.guild_permissions.mention_everyone):
+            await channel.send(role.mention, embed=live, allowed_mentions=discord.AllowedMentions(roles=[role]))
+        else:
+            await channel.send(embed=live, allowed_mentions=NO_MENTIONS)
         await channel.send(embed=done, allowed_mentions=NO_MENTIONS)
         await ctx.reply(f"Sent a sample alert to {channel.mention}.", mention_author=False)
 
     # Commands
+    @staticmethod
+    def check_role(ctx, role):
+        if role and not role.mentionable and not ctx.guild.me.guild_permissions.mention_everyone:
+            raise ModError(f"{role.name} can't be pinged. Turn on 'Allow anyone to @mention this role' for it, or give me the Mention Everyone permission.")
+
     @commands.group(name="streamalerts", aliases=["streamalert"], invoke_without_command=True)
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    async def streamalerts(self, ctx, channel: discord.TextChannel = None):
-        """Sets the channel for stream start and end alerts. Usage: !streamalerts #streams (or !streamalerts off)"""
+    async def streamalerts(self, ctx, channel: discord.TextChannel = None, ping: discord.Role = None):
+        """Sets the channel for stream alerts, and optionally a role to ping. Usage: !streamalerts #streams @StreamPing (or !streamalerts off)"""
         config = self.cfg(ctx.guild.id)
         if channel is None:
             now = f"<#{config['channel']}>" if config["channel"] else "off"
             raise ModError(f"Stream alerts are {now}. Use `streamalerts #channel` to pick a channel or `streamalerts off` to stop them.")
         if not channel.permissions_for(ctx.guild.me).send_messages or not channel.permissions_for(ctx.guild.me).embed_links:
             raise ModError("I need Send Messages and Embed Links in that channel.")
+        self.check_role(ctx, ping)
         config["channel"] = channel.id
+        if ping:
+            config["role"] = ping.id
         self.store.save()
-        await ctx.reply(f"Stream alerts will go to {channel.mention}. Anyone using Go Live in a voice channel is covered. For Twitch channels use `twitchadd`.", mention_author=False)
+        pinging = f" I'll ping {ping.mention} when someone goes live." if ping else (f" I'll keep pinging <@&{config['role']}>." if config["role"] else " Add a role at the end to ping it, like `streamalerts #streams @StreamPing`.")
+        await ctx.reply(f"Stream alerts will go to {channel.mention}.{pinging} For Twitch and TikTok use `twitchadd` and `tiktokadd`.", mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @streamalerts.command(name="off")
     @commands.has_permissions(manage_guild=True)
@@ -482,8 +500,8 @@ class Streams(commands.Cog):
     @commands.command(name="twitchadd")
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
-    async def twitchadd(self, ctx, login: str):
-        """Watches a Twitch channel and posts when it goes live and offline. Usage: !twitchadd shroud"""
+    async def twitchadd(self, ctx, login: str, ping: discord.Role = None):
+        """Watches a Twitch channel and posts when it goes live and offline. Usage: !twitchadd shroud @StreamPing"""
         if not self.twitch_ready:
             raise ModError("Twitch alerts need a free Twitch app. Create one at dev.twitch.tv/console, then set `TWITCH_CLIENT_ID` and `TWITCH_CLIENT_SECRET` on the bot host and restart.")
         login = login.strip().lower().rsplit("/", 1)[-1]
@@ -496,9 +514,12 @@ class Streams(commands.Cog):
             raise ModError("I'm already watching that channel.")
         if len(config["twitch"]) >= MAX_TWITCH:
             raise ModError(f"This server watches {MAX_TWITCH} Twitch channels already.")
+        self.check_role(ctx, ping)
         config["twitch"].append(login)
+        if ping:
+            config["roles"][f"twitch:{login}"] = ping.id
         self.store.save()
-        await ctx.reply(f"Watching **{login}** on Twitch. I check every {TWITCH_POLL} seconds.", mention_author=False)
+        await ctx.reply(f"Watching **{login}** on Twitch. I check every {TWITCH_POLL} seconds." + (f" I'll ping {ping.mention} when they go live." if ping else ""), mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="twitchremove")
     @commands.guild_only()
@@ -510,6 +531,7 @@ class Streams(commands.Cog):
         if login not in config["twitch"]:
             raise ModError("I'm not watching that channel.")
         config["twitch"].remove(login)
+        config["roles"].pop(f"twitch:{login}", None)
         self.store.data["twitch_live"].get(str(ctx.guild.id), {}).pop(login, None)
         self.store.save()
         await ctx.reply("Stopped watching it.", mention_author=False)
