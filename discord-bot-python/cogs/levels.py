@@ -5,7 +5,7 @@ from typing import Union
 import discord
 from discord.ext import commands, tasks
 
-from utils.helpers import NO_MENTIONS, explain_error
+from utils.helpers import NO_MENTIONS, explain_error, message_payload
 from utils.store import JsonStore
 
 DEFAULT_MESSAGE = "🎉 {user} reached level **{level}**!"
@@ -109,9 +109,12 @@ class Levels(commands.Cog):
         if target != "same":
             channel = member.guild.get_channel(int(target)) or channel
         template = config["message"] or DEFAULT_MESSAGE
-        text = template.replace("{user}", member.mention).replace("{level}", str(level)).replace("{name}", member.display_name)
+        vip = self.bot.get_cog("VIP")
+        payload = message_payload(template, member, {"{level}": str(level), "{name}": member.display_name}, color=vip.embed_color(member.guild.id) if vip else None)
+        if payload.get("content"):
+            payload["content"] = payload["content"][:1900]
         try:
-            await channel.send(text[:1900], allowed_mentions=discord.AllowedMentions(users=[member]))
+            await channel.send(**payload, allowed_mentions=discord.AllowedMentions(users=[member]))
         except discord.HTTPException:
             pass
 
@@ -296,7 +299,7 @@ class Levels(commands.Cog):
     @commands.command(name="levelmessage")
     @commands.has_permissions(manage_guild=True)
     async def levelmessage(self, ctx, *, text: str):
-        """Sets the level-up message using {user}, {name} and {level}, or reset. Usage: !levelmessage Nice one {user}, level {level}!"""
+        """Sets the level-up message using {user}, {name} and {level}, or reset. Put {embed} at the start and the end to send it as an embed. Usage: !levelmessage {embed} Nice one {user}, level {level}! {embed}"""
         config = self.cfg(ctx.guild.id)
         if text.lower() == "reset":
             config["message"] = None
@@ -305,8 +308,9 @@ class Levels(commands.Cog):
             return
         config["message"] = text[:300]
         self.settings.save()
-        preview = text.replace("{user}", ctx.author.mention).replace("{level}", "5").replace("{name}", ctx.author.display_name)
-        await ctx.reply(f"Saved. Preview:\n{preview[:300]}", mention_author=False, allowed_mentions=NO_MENTIONS)
+        payload = message_payload(text, ctx.author, {"{level}": "5", "{name}": ctx.author.display_name})
+        shown = f"Saved. Preview:\n{(payload.get('content') or '')[:300]}".rstrip()
+        await ctx.reply(shown, embed=payload.get("embed"), mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="levelchannel")
     @commands.has_permissions(manage_guild=True)

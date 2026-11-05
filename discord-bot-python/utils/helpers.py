@@ -96,3 +96,34 @@ async def explain_error(ctx, error):
     except discord.HTTPException:
         pass
     return True
+
+
+EMBED_TAG = "{embed}"
+
+
+def embed_split(text):
+    """(text, True) when the text starts and ends with {embed}, so it should be sent as an embed."""
+    stripped = (text or "").strip()
+    if len(stripped) > 2 * len(EMBED_TAG) and stripped.lower().startswith(EMBED_TAG) and stripped.lower().endswith(EMBED_TAG):
+        return stripped[len(EMBED_TAG):-len(EMBED_TAG)].strip(), True
+    return text, False
+
+
+def message_payload(template, member, subs=None, user_pattern=r"\{user\}", ping=True, color=None):
+    """Keyword arguments for channel.send. Wrapping the template in {embed} ... {embed} sends it as an embed.
+
+    `subs` replaces plain tokens (like {level}). The member's name replaces user_pattern: a mention in a normal
+    message, and their bold name in an embed (a mention is sent above the embed so they still get the ping).
+    """
+    import re
+    import discord
+
+    body, as_embed = embed_split(template)
+    for token, value in (subs or {}).items():
+        body = body.replace(token, value)
+    if not as_embed:
+        return {"content": re.sub(user_pattern, lambda _m: member.mention, body, flags=re.I)}
+    body = re.sub(user_pattern, lambda _m: f"**{discord.utils.escape_markdown(member.display_name)}**", body, flags=re.I)
+    embed = discord.Embed(description=body[:4000], color=color if color is not None else discord.Color.dark_grey())
+    embed.set_thumbnail(url=member.display_avatar.url)
+    return {"embed": embed, "content": member.mention if ping else None}
