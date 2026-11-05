@@ -129,7 +129,7 @@ const welcome: Renderer<"welcome"> = (draft, meta, changed) => {
     if (!draft.enabled) return;
     join.append(
       channelSelect("Welcome channel", meta, draft.channel, (v) => { draft.channel = v; changed(); }, "Choose a channel"),
-      textArea("Welcome message", draft.text, (v) => { draft.text = v; changed(); }, { max: 1500, hint: "Write New_user where the member should be mentioned." }),
+      textArea("Welcome message", draft.text, (v) => { draft.text = v; changed(); }, { max: 1500, hint: "Write New_user where the member should be mentioned. Put {embed} at the start and the end to send it as an embed." }),
     );
   };
   const drawLeave = (): void => {
@@ -137,7 +137,7 @@ const welcome: Renderer<"welcome"> = (draft, meta, changed) => {
     if (!draft.leaveEnabled) return;
     leave.append(
       channelSelect("Leave channel", meta, draft.leaveChannel, (v) => { draft.leaveChannel = v; changed(); }, "Choose a channel"),
-      textArea("Leave message", draft.leaveText, (v) => { draft.leaveText = v; changed(); }, { max: 1500, hint: "Write New_user where the member's name should go." }),
+      textArea("Leave message", draft.leaveText, (v) => { draft.leaveText = v; changed(); }, { max: 1500, hint: "Write New_user where the member's name should go. Put {embed} at the start and the end to send it as an embed." }),
     );
   };
   drawJoin();
@@ -233,7 +233,7 @@ const levels: Renderer<"levels"> = (draft, meta, changed) => {
       "Level-up message",
       null,
       selectInput("Where to announce", channelChoices(meta, null, [{ value: "same", label: "In the channel where they levelled up" }, { value: "off", label: "Don't announce" }]), draft.announce, (v) => { draft.announce = v; changed(); }),
-      textArea("Message", draft.message, (v) => { draft.message = v; changed(); }, { max: 500, rows: 3, hint: "Use {user} to mention them, {name} for their name and {level} for the new level. Leave empty for the default." }),
+      textArea("Message", draft.message, (v) => { draft.message = v; changed(); }, { max: 500, rows: 3, hint: "Use {user} to mention them, {name} for their name and {level} for the new level. Put {embed} at the start and the end to send it as an embed. Leave empty for the default." }),
     ),
     group(
       "Role rewards",

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T03:22:48+00:00",
+  "generatedAt": "2026-11-05T03:31:22+00:00",
   "prefixes": [
     "!",
     "?",
@@ -2844,7 +2844,7 @@
       "category": "Community",
       "description": "Watches a TikTok account and posts when it goes live and ends.",
       "examples": [
-        "@name"
+        "@name @StreamPing"
       ],
       "permission": "Manage Server"
     },
@@ -2884,7 +2884,7 @@
       "category": "Community",
       "description": "Watches a Twitch channel and posts when it goes live and offline.",
       "examples": [
-        "shroud"
+        "shroud @StreamPing"
       ],
       "permission": "Manage Server"
     },

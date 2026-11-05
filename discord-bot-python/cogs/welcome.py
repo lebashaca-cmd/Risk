@@ -3,7 +3,7 @@ import re
 import discord
 from discord.ext import commands
 
-from utils.helpers import explain_error
+from utils.helpers import embed_split, explain_error, message_payload
 from utils.store import JsonStore
 
 
@@ -20,12 +20,12 @@ class Welcome(commands.Cog):
     @commands.guild_only()
     @commands.has_permissions(manage_guild=True)
     async def welcome(self, ctx, channel: discord.TextChannel, *, text: str):
-        """Greets new members in a channel. Write New_user where the name goes. Usage: !welcome #channel Welcome New_user to Risk"""
+        """Greets new members in a channel. Write New_user where the name goes. Put {embed} at the start and the end to send it as an embed. Usage: !welcome #channel {embed} Welcome New_user to Risk {embed}"""
         entry = self.config.data.setdefault(str(ctx.guild.id), {})
         entry.update(channel=channel.id, text=text[:1500])
         self.config.save()
-        preview = re.sub("new_user", ctx.author.mention, text, flags=re.I)
-        await ctx.send(f"Welcome messages will go to {channel.mention}. Preview:\n{preview}", allowed_mentions=discord.AllowedMentions.none())
+        payload = message_payload(text, ctx.author, user_pattern="new_user", ping=False)
+        await ctx.send(f"Welcome messages will go to {channel.mention}. Preview:\n{payload.get('content') or ''}".rstrip(), embed=payload.get("embed"), allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="welcomeoff")
     @commands.guild_only()
@@ -48,9 +48,10 @@ class Welcome(commands.Cog):
         channel = member.guild.get_channel(entry["channel"])
         if channel is None:
             return
-        text = re.sub("new_user", member.mention, entry["text"], flags=re.I)
+        vip = self.bot.get_cog("VIP")
+        payload = message_payload(entry["text"], member, user_pattern="new_user", color=vip.embed_color(member.guild.id) if vip else None)
         try:
-            await channel.send(text, allowed_mentions=discord.AllowedMentions(users=True))
+            await channel.send(**payload, allowed_mentions=discord.AllowedMentions(users=[member]))
         except discord.HTTPException:
             pass
 
@@ -62,9 +63,18 @@ class Welcome(commands.Cog):
         channel = member.guild.get_channel(entry["leave_channel"])
         if channel is None:
             return
-        text = re.sub("new_user", discord.utils.escape_markdown(member.display_name), entry["leave_text"], flags=re.I)
+        body, as_embed = embed_split(entry["leave_text"])
+        name = discord.utils.escape_markdown(member.display_name)
+        text = re.sub("new_user", name, body, flags=re.I)
         try:
-            await channel.send(text, allowed_mentions=discord.AllowedMentions.none())
+            if as_embed:
+                vip = self.bot.get_cog("VIP")
+                color = vip.embed_color(member.guild.id) if vip else None
+                embed = discord.Embed(description=text[:4000], color=color if color is not None else discord.Color.dark_grey())
+                embed.set_thumbnail(url=member.display_avatar.url)
+                await channel.send(embed=embed, allowed_mentions=discord.AllowedMentions.none())
+            else:
+                await channel.send(text, allowed_mentions=discord.AllowedMentions.none())
         except discord.HTTPException:
             pass
 
