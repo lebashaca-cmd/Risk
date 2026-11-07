@@ -1,6 +1,6 @@
 ---
 title: Tickets commands
-date: 2026-11-05
+date: 2026-11-07
 tags: [risk, commands]
 ---
 

@@ -3,9 +3,10 @@ import type { SiteConfig, VipPlan } from "./types.js";
 
 const CORE = [
   "Scheduled announcements, from the dashboard or with !schedule",
-  "Embed-style auto-replies",
-  "A custom accent colour for Risk's embeds in your server",
-  "VIP-only commands: !vipembed, !serverstats and !schedule",
+  "Embed-style auto-replies and a custom accent colour",
+  "!vippoll, !vipannounce, !vipsay and !vipembed",
+  "!servercard, !userreport, !rolereport and !topmessages",
+  "!vipcolor and !viprolecolor",
   "A VIP badge and tab in your server's dashboard",
 ];
 
@@ -23,9 +24,21 @@ interface PlanInfo {
 // Edit this list to change what each plan says. Prices and checkout links come from the site's environment.
 const PLANS: PlanInfo[] = [
   { key: "basic", name: "Basic", period: "per month", note: "Cancel any time. VIP stays on until the end of the month you paid for.", perks: [...CORE, "Renews every month until you cancel"] },
-  { key: "lifetime", name: "Lifetime", period: "one time", note: "Pay once. VIP never expires on that server.", perks: [...CORE, "Never expires, and every future VIP feature is included"], featured: true },
-  { key: "white", name: "VIP White", period: "per month", note: "Everything in Basic, with priority help.", perks: ["Everything in Basic", "Priority support in the support server", "Ask for a feature and it goes to the front of the list", "A White role in the support server"] },
-  { key: "supreme", name: "VIP Supreme", period: "per month", note: "Everything in White, for the biggest servers.", perks: ["Everything in VIP White", "Early access to new features", "Direct help setting up your server", "A Supreme role in the support server"] },
+  { key: "lifetime", name: "Lifetime", period: "one time", note: "Pay once. VIP never expires on that server.", perks: [...CORE, "Lifetime-only: !founder supporter card and !motd message of the day", "Never expires"], featured: true },
+  {
+    key: "white",
+    name: "VIP White",
+    period: "per month",
+    note: "Everything in Basic, plus tools for running a community.",
+    perks: ["Everything in Basic", "!customcmd: your own text commands (up to 50)", "!autoreact: react to chosen words", "!welcomedm: a private welcome message", "!embededit and !stafflist", "Priority support in the support server"],
+  },
+  {
+    key: "supreme",
+    name: "VIP Supreme",
+    period: "per month",
+    note: "Everything in White, plus power tools for big servers.",
+    perks: ["Everything in VIP White", "!autodelete: clear a channel on a timer", "!lockall and !unlockall for the whole server", "!serverbackup and !permaudit", "!membercounter and !slowmodeall", "Up to 200 custom commands"],
+  },
 ];
 
 function plan(info: PlanInfo, data: VipPlan | undefined): HTMLElement {

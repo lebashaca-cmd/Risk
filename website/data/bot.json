@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-05T03:31:22+00:00",
+  "generatedAt": "2026-11-07T21:34:10+00:00",
   "prefixes": [
     "!",
     "?",
@@ -883,6 +883,66 @@
       "description": "Toggles a channel or role that automod leaves alone.",
       "examples": [
         "#staff-chat"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "badwords",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Manages words that get a message deleted. Actions: add, import, remove, list, clear.",
+      "examples": [
+        "add word"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "badwords add",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Blocks a word or short phrase. Your command message is deleted so the word isn't shown.",
+      "examples": [
+        "word"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "badwords clear",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Removes every blocked word.",
+      "examples": [
+        "confirm"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "badwords import",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Blocks every word in an attached .txt or .env file (one per line, or comma separated).",
+      "examples": [
+        "(attach the file)"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "badwords list",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Sends you the blocked words in a direct message.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "badwords remove",
+      "kind": "prefix",
+      "category": "Moderation",
+      "description": "Unblocks a word.",
+      "examples": [
+        "word"
       ],
       "permission": "Manage Server"
     },
@@ -2329,6 +2389,46 @@
       "permission": null
     },
     {
+      "name": "lottery",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Shows the lottery pot and your tickets. Actions: buy, info, draw.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "lottery buy",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Buys lottery tickets for 100 coins each (up to 50 per person).",
+      "examples": [
+        "5"
+      ],
+      "permission": null
+    },
+    {
+      "name": "lottery draw",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Draws the lottery now (staff only).",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "lottery info",
+      "kind": "prefix",
+      "category": "Economy",
+      "description": "Shows the pot, the next draw and the last winner.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "mine",
       "kind": "prefix",
       "category": "Economy",
@@ -2502,9 +2602,9 @@
       "name": "levelmessage",
       "kind": "prefix",
       "category": "Levels",
-      "description": "Sets the level-up message using {user}, {name} and {level}, or reset.",
+      "description": "Sets the level-up message using {user}, {name} and {level}, or reset. Put {embed} at the start and the end to send it as an embed.",
       "examples": [
-        "Nice one {user}, level {level}!"
+        "{embed} Nice one {user}, level {level}! {embed}"
       ],
       "permission": "Manage Server"
     },
@@ -2699,12 +2799,142 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "autorole",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the role new members get automatically.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "autorole off",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Stops giving new members a role.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "autorole set",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Gives new members a role when they join.",
+      "examples": [
+        "@Member"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "autorole show",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the role new members get automatically.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "birthday",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows a member's birthday. Also: set, remove, list, next.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "birthday list",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists birthdays in this server by month.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "birthday next",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the next few birthdays.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "birthday remove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes your saved birthday.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "birthday set",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Saves your birthday as month and day.",
+      "examples": [
+        "05-17"
+      ],
+      "permission": null
+    },
+    {
       "name": "birthdaychannel",
       "kind": "prefix",
       "category": "Community",
       "description": "Sets where birthday messages go, or turns them off.",
       "examples": [
         "#birthdays"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "counting",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the counting game status. Actions: set, off, reset.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "counting off",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Stops the counting game.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "counting reset",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Resets the count to zero.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "counting set",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Starts the counting game in a channel.",
+      "examples": [
+        "#counting"
       ],
       "permission": "Manage Server"
     },
@@ -2717,6 +2947,176 @@
         "12 not right now"
       ],
       "permission": "Manage Messages"
+    },
+    {
+      "name": "giveaway",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Starts a giveaway: duration, winners, prize. Also: start, drop, end, reroll, cancel, list, info, require.",
+      "examples": [
+        "1h 2 Discord Nitro"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "giveaway cancel",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes a giveaway without picking a winner.",
+      "examples": [
+        "123456789012345678"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "giveaway drop",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Starts a drop where the first person to press Enter wins.",
+      "examples": [
+        "Free role"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "giveaway end",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Ends a giveaway now and picks winners.",
+      "examples": [
+        "123456789012345678"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "giveaway info",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows a giveaway's entries and winners.",
+      "examples": [
+        "123456789012345678"
+      ],
+      "permission": null
+    },
+    {
+      "name": "giveaway list",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists the giveaways that are running.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "giveaway require",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Limits a giveaway to members with a role, or removes the limit with off.",
+      "examples": [
+        "123456789012345678 @Member"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "giveaway reroll",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Picks new winners for a finished giveaway.",
+      "examples": [
+        "123456789012345678"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "giveaway start",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Starts a giveaway with a time limit.",
+      "examples": [
+        "30m 1 Steam gift card"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "note",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Keeps private staff notes about members. Actions: add, list, remove.",
+      "examples": [
+        "add @user trusted"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "note add",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Adds a staff note to a member.",
+      "examples": [
+        "@user helped in the last event"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "note list",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the staff notes for a member.",
+      "examples": [
+        "@user"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "note remove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes one staff note by its number.",
+      "examples": [
+        "@user 2"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "reactionrole",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Gives roles when members react to a message. Use add, remove or list.",
+      "examples": [
+        "list"
+      ],
+      "permission": null
+    },
+    {
+      "name": "reactionrole add",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Adds a reaction role to a message in this channel.",
+      "examples": [
+        "123456789012345678 🎮 @Gamer"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "reactionrole list",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists the reaction roles in this server.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "reactionrole remove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes a reaction role from a message.",
+      "examples": [
+        "123456789012345678 🎮"
+      ],
+      "permission": "Manage Roles"
     },
     {
       "name": "report",
@@ -2755,6 +3155,76 @@
       "description": "Saves the server rules shown by the rules command, or reset to clear them.",
       "examples": [
         "1. Be kind. 2. No spam."
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "starboard",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the starboard settings.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "starboard off",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Turns the starboard off.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "starboard set",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Chooses the starboard channel.",
+      "examples": [
+        "#starboard"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "starboard show",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the starboard channel and star threshold.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "starboard threshold",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Sets how many stars a message needs, from 1 to 25.",
+      "examples": [
+        "5"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "streamalerts",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Sets the channel for stream alerts, and optionally a role to ping.",
+      "examples": [
+        "#streams @StreamPing (or !streamalerts off)"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "streamalerts off",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Turns stream alerts off.",
+      "examples": [
+        ""
       ],
       "permission": "Manage Server"
     },
@@ -2827,6 +3297,66 @@
         "#suggestions"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "tag",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows a saved tag. Manage them with tag add, edit, remove, list and info.",
+      "examples": [
+        "rules"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tag add",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Creates a tag.",
+      "examples": [
+        "rules Be kind to each other"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tag edit",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Changes a tag's text.",
+      "examples": [
+        "rules Be kind and have fun"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tag info",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows who made a tag and how often it's used.",
+      "examples": [
+        "rules"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tag list",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists the tags in this server.",
+      "examples": [
+        "2"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tag remove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Deletes a tag.",
+      "examples": [
+        "rules"
+      ],
+      "permission": null
     },
     {
       "name": "tags",
@@ -3262,9 +3792,9 @@
       "name": "welcome",
       "kind": "prefix",
       "category": "Welcome",
-      "description": "Greets new members in a channel. Write New_user where the name goes.",
+      "description": "Greets new members in a channel. Write New_user where the name goes. Put {embed} at the start and the end to send it as an embed.",
       "examples": [
-        "#channel Welcome New_user to Risk"
+        "#channel {embed} Welcome New_user to Risk {embed}"
       ],
       "permission": "Manage Server"
     },
@@ -3333,6 +3863,237 @@
       "permission": null
     },
     {
+      "name": "autodelete",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Deletes new messages in a channel after a delay.",
+      "examples": [
+        "set #channel <minutes> | off #channel | list"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "autodelete list",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Lists the channels.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "autodelete off",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Stops deleting in a channel.",
+      "examples": [
+        "#channel"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "autodelete set",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Deletes messages in the channel after some minutes.",
+      "examples": [
+        "#channel <minutes>"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "autoreact",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Reacts to messages that contain a word.",
+      "examples": [
+        "add <word> <emoji> | remove <word> | list"
+      ],
+      "permission": null
+    },
+    {
+      "name": "autoreact add",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Reacts with an emoji whenever the word appears.",
+      "examples": [
+        "<word> <emoji>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "autoreact list",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Lists the auto reactions.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "autoreact remove",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Removes an auto reaction.",
+      "examples": [
+        "<word>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "customcmd",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Your own commands that reply with text.",
+      "examples": [
+        "add <name> <reply> | remove <name> | list"
+      ],
+      "permission": null
+    },
+    {
+      "name": "customcmd add",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Adds a custom command.",
+      "examples": [
+        "<name> <reply>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "customcmd list",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Lists this server's custom commands.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "customcmd remove",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Removes a custom command.",
+      "examples": [
+        "<name>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "embededit",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Edits an embed Risk posted.",
+      "examples": [
+        "<message id",
+        "link> Title | Body"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "founder",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Lifetime. Shows this server's founding supporter card.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "lockall",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Stops everyone from sending in every text channel.",
+      "examples": [
+        "[reason]. Undo with !unlockall"
+      ],
+      "permission": "Administrator"
+    },
+    {
+      "name": "membercounter",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Keeps a channel's name showing the member count.",
+      "examples": [
+        "set #voice [Members: {count}] | off"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "membercounter off",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Stops updating.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "membercounter set",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Picks the channel.",
+      "examples": [
+        "#channel [Members: {count}]"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "motd",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Lifetime. Shows the server's message of the day.",
+      "examples": [
+        "(set with !motd set <text>, clear with !motd clear)"
+      ],
+      "permission": null
+    },
+    {
+      "name": "motd clear",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Clears the message of the day.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "motd set",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Sets the message of the day.",
+      "examples": [
+        "<text>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "permaudit",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Shows which roles hold powerful permissions and how many members have them.",
+      "examples": [
+        ""
+      ],
+      "permission": "Administrator"
+    },
+    {
+      "name": "rolereport",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Lists a role's members, colour and permissions.",
+      "examples": [
+        "@role"
+      ],
+      "permission": null
+    },
+    {
       "name": "schedule",
       "kind": "prefix",
       "category": "VIP",
@@ -3353,10 +4114,50 @@
       "permission": "Manage Server"
     },
     {
+      "name": "serverbackup",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Sends a file listing the server's roles and channels.",
+      "examples": [
+        ""
+      ],
+      "permission": "Administrator"
+    },
+    {
+      "name": "servercard",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Shows a card with the server's icon, banner and numbers.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "serverstats",
       "kind": "prefix",
       "category": "VIP",
       "description": "VIP. Shows a detailed server report.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "slowmodeall",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Sets slowmode on every text channel.",
+      "examples": [
+        "<seconds> (0 turns it off)"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "stafflist",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Lists the staff, grouped by their top role.",
       "examples": [
         ""
       ],
@@ -3369,6 +4170,26 @@
       "description": "Set an embedded sticky message.",
       "examples": [],
       "permission": "Manage Messages"
+    },
+    {
+      "name": "topmessages",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Shows who sent the most messages (counted for levels).",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "unlockall",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Undoes !lockall and restores each channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Administrator"
     },
     {
       "name": "unschedule",
@@ -3389,10 +4210,50 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "userreport",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. A detailed report on a member: dates, roles, level and money.",
+      "examples": [
+        "[@member]"
+      ],
+      "permission": null
+    },
+    {
       "name": "vip",
       "kind": "prefix",
       "category": "VIP",
       "description": "Shows this server's VIP status and what VIP unlocks.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "vipannounce",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Posts an announcement embed and can ping one role.",
+      "examples": [
+        "#channel [@role] Title | Body"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "vipcolor",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Sets the accent colour of Risk's embeds here.",
+      "examples": [
+        "#5865f2 (or !vipcolor reset)"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "vipcommands",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Lists every VIP command and which plan unlocks it.",
       "examples": [
         ""
       ],
@@ -3414,7 +4275,7 @@
       "category": "VIP",
       "description": "Owner only. Gives a server VIP for some days (0 = no end).",
       "examples": [
-        "<server id> [days] [note]"
+        "<server id> [days] [basic|lifetime|white|supreme] [note]"
       ],
       "permission": null
     },
@@ -3429,6 +4290,16 @@
       "permission": null
     },
     {
+      "name": "vippoll",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Posts an embed poll with number reactions.",
+      "examples": [
+        "Question | Option 1 | Option 2 (up to 10)"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
       "name": "viprevoke",
       "kind": "prefix",
       "category": "VIP",
@@ -3437,6 +4308,76 @@
         "<server id>"
       ],
       "permission": null
+    },
+    {
+      "name": "viprolecolor",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Changes a role's colour.",
+      "examples": [
+        "@role #ff0000"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "vipsay",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Makes Risk say something, in this or another channel.",
+      "examples": [
+        "[#channel] message"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "viptier",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Owner only. Changes which plan a VIP server is on.",
+      "examples": [
+        "<server id> <basic|lifetime|white|supreme>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "welcomedm",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Sends new members a private message.",
+      "examples": [
+        "set <text> | off | show"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "welcomedm off",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Turns it off.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "welcomedm set",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Sets the message.",
+      "examples": [
+        "<text>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "welcomedm show",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Shows the message.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
     }
   ],
   "tos": {

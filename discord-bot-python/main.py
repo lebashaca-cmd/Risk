@@ -97,7 +97,7 @@ async def cogstatus(ctx):
     lines = [f'{len(loaded)} of {len(files)} cog files loaded, {len(bot.commands)} commands.']
     for name in missing:
         lines.append(f'Not loaded: {name} - {bot.load_errors.get(name + ".py", "no error recorded")}')
-    for name in ('streams', 'vip', 'dashboard'):
+    for name in ('streams', 'vip', 'vip_plus', 'dashboard'):
         if name not in files:
             lines.append(f'Missing file: cogs/{name}.py was not uploaded to this host.')
     await ctx.reply('\n'.join(lines)[:1900], mention_author=False)

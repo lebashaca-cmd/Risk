@@ -1,6 +1,6 @@
 ---
 title: Info commands
-date: 2026-11-05
+date: 2026-11-07
 tags: [risk, commands]
 ---
 
@@ -15,7 +15,7 @@ tags: [risk, commands]
 - **ping**: Check the bot's latency.
 - **prefix**: Shows or changes this server's extra prefix (the defaults ! ? , always work). Example: `$`
 - **privacy**: Shows what data Risk saves and how it is used.
-- **time**: Shows the current time in UTC or a timezone. Example: `America/Chicago`
+- **time**: Shows the current time in UTC or a timezone.
 - **tos**: Shows the server Terms of Service.
 - **uptime**: Shows how long the bot has been online.
 

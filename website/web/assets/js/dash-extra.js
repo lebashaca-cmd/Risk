@@ -166,7 +166,7 @@ export const announcements = (vip) => (draft, meta, changed) => {
 // VIP
 export const vipSection = () => (draft, _meta, changed) => {
     const status = draft.active
-        ? h("div", { class: "dash-vipcard is-on" }, h("h3", {}, vipBadge(), " is on for this server"), h("p", {}, draft.until ? `Until ${new Date(draft.until * 1000).toLocaleDateString()}.` : "With no end date."))
+        ? h("div", { class: "dash-vipcard is-on" }, h("h3", {}, vipBadge(), ` ${draft.tier ?? "VIP"} is on for this server`), h("p", {}, draft.until ? `Until ${new Date(draft.until * 1000).toLocaleDateString()}.` : "With no end date."))
         : h("div", { class: "dash-vipcard" }, h("h3", {}, "This server is on the free plan"), h("p", {}, "VIP unlocks a few extras. Nothing in the regular settings is limited."), upsell(draft, "Get VIP to unlock everything below."));
     const colorValue = draft.color ?? "#5865f2";
     const colorInput = h("input", { type: "color", class: "dash-color", id: "vip-color", value: colorValue, "aria-label": "Accent colour" });
@@ -187,6 +187,7 @@ export const vipSection = () => (draft, _meta, changed) => {
     return [
         status,
         group("What VIP includes", null, h("ul", { class: "dash-perks" }, ...draft.perks.map((perk) => h("li", {}, perk)))),
+        group("Commands by plan", "Run !vipcommands in Discord for the same list.", ...draft.commands.map((set) => h("div", { class: "dash-field" }, h("label", {}, `${{ basic: "Every VIP plan", lifetime: "Lifetime", white: "VIP White and Supreme", supreme: "VIP Supreme" }[set.plan]}${draft.active ? (set.unlocked ? " (unlocked)" : " (locked)") : ""}`), h("p", { class: "dash-hint" }, set.names.map((name) => `!${name}`).join("  "))))),
         group("Appearance", null, lockedColour),
     ];
 };
