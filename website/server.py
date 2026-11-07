@@ -61,10 +61,13 @@ class Settings:
         self.client_id = env("CLIENT_ID")
         self.invite_url = env("INVITE_URL")
         self.support_url = env("SUPPORT_URL")
-        self.vip_monthly_url = env("VIP_MONTHLY_URL")
-        self.vip_lifetime_url = env("VIP_LIFETIME_URL")
-        self.vip_monthly_price = env("VIP_MONTHLY_PRICE", "$4.99")[:20]
-        self.vip_lifetime_price = env("VIP_LIFETIME_PRICE", "$29.99")[:20]
+        # Basic used to be called Monthly, so the old variable names still work.
+        self.vip_plans = {
+            "basic": (env("VIP_BASIC_URL") or env("VIP_MONTHLY_URL"), (env("VIP_BASIC_PRICE") or env("VIP_MONTHLY_PRICE") or "$4.99")[:20]),
+            "lifetime": (env("VIP_LIFETIME_URL"), env("VIP_LIFETIME_PRICE", "$29.99")[:20]),
+            "white": (env("VIP_WHITE_URL"), env("VIP_WHITE_PRICE", "$9.99")[:20]),
+            "supreme": (env("VIP_SUPREME_URL"), env("VIP_SUPREME_PRICE", "$19.99")[:20]),
+        }
         self.trust_proxy = env("TRUST_PROXY") in ("1", "true", "yes")
         host = env("DASHBOARD_HOST").lower()
         self.dashboard_host = host.removeprefix("https://").removeprefix("http://").strip("/")
@@ -75,10 +78,7 @@ class Settings:
         """Checkout links come from the owner's payment provider. Only https links are ever sent to the page."""
         def link(url):
             return url if url.startswith("https://") else None
-        return {
-            "monthly": {"price": self.vip_monthly_price, "url": link(self.vip_monthly_url)},
-            "lifetime": {"price": self.vip_lifetime_price, "url": link(self.vip_lifetime_url)},
-        }
+        return {name: {"price": price, "url": link(url)} for name, (url, price) in self.vip_plans.items()}
 
     def invite(self):
         if self.invite_url.startswith("https://"):
