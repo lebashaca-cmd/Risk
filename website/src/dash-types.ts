@@ -2,6 +2,30 @@ export interface DashUser {
   id: string;
   name: string;
   avatar: string | null;
+  banner?: string | null;
+  accent?: string | null;
+  username?: string | null;
+  tag?: { text: string; badge: string | null } | null;
+  badges?: string[];
+  nitro?: string | null;
+  created?: number | null;
+}
+
+export interface AccountStats {
+  level: number;
+  xp: number;
+  progress: number;
+  needed: number;
+  messages: number;
+  rank: number | null;
+  bestLevel: number;
+  bestServer: string | null;
+  money: number;
+  servers: number;
+  managed: number;
+  vip: number;
+  streams: number;
+  streamSeconds: number;
 }
 
 export interface DashGuildCard {

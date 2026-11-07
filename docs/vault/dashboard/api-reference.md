@@ -14,6 +14,7 @@ tags: [risk, dashboard, reference]
 | `/api/auth/callback` | GET | Finishes sign-in, sets the `risk_session` cookie |
 | `/api/auth/me` | GET | The signed-in user and the servers they can manage that Risk is in |
 | `/api/auth/logout` | POST | Ends the session and revokes the Discord token |
+| `/api/dash/account` | GET | Account bar stats for the signed-in user (cached 30 s) |
 | `/api/dash/guild/<id>` | GET | Settings for all sections, `meta` (channels, roles, commands, limits), `unavailable`, `profile` |
 | `/api/dash/guild/<id>/<section>` | PUT | Saves one section |
 | `/api/dash/guild/<id>/profile` | PUT | Saves the bot profile (large body allowed) |
@@ -29,6 +30,7 @@ All under `/dash/*` on the bot's status server (`main.py` forwards to `Dashboard
 |---|---|---|
 | `/dash/oauth` | POST | Exchange the OAuth code, read the user and their servers, revoke the token |
 | `/dash/present` | POST | Which of these server ids is Risk in |
+| `/dash/account` | GET | Overall level, rank, money and server counts for `X-Dashboard-User` |
 | `/dash/guild/<id>` | GET | Read everything for one server |
 | `/dash/guild/<id>/<section>` | PUT | Save a section |
 | `/dash/guild/<id>/profile` | PUT | Save the bot profile |

@@ -360,7 +360,20 @@ function serverCard(guild, base) {
     }
     return h("div", { class: "dash-server dash-server-off" }, ...body);
 }
-function userBar(me, home) {
+function compact(n) {
+    return new Intl.NumberFormat("en", { notation: "compact", maximumFractionDigits: 1 }).format(n);
+}
+function span(seconds) {
+    if (seconds < 60)
+        return seconds > 0 ? "<1m" : "0m";
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h ? `${h}h ${m}m` : `${m}m`;
+}
+function dateOf(stamp) {
+    return new Date(stamp * 1000).toLocaleDateString("en", { year: "numeric", month: "short", day: "numeric" });
+}
+function accountBar(me, home) {
     const user = me.user;
     if (!user)
         return h("div");
@@ -375,11 +388,37 @@ function userBar(me, home) {
         }
         window.location.assign(home);
     });
-    return h("div", { class: "dash-user" }, avatar(user.avatar, user.name, "dash-user-icon"), h("span", {}, user.name), out);
+    const banner = h("div", { class: "acct-banner" });
+    if (user.banner)
+        banner.style.backgroundImage = `url("${user.banner}")`;
+    else if (user.accent)
+        banner.style.backgroundColor = user.accent;
+    const chips = h("div", { class: "acct-chips" });
+    if (user.tag)
+        chips.appendChild(h("span", { class: "acct-chip acct-tag", title: "Your Discord server tag" }, user.tag.badge ? h("img", { src: user.tag.badge, alt: "", width: 14, height: 14, referrerpolicy: "no-referrer" }) : null, user.tag.text));
+    if (user.nitro)
+        chips.appendChild(h("span", { class: "acct-chip" }, user.nitro));
+    for (const badge of user.badges ?? [])
+        chips.appendChild(h("span", { class: "acct-chip" }, badge));
+    const level = h("div", { class: "acct-level", role: "status" }, h("span", { class: "acct-loading" }, "Loading your stats"));
+    const stats = h("dl", { class: "acct-stats" });
+    const stat = (label, value, note) => h("div", { class: "acct-stat", title: note ?? "" }, h("dt", {}, label), h("dd", {}, value));
+    void dashApi
+        .account()
+        .then((a) => {
+        const pct = a.needed > 0 ? Math.min(100, Math.round((a.progress / a.needed) * 100)) : 0;
+        const bar = h("div", { class: "acct-meter", role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100", "aria-valuenow": String(pct), "aria-label": "Progress to the next level" }, h("div", { style: `width:${pct}%` }));
+        mount(level, h("div", { class: "acct-levelhead" }, h("strong", {}, `Level ${a.level.toLocaleString()}`), h("span", {}, `${a.progress.toLocaleString()} / ${a.needed.toLocaleString()} XP to level ${(a.level + 1).toLocaleString()}`)), bar);
+        mount(stats, stat("Total XP", compact(a.xp), `${a.xp.toLocaleString()} XP across every server with Risk`), stat("Rank", a.rank ? `#${a.rank.toLocaleString()}` : "Unranked", "Your position by total XP across all servers"), stat("Messages", compact(a.messages)), stat("Best server level", a.bestLevel.toLocaleString(), a.bestServer ?? ""), stat("Money", compact(a.money), "Wallet and bank across all servers"), stat("Servers with Risk", String(a.servers)), stat("You manage", `${a.managed}${a.vip ? ` (${a.vip} VIP)` : ""}`), stat("Streams", `${a.streams} (${span(a.streamSeconds)})`, "Streams Risk has tracked"));
+    })
+        .catch(() => {
+        mount(level, h("span", { class: "acct-loading" }, "Your stats aren't available right now."));
+    });
+    return h("section", { class: "acct", "aria-label": "Your account" }, banner, h("div", { class: "acct-body" }, avatar(user.avatar, user.name, "acct-avatar"), h("div", { class: "acct-id" }, h("h2", {}, user.name), h("p", {}, [user.username && user.username !== user.name ? `@${user.username}` : "", user.created ? `On Discord since ${dateOf(user.created)}` : ""].filter(Boolean).join("  ·  ")), chips), level, out), stats);
 }
 function serverList(me, base) {
     const guilds = me.guilds;
-    return h("div", { class: "dash-list" }, h("div", { class: "dash-top" }, h("h1", {}, "Your servers"), userBar(me, base || "/")), me.botReachable === false ? notice("info", "Risk is offline right now, so server status can't be checked. Servers are listed anyway.") : null, guilds.length === 0
+    return h("div", { class: "dash-list" }, h("div", { class: "dash-top" }, h("h1", {}, "Your servers")), accountBar(me, base || "/"), me.botReachable === false ? notice("info", "Risk is offline right now, so server status can't be checked. Servers are listed anyway.") : null, guilds.length === 0
         ? notice("info", "You don't manage any servers. You need the Manage Server permission to change Risk's settings.")
         : h("div", { class: "dash-servers" }, ...guilds.map((g) => serverCard(g, base))), h("p", { class: "dash-fine" }, "Only servers where you are the owner or have Manage Server or Administrator are listed. If a server is missing, sign out and back in to refresh the list."));
 }
@@ -415,7 +454,7 @@ export function renderDashboard(guildId, base) {
                 return;
             const editor = renderEditor(payload, id);
             cleanup = editor.cleanup;
-            mount(root, h("div", { class: "dash-top" }, h("div", { class: "dash-title" }, avatar(payload.guild.icon, payload.guild.name, "dash-server-icon"), h("div", {}, h("a", { class: "dash-back", href: home, "data-link": true }, "All servers"), h("h1", {}, payload.guild.name))), userBar(me, home)), editor.node);
+            mount(root, h("div", { class: "dash-top" }, h("div", { class: "dash-title" }, avatar(payload.guild.icon, payload.guild.name, "dash-server-icon"), h("div", {}, h("a", { class: "dash-back", href: home, "data-link": true }, "All servers"), h("h1", {}, payload.guild.name)))), accountBar(me, home), editor.node);
         }
         catch (error) {
             if (alive)

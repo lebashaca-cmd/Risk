@@ -853,6 +853,70 @@ class Dashboard(commands.Cog):
             raise ApiError(400, "The request must be a JSON object.")
         return body
 
+    def read_account(self, user_id):
+        """Everything the account bar shows about one person, across every server the bot shares with them."""
+        levels = self.bot.get_cog("Levels")
+        economy = self.bot.get_cog("Economy")
+        streams = self.bot.get_cog("Streams")
+        uid = str(user_id)
+        total_xp = messages = best = best_guild = 0
+        ranking = {}
+        if levels is not None:
+            from cogs.levels import level_for
+            for gid, users in levels.store.data.items():
+                if not isinstance(users, dict):
+                    continue
+                for key, entry in users.items():
+                    if isinstance(entry, dict):
+                        ranking[key] = ranking.get(key, 0) + int(entry.get("xp", 0) or 0)
+                mine = users.get(uid)
+                if isinstance(mine, dict):
+                    xp = int(mine.get("xp", 0) or 0)
+                    total_xp += xp
+                    messages += int(mine.get("msgs", 0) or 0)
+                    if level_for(xp) >= best:
+                        best, best_guild = level_for(xp), gid
+        level = progress = need = 0
+        if levels is not None:
+            from cogs.levels import level_for, xp_for
+            level = level_for(total_xp)
+            floor, ceiling = xp_for(level), xp_for(level + 1)
+            progress, need = total_xp - floor, ceiling - floor
+        rank = (sorted(ranking.values(), reverse=True).index(total_xp) + 1) if total_xp and ranking else None
+        money = 0
+        if economy is not None:
+            for gid, users in economy.store.data.items():
+                acc = users.get(uid) if isinstance(users, dict) else None
+                if isinstance(acc, dict):
+                    money += int(acc.get("wallet", 0) or 0) + int(acc.get("bank", 0) or 0)
+        shared = managed = vip = 0
+        for guild in self.bot.guilds:
+            member = guild.get_member(int(user_id))
+            if member is None:
+                continue
+            shared += 1
+            perms = member.guild_permissions
+            if member.id == guild.owner_id or perms.administrator or perms.manage_guild:
+                managed += 1
+                if self.vip_info(guild.id)["vip"]:
+                    vip += 1
+        streamed = seconds = 0
+        if streams is not None:
+            for users in streams.store.data.get("stats", {}).values():
+                row = users.get(uid) if isinstance(users, dict) else None
+                if isinstance(row, dict):
+                    streamed += int(row.get("count", 0) or 0)
+                    seconds += int(row.get("seconds", 0) or 0)
+        best_name = None
+        if best_guild:
+            found = self.bot.get_guild(int(best_guild))
+            best_name = found.name if found else None
+        return {
+            "level": level, "xp": total_xp, "progress": progress, "needed": need, "messages": messages, "rank": rank,
+            "bestLevel": best, "bestServer": best_name, "money": money,
+            "servers": shared, "managed": managed, "vip": vip, "streams": streamed, "streamSeconds": seconds,
+        }
+
     async def handle(self, request):
         try:
             self.check_key(request)
@@ -870,6 +934,9 @@ class Dashboard(commands.Cog):
     async def route(self, request, method, parts):
         if parts == ["oauth"] and method == "POST":
             return await self.oauth(await self.read_json(request))
+
+        if parts == ["account"] and method == "GET":
+            return self.read_account(as_snowflake(request.headers.get("X-Dashboard-User", ""), "User id"))
 
         if parts == ["present"] and method == "POST":
             body = await self.read_json(request)

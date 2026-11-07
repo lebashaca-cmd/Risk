@@ -8,6 +8,7 @@ tags: [risk, dashboard]
 
 One note per tab, plus the bot profile card, the API and the rules.
 
+- [Account bar](account-bar.md): Your profile and cross-server stats at the top.
 - [Overview](section-overview.md): Read only landing tab.
 - [General](section-general.md): Bot-wide basics for one server.
 - [Welcome and leave](section-welcome.md): Greeting and goodbye messages.

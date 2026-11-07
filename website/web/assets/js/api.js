@@ -46,6 +46,7 @@ async function send(method, path, body) {
 }
 export const dashApi = {
     me: () => send("GET", "/api/auth/me"),
+    account: () => send("GET", "/api/dash/account"),
     guild: (id) => send("GET", `/api/dash/guild/${encodeURIComponent(id)}`),
     save: (id, section, body) => send("PUT", `/api/dash/guild/${encodeURIComponent(id)}/${section}`, body),
     saveProfile: (id, body) => send("PUT", `/api/dash/guild/${encodeURIComponent(id)}/profile`, body),

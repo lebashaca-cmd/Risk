@@ -13,6 +13,8 @@ tags: [risk, changelog]
 | 18 | JSON error catch-all and clearer error messages |
 | 19 | VIP, bot profile editor, Overview, command rules, auto-replies, announcements, blocked-word file import, no plan limits, stream alerts (Go Live, Discord status, Twitch, TikTok), live embeds, role pings, test commands, `{embed}` messages, `!cogstatus` |
 
+| 19 (later) | Dashboard account bar: Discord banner, avatar, server tag, badges, overall level, rank and cross-server stats |
+
 Command count at the end of PR 19: 343.
 
 Related: [Testing](Testing.md), [Open items](Open-Items.md)

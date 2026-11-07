@@ -134,4 +134,5 @@ Test commands: `!streamtest` (sample alert), `!twitchtest <channel>`, `!tiktokte
 
 - Sign-ins are kept in the site's memory, so a Render restart or sleep signs everyone out. They sign back in with one click.
 - The sign-in asks Discord for the `identify` and `guilds` scopes only, and the token is revoked right after the server list is read.
+- The top of the dashboard has an account bar: your Discord avatar, banner, server tag and badges, your overall level (total XP across every server with Risk), rank, money, and how many servers you share and manage.
 - Each save is recorded in the server's logs as "Dashboard Updated" with who made it.
