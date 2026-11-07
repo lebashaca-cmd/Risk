@@ -25,16 +25,23 @@ PROFILE_MAX = 7_500_000
 SESSION_COOKIE = "risk_session"
 STATE_COOKIE = "risk_oauth"
 PRESENCE_TTL = 20
+ACCOUNT_TTL = 30
+BADGES = (
+    (1, "Discord Staff"), (2, "Partnered Server Owner"), (4, "HypeSquad Events"), (8, "Bug Hunter"),
+    (64, "HypeSquad Bravery"), (128, "HypeSquad Brilliance"), (256, "HypeSquad Balance"), (512, "Early Supporter"),
+    (16384, "Bug Hunter Gold"), (131072, "Early Verified Bot Developer"), (262144, "Moderator Programs Alumni"), (4194304, "Active Developer"),
+)
 LOGIN_REASONS = {"denied", "secret", "redirect", "expired", "busy", "blocked", "unreachable", "helper", "failed"}
 USER_AGENT = {"User-Agent": "DiscordBot (https://github.com/lebashaca-cmd/Risk, 1.0)"}
 
 
 class Session:
-    __slots__ = ("user", "guilds", "expires")
+    __slots__ = ("user", "guilds", "expires", "account")
 
     def __init__(self, user, guilds):
         self.user = user
         self.guilds = guilds
+        self.account = None
         self.expires = time.time() + SESSION_TTL
 
 
@@ -168,6 +175,7 @@ class Dashboard:
             "id": user["id"],
             "name": str(user.get("global_name") or user.get("username") or "Member")[:60],
             "avatar": f"https://cdn.discordapp.com/avatars/{user['id']}/{avatar}.png?size=64" if isinstance(avatar, str) and avatar.replace("_", "").isalnum() else None,
+            **self.extras(user, avatar),
         }
         self.purge()
         sid = secrets.token_urlsafe(32)
@@ -264,6 +272,47 @@ class Dashboard:
             )
         except (aiohttp.ClientError, asyncio.TimeoutError):
             pass
+
+    @staticmethod
+    def extras(user, avatar):
+        """Optional profile details for the account bar. Everything is checked because it comes from outside."""
+        def token(value):
+            return value if isinstance(value, str) and value.replace("_", "").isalnum() and len(value) <= 64 else None
+        uid = str(user["id"])
+        banner = token(user.get("banner"))
+        accent = user.get("accent_color")
+        tag = None
+        guild = user.get("primary_guild")
+        if isinstance(guild, dict) and guild.get("identity_enabled") is not False and isinstance(guild.get("tag"), str) and guild["tag"].strip():
+            gid, badge = guild.get("identity_guild_id"), token(guild.get("badge"))
+            tag = {
+                "text": guild["tag"].strip()[:4],
+                "badge": f"https://cdn.discordapp.com/guild-tag-badges/{gid}/{badge}.png?size=32" if badge and isinstance(gid, str) and gid.isdigit() else None,
+            }
+        flags = user.get("public_flags")
+        flags = flags if isinstance(flags, int) and not isinstance(flags, bool) else 0
+        badges = [label for bit, label in BADGES if flags & bit]
+        nitro = {1: "Nitro Classic", 2: "Nitro", 3: "Nitro Basic"}.get(user.get("premium_type"))
+        username = user.get("username")
+        return {
+            "banner": f"https://cdn.discordapp.com/banners/{uid}/{banner}.png?size=600" if banner else None,
+            "accent": f"#{accent:06x}" if isinstance(accent, int) and not isinstance(accent, bool) and 0 <= accent <= 0xFFFFFF else None,
+            "username": str(username)[:40] if username else None,
+            "tag": tag,
+            "badges": badges,
+            "nitro": nitro,
+            "created": ((int(uid) >> 22) + 1420070400000) // 1000 if uid.isdigit() else None,
+        }
+
+    async def account(self, request):
+        _, session = self.require(request)
+        cached = session.account
+        if cached and time.monotonic() - cached[0] < ACCOUNT_TTL:
+            return self.reply(cached[1])
+        status, payload = await self.ask_bot(request, "GET", "account", session.user["id"])
+        if status == 200:
+            session.account = (time.monotonic(), payload)
+        return self.reply(payload, status)
 
     async def logout(self, request):
         self.check_write(request)
@@ -382,6 +431,7 @@ class Dashboard:
         app.router.add_get("/api/auth/login", self.login)
         app.router.add_get("/api/auth/callback", self.callback)
         app.router.add_get("/api/auth/me", self.me)
+        app.router.add_get("/api/dash/account", self.account)
         app.router.add_post("/api/auth/logout", self.logout)
         app.router.add_get("/api/dash/guild/{gid:\\d+}", self.guild_settings)
         app.router.add_put("/api/dash/guild/{gid:\\d+}/{section}", self.save_section)
