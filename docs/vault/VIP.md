@@ -24,6 +24,7 @@ On request, the plan limits on blocked words (up to 10,000), level rewards, XP m
 - `!vipgrant <server id> [days] [note]`: bot owner only. 0 or no days means no end date.
 - `!viprevoke <server id>` and `!viplist`.
 - Or list ids in `VIP_GUILD_IDS` on the bot host.
+- The website's `/vip` page sells two plans: Monthly and Lifetime. Buttons use `VIP_MONTHLY_URL` and `VIP_LIFETIME_URL` from the site's environment, so any provider that gives a checkout link works. Fulfilment is manual: after a payment, run `!vipgrant <server id> 30` (monthly) or `!vipgrant <server id>` (lifetime).
 - `VIP_URL` (an https link) is shown as "Get VIP" in `!vip` and the dashboard.
 
 Settings stay saved if VIP ends. VIP-only features stop running.

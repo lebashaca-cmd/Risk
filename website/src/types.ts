@@ -4,6 +4,12 @@ export interface SiteConfig {
   supportUrl: string | null;
   dashboardUrl?: string;
   dashboardHost?: boolean;
+  vip?: { monthly: VipPlan; lifetime: VipPlan };
+}
+
+export interface VipPlan {
+  price: string;
+  url: string | null;
 }
 
 export interface ServerInfo {

@@ -14,7 +14,7 @@ from dashboard import Dashboard
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 DATA_FILE = ROOT / "data" / "bot.json"
-PAGES = {"/", "/commands", "/terms", "/privacy"}
+PAGES = {"/", "/commands", "/terms", "/privacy", "/vip"}
 STATUS_TTL = 10
 API_LIMIT = (90, 60)
 
@@ -61,11 +61,24 @@ class Settings:
         self.client_id = env("CLIENT_ID")
         self.invite_url = env("INVITE_URL")
         self.support_url = env("SUPPORT_URL")
+        self.vip_monthly_url = env("VIP_MONTHLY_URL")
+        self.vip_lifetime_url = env("VIP_LIFETIME_URL")
+        self.vip_monthly_price = env("VIP_MONTHLY_PRICE", "$4.99")[:20]
+        self.vip_lifetime_price = env("VIP_LIFETIME_PRICE", "$29.99")[:20]
         self.trust_proxy = env("TRUST_PROXY") in ("1", "true", "yes")
         host = env("DASHBOARD_HOST").lower()
         self.dashboard_host = host.removeprefix("https://").removeprefix("http://").strip("/")
         permissions = env("INVITE_PERMISSIONS")
         self.permissions = int(permissions) if permissions.isdigit() else INVITE_PERMISSIONS
+
+    def vip(self):
+        """Checkout links come from the owner's payment provider. Only https links are ever sent to the page."""
+        def link(url):
+            return url if url.startswith("https://") else None
+        return {
+            "monthly": {"price": self.vip_monthly_price, "url": link(self.vip_monthly_url)},
+            "lifetime": {"price": self.vip_lifetime_price, "url": link(self.vip_lifetime_url)},
+        }
 
     def invite(self):
         if self.invite_url.startswith("https://"):
@@ -224,7 +237,7 @@ async def api_config(request):
         dashboard_url = f"https://{settings.dashboard_host}/"
     else:
         dashboard_url = "/dashboard"
-    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "dashboardHost": on_dashboard_host(request)}, 60)
+    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "dashboardHost": on_dashboard_host(request), "vip": settings.vip()}, 60)
 
 
 async def api_status(request):
