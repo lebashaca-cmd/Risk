@@ -19,38 +19,67 @@ function plan(info, data) {
         : h("button", { class: "btn btn-quiet", type: "button", disabled: true }, "Not on sale yet");
     return h("article", { class: `vip-plan${info.featured ? " vip-featured" : ""}`, "data-plan": info.key }, h("h2", {}, info.name), h("p", { class: "vip-price" }, h("strong", {}, data?.price ?? ""), h("span", {}, info.period)), h("p", { class: "vip-note" }, info.note), h("p", { class: "vip-incl" }, "What's included"), h("ul", { class: "vip-list" }, ...info.perks.map((text) => h("li", {}, text))), action);
 }
-/** Cards in a row you can swipe or scroll, with a slider underneath that moves the row. */
-function slider(cards) {
-    const track = h("div", { class: "vip-track", tabindex: "0", role: "group", "aria-label": "VIP plans" }, ...cards);
-    const range = h("input", { class: "vip-range", type: "range", min: "0", max: "100", step: "1", value: "0", "aria-label": "Slide to see more VIP plans" });
-    let syncing = false;
-    const maxScroll = () => Math.max(0, track.scrollWidth - track.clientWidth);
-    const nearest = () => {
-        const step = cards.length > 1 ? (cards[1]?.offsetLeft ?? 0) - (cards[0]?.offsetLeft ?? 0) : 1;
-        return Math.min(maxScroll(), Math.round(track.scrollLeft / Math.max(step, 1)) * step);
+/** A coverflow: the chosen plan sits flat in the middle and its neighbours tilt away on either side. */
+function slider(cards, start) {
+    let active = Math.min(Math.max(start, 0), cards.length - 1);
+    const slots = cards.map((card) => h("div", { class: "vip-slot" }, card));
+    const stage = h("div", { class: "vip-stage", tabindex: "0", role: "group", "aria-roledescription": "carousel", "aria-label": "VIP plans. Use the left and right arrow keys to change plan." }, ...slots);
+    const dots = cards.map((_, i) => h("button", { class: "vip-dot", type: "button", "aria-label": `Show plan ${i + 1} of ${cards.length}` }));
+    const dotRow = h("div", { class: "vip-dots" }, ...dots);
+    const show = (next) => {
+        active = Math.min(Math.max(next, 0), cards.length - 1);
+        slots.forEach((slot, i) => {
+            const offset = i - active;
+            slot.style.setProperty("--o", String(offset));
+            slot.style.setProperty("--a", String(Math.abs(offset)));
+            slot.dataset.pos = offset === 0 ? "center" : Math.abs(offset) === 1 ? "side" : "far";
+            slot.setAttribute("aria-hidden", offset === 0 ? "false" : "true");
+            cards[i]?.toggleAttribute("inert", offset !== 0);
+        });
+        dots.forEach((dot, i) => {
+            dot.classList.toggle("on", i === active);
+            if (i === active)
+                dot.setAttribute("aria-current", "true");
+            else
+                dot.removeAttribute("aria-current");
+        });
     };
-    const fromTrack = () => {
-        if (syncing)
+    let swiped = false;
+    slots.forEach((slot, i) => slot.addEventListener("click", () => !swiped && i !== active && show(i)));
+    dots.forEach((dot, i) => dot.addEventListener("click", () => show(i)));
+    stage.addEventListener("keydown", (event) => {
+        if (event.key === "ArrowRight")
+            show(active + 1);
+        else if (event.key === "ArrowLeft")
+            show(active - 1);
+        else
             return;
-        const max = maxScroll();
-        range.value = max > 0 ? String(Math.round((track.scrollLeft / max) * 100)) : "0";
-        range.disabled = max <= 0;
-    };
-    const fromRange = () => {
-        syncing = true;
-        track.scrollLeft = (Number(range.value) / 100) * maxScroll();
-        window.setTimeout(() => (syncing = false), 60);
-    };
-    track.addEventListener("scroll", fromTrack, { passive: true });
-    range.addEventListener("input", fromRange);
-    range.addEventListener("change", () => track.scrollTo({ left: nearest(), behavior: "smooth" }));
-    window.addEventListener("resize", fromTrack);
-    window.requestAnimationFrame(fromTrack);
-    const dots = h("p", { class: "vip-hint" }, "Slide to see all plans");
-    return h("div", { class: "vip-slider" }, track, range, dots);
+        event.preventDefault();
+    });
+    // Swipe or drag sideways to change plan.
+    let startX = null;
+    stage.addEventListener("pointerdown", (event) => {
+        startX = event.clientX;
+    });
+    stage.addEventListener("pointerup", (event) => {
+        if (startX === null)
+            return;
+        const moved = event.clientX - startX;
+        startX = null;
+        if (Math.abs(moved) > 40) {
+            swiped = true; // the click that follows a drag must not undo it
+            window.setTimeout(() => (swiped = false), 0);
+            show(active + (moved < 0 ? 1 : -1));
+        }
+    });
+    stage.addEventListener("pointercancel", () => {
+        startX = null;
+    });
+    show(active);
+    return h("div", { class: "vip-slider" }, stage, dotRow);
 }
 export function renderVip(config) {
     const vip = config.vip;
     const support = config.supportUrl;
-    return h("div", { class: "view container page vip" }, h("h1", {}, "Risk VIP"), h("p", { class: "lede" }, "Extra tools for one server. Pay monthly, or once for good."), slider(PLANS.map((info) => plan(info, vip?.[info.key]))), h("h2", { class: "vip-sub" }, "After you pay"), h("ol", { class: "vip-steps" }, h("li", {}, "Copy your server's ID: turn on Developer Mode in Discord, then right-click the server and choose Copy Server ID."), h("li", {}, support ? h("span", {}, "Send the ID and your receipt in the ", h("a", { href: support, rel: "noopener noreferrer", target: "_blank" }, "support server"), ".") : "Send the ID and your receipt to the bot owner."), h("li", {}, "VIP is switched on for that server, and the VIP tab in the dashboard unlocks.")), h("p", { class: "dash-fine" }, "VIP belongs to one server. Payments are handled by the payment provider, and Risk never sees your card details."));
+    return h("div", { class: "view container page vip" }, h("h1", {}, "Risk VIP"), h("p", { class: "lede" }, "Extra tools for one server. Pay monthly, or once for good."), slider(PLANS.map((info) => plan(info, vip?.[info.key])), PLANS.findIndex((info) => info.featured)), h("h2", { class: "vip-sub" }, "After you pay"), h("ol", { class: "vip-steps" }, h("li", {}, "Copy your server's ID: turn on Developer Mode in Discord, then right-click the server and choose Copy Server ID."), h("li", {}, support ? h("span", {}, "Send the ID and your receipt in the ", h("a", { href: support, rel: "noopener noreferrer", target: "_blank" }, "support server"), ".") : "Send the ID and your receipt to the bot owner."), h("li", {}, "VIP is switched on for that server, and the VIP tab in the dashboard unlocks.")), h("p", { class: "dash-fine" }, "VIP belongs to one server. Payments are handled by the payment provider, and Risk never sees your card details."));
 }

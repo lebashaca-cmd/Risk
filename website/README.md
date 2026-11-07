@@ -105,7 +105,7 @@ VIP is a per-server upgrade that unlocks a few extras: announcements, embed auto
 
 - `!vipgrant <server id> [days] [note]` (bot owner only; 0 or no days means no end date), `!viprevoke <server id>`, `!viplist`
 - or set `VIP_GUILD_IDS` on the bot host to a comma-separated list of server ids
-- the site has a `/vip` page with four plans (Basic, Lifetime, VIP White, VIP Supreme) in a slider. The wording of each plan is in `PLANS` in `website/src/vip.ts`; the bot has one VIP level, so every plan switches on the same features. Payment is handled by your provider; after a payment you switch VIP on with `!vipgrant <server id> 30` (monthly, renew each month) or `!vipgrant <server id>` (lifetime). Set the bot's `VIP_URL` to `https://<your site>/vip`.
+- the site has a `/vip` page with four plans (Basic, Lifetime, VIP White, VIP Supreme) in a coverflow slider (the chosen plan in the middle, its neighbours tilted, dots underneath). The wording of each plan is in `PLANS` in `website/src/vip.ts`; the bot has one VIP level, so every plan switches on the same features. Payment is handled by your provider; after a payment you switch VIP on with `!vipgrant <server id> 30` (monthly, renew each month) or `!vipgrant <server id>` (lifetime). Set the bot's `VIP_URL` to `https://<your site>/vip`.
 - optional `VIP_URL` (https) is shown as the "Get VIP" link on the dashboard and in `!vip`
 
 Upload `cogs/vip.py` with the other bot files. The dashboard also needs the new `main.py` (bigger request size, for profile pictures).

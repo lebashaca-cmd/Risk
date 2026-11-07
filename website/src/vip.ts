@@ -44,37 +44,62 @@ function plan(info: PlanInfo, data: VipPlan | undefined): HTMLElement {
   );
 }
 
-/** Cards in a row you can swipe or scroll, with a slider underneath that moves the row. */
-function slider(cards: HTMLElement[]): HTMLElement {
-  const track = h("div", { class: "vip-track", tabindex: "0", role: "group", "aria-label": "VIP plans" }, ...cards);
-  const range = h("input", { class: "vip-range", type: "range", min: "0", max: "100", step: "1", value: "0", "aria-label": "Slide to see more VIP plans" });
-  let syncing = false;
+/** A coverflow: the chosen plan sits flat in the middle and its neighbours tilt away on either side. */
+function slider(cards: HTMLElement[], start: number): HTMLElement {
+  let active = Math.min(Math.max(start, 0), cards.length - 1);
+  const slots = cards.map((card) => h("div", { class: "vip-slot" }, card));
+  const stage = h("div", { class: "vip-stage", tabindex: "0", role: "group", "aria-roledescription": "carousel", "aria-label": "VIP plans. Use the left and right arrow keys to change plan." }, ...slots);
+  const dots = cards.map((_, i) => h("button", { class: "vip-dot", type: "button", "aria-label": `Show plan ${i + 1} of ${cards.length}` }));
+  const dotRow = h("div", { class: "vip-dots" }, ...dots);
 
-  const maxScroll = (): number => Math.max(0, track.scrollWidth - track.clientWidth);
-  const nearest = (): number => {
-    const step = cards.length > 1 ? (cards[1]?.offsetLeft ?? 0) - (cards[0]?.offsetLeft ?? 0) : 1;
-    return Math.min(maxScroll(), Math.round(track.scrollLeft / Math.max(step, 1)) * step);
-  };
-  const fromTrack = (): void => {
-    if (syncing) return;
-    const max = maxScroll();
-    range.value = max > 0 ? String(Math.round((track.scrollLeft / max) * 100)) : "0";
-    range.disabled = max <= 0;
-  };
-  const fromRange = (): void => {
-    syncing = true;
-    track.scrollLeft = (Number(range.value) / 100) * maxScroll();
-    window.setTimeout(() => (syncing = false), 60);
+  const show = (next: number): void => {
+    active = Math.min(Math.max(next, 0), cards.length - 1);
+    slots.forEach((slot, i) => {
+      const offset = i - active;
+      slot.style.setProperty("--o", String(offset));
+      slot.style.setProperty("--a", String(Math.abs(offset)));
+      slot.dataset.pos = offset === 0 ? "center" : Math.abs(offset) === 1 ? "side" : "far";
+      slot.setAttribute("aria-hidden", offset === 0 ? "false" : "true");
+      cards[i]?.toggleAttribute("inert", offset !== 0);
+    });
+    dots.forEach((dot, i) => {
+      dot.classList.toggle("on", i === active);
+      if (i === active) dot.setAttribute("aria-current", "true");
+      else dot.removeAttribute("aria-current");
+    });
   };
 
-  track.addEventListener("scroll", fromTrack, { passive: true });
-  range.addEventListener("input", fromRange);
-  range.addEventListener("change", () => track.scrollTo({ left: nearest(), behavior: "smooth" }));
-  window.addEventListener("resize", fromTrack);
-  window.requestAnimationFrame(fromTrack);
+  let swiped = false;
+  slots.forEach((slot, i) => slot.addEventListener("click", () => !swiped && i !== active && show(i)));
+  dots.forEach((dot, i) => dot.addEventListener("click", () => show(i)));
+  stage.addEventListener("keydown", (event) => {
+    if (event.key === "ArrowRight") show(active + 1);
+    else if (event.key === "ArrowLeft") show(active - 1);
+    else return;
+    event.preventDefault();
+  });
 
-  const dots = h("p", { class: "vip-hint" }, "Slide to see all plans");
-  return h("div", { class: "vip-slider" }, track, range, dots);
+  // Swipe or drag sideways to change plan.
+  let startX: number | null = null;
+  stage.addEventListener("pointerdown", (event) => {
+    startX = event.clientX;
+  });
+  stage.addEventListener("pointerup", (event) => {
+    if (startX === null) return;
+    const moved = event.clientX - startX;
+    startX = null;
+    if (Math.abs(moved) > 40) {
+      swiped = true; // the click that follows a drag must not undo it
+      window.setTimeout(() => (swiped = false), 0);
+      show(active + (moved < 0 ? 1 : -1));
+    }
+  });
+  stage.addEventListener("pointercancel", () => {
+    startX = null;
+  });
+
+  show(active);
+  return h("div", { class: "vip-slider" }, stage, dotRow);
 }
 
 export function renderVip(config: SiteConfig): HTMLElement {
@@ -85,7 +110,7 @@ export function renderVip(config: SiteConfig): HTMLElement {
     { class: "view container page vip" },
     h("h1", {}, "Risk VIP"),
     h("p", { class: "lede" }, "Extra tools for one server. Pay monthly, or once for good."),
-    slider(PLANS.map((info) => plan(info, vip?.[info.key]))),
+    slider(PLANS.map((info) => plan(info, vip?.[info.key])), PLANS.findIndex((info) => info.featured)),
     h("h2", { class: "vip-sub" }, "After you pay"),
     h(
       "ol",
