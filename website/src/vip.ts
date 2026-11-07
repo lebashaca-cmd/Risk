@@ -1,7 +1,7 @@
 import { h } from "./dom.js";
 import type { SiteConfig, VipPlan } from "./types.js";
 
-const PERKS = [
+const CORE = [
   "Scheduled announcements, from the dashboard or with !schedule",
   "Embed-style auto-replies",
   "A custom accent colour for Risk's embeds in your server",
@@ -9,20 +9,72 @@ const PERKS = [
   "A VIP badge and tab in your server's dashboard",
 ];
 
-function plan(name: string, price: string, period: string, note: string, data: VipPlan | undefined, featured: boolean, extra: string): HTMLElement {
+type PlanKey = "basic" | "lifetime" | "white" | "supreme";
+
+interface PlanInfo {
+  key: PlanKey;
+  name: string;
+  period: string;
+  note: string;
+  perks: string[];
+  featured?: boolean;
+}
+
+// Edit this list to change what each plan says. Prices and checkout links come from the site's environment.
+const PLANS: PlanInfo[] = [
+  { key: "basic", name: "Basic", period: "per month", note: "Cancel any time. VIP stays on until the end of the month you paid for.", perks: [...CORE, "Renews every month until you cancel"] },
+  { key: "lifetime", name: "Lifetime", period: "one time", note: "Pay once. VIP never expires on that server.", perks: [...CORE, "Never expires, and every future VIP feature is included"], featured: true },
+  { key: "white", name: "VIP White", period: "per month", note: "Everything in Basic, with priority help.", perks: ["Everything in Basic", "Priority support in the support server", "Ask for a feature and it goes to the front of the list", "A White role in the support server"] },
+  { key: "supreme", name: "VIP Supreme", period: "per month", note: "Everything in White, for the biggest servers.", perks: ["Everything in VIP White", "Early access to new features", "Direct help setting up your server", "A Supreme role in the support server"] },
+];
+
+function plan(info: PlanInfo, data: VipPlan | undefined): HTMLElement {
   const action = data?.url
-    ? h("a", { class: featured ? "btn btn-primary" : "btn btn-quiet", href: data.url, rel: "noopener noreferrer", target: "_blank" }, `Get ${name.toLowerCase()}`)
+    ? h("a", { class: info.featured ? "btn btn-primary" : "btn btn-quiet", href: data.url, rel: "noopener noreferrer", target: "_blank" }, `Get ${info.name.toLowerCase()}`)
     : h("button", { class: "btn btn-quiet", type: "button", disabled: true }, "Not on sale yet");
   return h(
     "article",
-    { class: `vip-plan${featured ? " vip-featured" : ""}` },
-    h("h2", {}, name),
-    h("p", { class: "vip-price" }, h("strong", {}, price), h("span", {}, period)),
-    h("p", { class: "vip-note" }, note),
+    { class: `vip-plan${info.featured ? " vip-featured" : ""}`, "data-plan": info.key },
+    h("h2", {}, info.name),
+    h("p", { class: "vip-price" }, h("strong", {}, data?.price ?? ""), h("span", {}, info.period)),
+    h("p", { class: "vip-note" }, info.note),
     h("p", { class: "vip-incl" }, "What's included"),
-    h("ul", { class: "vip-list" }, ...[...PERKS, extra].map((text) => h("li", {}, text))),
+    h("ul", { class: "vip-list" }, ...info.perks.map((text) => h("li", {}, text))),
     action,
   );
+}
+
+/** Cards in a row you can swipe or scroll, with a slider underneath that moves the row. */
+function slider(cards: HTMLElement[]): HTMLElement {
+  const track = h("div", { class: "vip-track", tabindex: "0", role: "group", "aria-label": "VIP plans" }, ...cards);
+  const range = h("input", { class: "vip-range", type: "range", min: "0", max: "100", step: "1", value: "0", "aria-label": "Slide to see more VIP plans" });
+  let syncing = false;
+
+  const maxScroll = (): number => Math.max(0, track.scrollWidth - track.clientWidth);
+  const nearest = (): number => {
+    const step = cards.length > 1 ? (cards[1]?.offsetLeft ?? 0) - (cards[0]?.offsetLeft ?? 0) : 1;
+    return Math.min(maxScroll(), Math.round(track.scrollLeft / Math.max(step, 1)) * step);
+  };
+  const fromTrack = (): void => {
+    if (syncing) return;
+    const max = maxScroll();
+    range.value = max > 0 ? String(Math.round((track.scrollLeft / max) * 100)) : "0";
+    range.disabled = max <= 0;
+  };
+  const fromRange = (): void => {
+    syncing = true;
+    track.scrollLeft = (Number(range.value) / 100) * maxScroll();
+    window.setTimeout(() => (syncing = false), 60);
+  };
+
+  track.addEventListener("scroll", fromTrack, { passive: true });
+  range.addEventListener("input", fromRange);
+  range.addEventListener("change", () => track.scrollTo({ left: nearest(), behavior: "smooth" }));
+  window.addEventListener("resize", fromTrack);
+  window.requestAnimationFrame(fromTrack);
+
+  const dots = h("p", { class: "vip-hint" }, "Slide to see all plans");
+  return h("div", { class: "vip-slider" }, track, range, dots);
 }
 
 export function renderVip(config: SiteConfig): HTMLElement {
@@ -33,12 +85,7 @@ export function renderVip(config: SiteConfig): HTMLElement {
     { class: "view container page vip" },
     h("h1", {}, "Risk VIP"),
     h("p", { class: "lede" }, "Extra tools for one server. Pay monthly, or once for good."),
-    h(
-      "div",
-      { class: "vip-plans" },
-      plan("Monthly", vip?.monthly.price ?? "", "per month", "Cancel any time. VIP stays on until the end of the month you paid for.", vip?.monthly, false, "Renews every month until you cancel"),
-      plan("Lifetime", vip?.lifetime.price ?? "", "one time", "Pay once. VIP never expires on that server.", vip?.lifetime, true, "Never expires, and every future VIP feature is included"),
-    ),
+    slider(PLANS.map((info) => plan(info, vip?.[info.key]))),
     h("h2", { class: "vip-sub" }, "After you pay"),
     h(
       "ol",

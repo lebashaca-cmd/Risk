@@ -4,7 +4,7 @@ export interface SiteConfig {
   supportUrl: string | null;
   dashboardUrl?: string;
   dashboardHost?: boolean;
-  vip?: { monthly: VipPlan; lifetime: VipPlan };
+  vip?: Record<"basic" | "lifetime" | "white" | "supreme", VipPlan>;
 }
 
 export interface VipPlan {

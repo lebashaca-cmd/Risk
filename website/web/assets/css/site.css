@@ -642,8 +642,14 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 /* VIP page */
 .vip { text-align: center; }
 .vip .lede { margin-inline: auto; }
-.vip-plans { display: grid; grid-template-columns: repeat(2, minmax(0, 22rem)); justify-content: center; gap: 1.25rem; margin: 2.5rem auto 0; }
-.vip-plan { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 2rem 1.75rem; min-height: 32rem; border: 1px solid var(--edge); border-radius: 14px; background: var(--panel); text-align: center; }
+.vip-slider { width: min(100%, 47.5rem); margin: 2.5rem auto 0; }
+.vip-track { display: grid; grid-auto-flow: column; grid-auto-columns: calc((100% - 1.25rem) / 2); gap: 1.25rem; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px; margin: -2px; border-radius: 16px; }
+.vip-track::-webkit-scrollbar { display: none; }
+.vip-track > .vip-plan { scroll-snap-align: start; }
+.vip-range { display: block; width: min(100%, 18rem); margin: 1.5rem auto 0; accent-color: var(--mist); cursor: pointer; }
+.vip-range:disabled { opacity: 0.4; cursor: default; }
+.vip-hint { margin: 0.5rem 0 0; color: var(--fog); font-size: 0.8rem; }
+.vip-plan { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 2rem 1.75rem; border: 1px solid var(--edge); border-radius: 14px; background: var(--panel); text-align: center; }
 .vip-featured { border-color: var(--mist); background: var(--glass); }
 .vip-plan h2 { margin: 0; font-size: 1.2rem; }
 .vip-price { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; }
@@ -658,4 +664,4 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 .vip-sub { font-size: 1.1rem; margin: 3rem 0 0.75rem; }
 .vip-steps { margin: 0 auto; padding-left: 1.2rem; max-width: 40rem; color: var(--mist); display: grid; gap: 0.4rem; text-align: left; }
 .vip .dash-fine { margin-inline: auto; max-width: 40rem; }
-@media (max-width: 640px) { .vip-plans { grid-template-columns: minmax(0, 1fr); } .vip-plan { min-height: 0; } }
+@media (max-width: 640px) { .vip-track { grid-auto-columns: 100%; } .vip-plan { min-height: 0; } }
