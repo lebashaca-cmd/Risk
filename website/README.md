@@ -25,7 +25,11 @@ Open http://localhost:8080.
 | `CLIENT_ID` | The bot's application ID. Builds the "Add Risk to your server" link. Without it the button is hidden. |
 | `INVITE_URL` | Use your own invite link instead of building one. |
 | `INVITE_PERMISSIONS` | Override the permissions number in the invite link. |
-| `SUPPORT_URL` | Optional support server link. |
+| `SUPPORT_URL` | Optional support server link. Also used on the VIP page. |
+| `VIP_MONTHLY_URL` | https checkout link for the monthly VIP plan (a Stripe Payment Link, Ko-fi, Patreon or similar). Until it is set the button says "Not on sale yet". |
+| `VIP_LIFETIME_URL` | https checkout link for the lifetime plan. |
+| `VIP_MONTHLY_PRICE` | Price text on the page. Default `$4.99`. |
+| `VIP_LIFETIME_PRICE` | Price text on the page. Default `$29.99`. |
 | `TRUST_PROXY` | Set to `1` behind a proxy so rate limits see real visitor IPs. |
 
 Nothing secret goes in this site. The application ID is public, and the site never sees your bot token.
@@ -102,6 +106,7 @@ VIP is a per-server upgrade that unlocks a few extras: announcements, embed auto
 
 - `!vipgrant <server id> [days] [note]` (bot owner only; 0 or no days means no end date), `!viprevoke <server id>`, `!viplist`
 - or set `VIP_GUILD_IDS` on the bot host to a comma-separated list of server ids
+- the site has a `/vip` page with Monthly and Lifetime plans. Payment is handled by your provider; after a payment you switch VIP on with `!vipgrant <server id> 30` (monthly, renew each month) or `!vipgrant <server id>` (lifetime). Set the bot's `VIP_URL` to `https://<your site>/vip`.
 - optional `VIP_URL` (https) is shown as the "Get VIP" link on the dashboard and in `!vip`
 
 Upload `cogs/vip.py` with the other bot files. The dashboard also needs the new `main.py` (bigger request size, for profile pictures).

@@ -16,7 +16,9 @@ tags: [risk, config]
 | `DISCORD_CLIENT_SECRET` | Dashboard sign-in | The OAuth2 client secret from the Developer Portal. Lives on the bot, not on Render |
 | `NERVE_API_KEY` | `!tiktok`, `!github`, `!spotify`, `!youtube` | See [Lookups](Lookups.md) |
 | `VIP_GUILD_IDS` | VIP | Comma-separated server ids that always have VIP |
-| `VIP_URL` | VIP | Optional https link shown as "Get VIP" |
+| `VIP_URL` | VIP | Optional https link shown as "Get VIP". Point it at the site's `/vip` page |
+| `VIP_MONTHLY_URL`, `VIP_LIFETIME_URL` | Site | https checkout links for the two plans on `/vip` |
+| `VIP_MONTHLY_PRICE`, `VIP_LIFETIME_PRICE` | Site | Price text on `/vip` (defaults `$4.99`, `$29.99`) |
 | `STREAM_PRESENCE` | Discord "Streaming" status alerts | Set to `1` only after enabling the Presence intent in the Developer Portal |
 | `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` | Twitch alerts | Free app at dev.twitch.tv/console |
 | `SERVER_PORT` | Status server | Defaults to 25239 |

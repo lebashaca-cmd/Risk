@@ -638,3 +638,16 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
   .acct-stat { padding: 0.6rem 1rem; }
   .acct-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* VIP page */
+.vip-plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; max-width: 46rem; }
+.vip-plan { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 1.5rem; border: 1px solid var(--edge); border-radius: 14px; background: var(--panel); }
+.vip-featured { border-color: var(--mist); background: var(--glass); }
+.vip-plan h2 { margin: 0; font-size: 1.1rem; }
+.vip-price { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; }
+.vip-price strong { font-size: 2.2rem; line-height: 1; }
+.vip-price span, .vip-note { color: var(--fog); font-size: 0.9rem; }
+.vip-note { margin: 0 0 0.75rem; flex: 1; }
+.vip-sub { font-size: 1.1rem; margin: 2.5rem 0 0.75rem; }
+.vip-perks, .vip-steps { margin: 0; padding-left: 1.2rem; max-width: 40rem; color: var(--mist); display: grid; gap: 0.4rem; }
+@media (max-width: 640px) { .vip-plans { grid-template-columns: 1fr; } }

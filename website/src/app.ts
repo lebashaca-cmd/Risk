@@ -6,6 +6,7 @@ import { renderDashboard } from "./dashboard.js";
 import { renderHome } from "./home.js";
 import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
+import { renderVip } from "./vip.js";
 import type { SiteConfig } from "./types.js";
 
 const outlet = document.getElementById("app");
@@ -20,6 +21,7 @@ const TITLES: Record<string, string> = {
   "/commands": "Commands · Risk",
   "/terms": "Terms of Service · Risk",
   "/privacy": "Privacy Policy · Risk",
+  "/vip": "VIP · Risk",
 };
 
 function normalize(path: string): string {
@@ -117,6 +119,10 @@ function render(): void {
       const view = renderTerms();
       node = view.node;
       cleanup = view.cleanup;
+      break;
+    }
+    case "/vip": {
+      node = renderVip(config);
       break;
     }
     case "/privacy": {
