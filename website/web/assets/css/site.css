@@ -640,14 +640,22 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 }
 
 /* VIP page */
-.vip-plans { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin-top: 2rem; max-width: 46rem; }
-.vip-plan { display: flex; flex-direction: column; align-items: flex-start; gap: 0.5rem; padding: 1.5rem; border: 1px solid var(--edge); border-radius: 14px; background: var(--panel); }
+.vip { text-align: center; }
+.vip .lede { margin-inline: auto; }
+.vip-plans { display: grid; grid-template-columns: repeat(2, minmax(0, 22rem)); justify-content: center; gap: 1.25rem; margin: 2.5rem auto 0; }
+.vip-plan { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; padding: 2rem 1.75rem; min-height: 32rem; border: 1px solid var(--edge); border-radius: 14px; background: var(--panel); text-align: center; }
 .vip-featured { border-color: var(--mist); background: var(--glass); }
-.vip-plan h2 { margin: 0; font-size: 1.1rem; }
-.vip-price { margin: 0; display: flex; align-items: baseline; gap: 0.5rem; }
-.vip-price strong { font-size: 2.2rem; line-height: 1; }
+.vip-plan h2 { margin: 0; font-size: 1.2rem; }
+.vip-price { margin: 0; display: flex; align-items: baseline; justify-content: center; gap: 0.5rem; }
+.vip-price strong { font-size: 2.6rem; line-height: 1; }
 .vip-price span, .vip-note { color: var(--fog); font-size: 0.9rem; }
-.vip-note { margin: 0 0 0.75rem; flex: 1; }
-.vip-sub { font-size: 1.1rem; margin: 2.5rem 0 0.75rem; }
-.vip-perks, .vip-steps { margin: 0; padding-left: 1.2rem; max-width: 40rem; color: var(--mist); display: grid; gap: 0.4rem; }
-@media (max-width: 640px) { .vip-plans { grid-template-columns: 1fr; } }
+.vip-note { margin: 0 0 0.5rem; }
+.vip-incl { margin: 0.75rem 0 0; padding-top: 1rem; width: 100%; border-top: 1px solid var(--edge); font-weight: 600; font-size: 0.9rem; }
+.vip-list { list-style: none; margin: 0 0 1.5rem; padding: 0; flex: 1; display: grid; gap: 0.6rem; align-content: start; color: var(--mist); font-size: 0.92rem; text-align: left; width: 100%; }
+.vip-list li { position: relative; padding-left: 1.4rem; }
+.vip-list li::before { content: ""; position: absolute; left: 0.1rem; top: 0.35em; width: 0.35rem; height: 0.6rem; border: solid var(--mist); border-width: 0 2px 2px 0; transform: rotate(45deg); }
+.vip-plan .btn { width: 100%; justify-content: center; }
+.vip-sub { font-size: 1.1rem; margin: 3rem 0 0.75rem; }
+.vip-steps { margin: 0 auto; padding-left: 1.2rem; max-width: 40rem; color: var(--mist); display: grid; gap: 0.4rem; text-align: left; }
+.vip .dash-fine { margin-inline: auto; max-width: 40rem; }
+@media (max-width: 640px) { .vip-plans { grid-template-columns: minmax(0, 1fr); } .vip-plan { min-height: 0; } }
