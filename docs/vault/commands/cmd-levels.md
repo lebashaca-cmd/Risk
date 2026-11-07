@@ -1,6 +1,6 @@
 ---
 title: Levels commands
-date: 2026-11-05
+date: 2026-11-07
 tags: [risk, commands]
 ---
 
@@ -13,7 +13,7 @@ tags: [risk, commands]
 - **leaderboard**: Shows the top members with all of their stats. Sort by coins, wallet, bank, level, messages, streak, items or giveaways. Example: `level 2`
 - **levelchannel** (needs Manage Server): Chooses where level-ups are announced: a #channel, here, or off. Example: `#levels`
 - **levelinfo**: Shows how levels are set up in this server.
-- **levelmessage** (needs Manage Server): Sets the level-up message using {user}, {name} and {level}, or reset. Example: `Nice one {user}, level {level}!`
+- **levelmessage** (needs Manage Server): Sets the level-up message using {user}, {name} and {level}, or reset. Put {embed} at the start and the end to send it as an embed. Example: `{embed} Nice one {user}, level {level}! {embed}`
 - **levelreward** (needs Manage Roles): Gives a role when members reach a level. Example: `10 @Regular`
 - **levelrewards**: Lists the roles given at each level.
 - **levels**: Shows the most active members by XP, 10 per page. Example: `2`

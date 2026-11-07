@@ -30,9 +30,29 @@ PERKS = [
     "Scheduled announcements in the dashboard and with !schedule",
     "Embed-style auto-replies",
     "A custom accent colour for Risk's embeds in your server",
-    "VIP-only commands: !vipembed, !serverstats, !schedule",
+    "Basic commands: !vippoll, !vipannounce, !servercard, !userreport and more",
+    "VIP White adds custom commands, auto reactions and a welcome DM",
+    "VIP Supreme adds auto delete, server lock, backups and a member counter",
+    "Lifetime adds !founder and !motd",
 ]
 MIN_INTERVAL = 300
+
+# What each plan unlocks. A command asks for one group, and a server has it if its plan lists that group.
+# Basic is the base. White and Supreme stack (Supreme has White's commands too). Lifetime is Basic that never
+# ends, plus the Lifetime-only commands. A server in VIP_GUILD_IDS gets every group.
+GROUPS = ("basic", "lifetime", "white", "supreme")
+TIERS = {
+    "basic": ("Basic", {"basic"}),
+    "lifetime": ("Lifetime", {"basic", "lifetime"}),
+    "white": ("VIP White", {"basic", "white"}),
+    "supreme": ("VIP Supreme", {"basic", "white", "supreme"}),
+}
+GROUP_COMMANDS = {
+    "basic": ["vipcolor", "vippoll", "vipsay", "vipannounce", "viprolecolor", "servercard", "topmessages", "userreport", "rolereport", "vipembed", "serverstats", "schedule"],
+    "lifetime": ["founder", "motd"],
+    "white": ["customcmd", "autoreact", "welcomedm", "embededit", "stafflist"],
+    "supreme": ["autodelete", "slowmodeall", "lockall", "unlockall", "serverbackup", "membercounter", "permaudit"],
+}
 
 
 def env_ids():
@@ -65,15 +85,23 @@ class VIP(commands.Cog):
 
     # Status helpers used by other cogs
     def info(self, guild_id):
-        """{'vip': bool, 'source': 'env'|'granted'|None, 'until': ts|None, 'note': str}"""
+        """{'vip': bool, 'source': 'env'|'granted'|None, 'until': ts|None, 'note': str, 'tier': str|None, 'groups': set}"""
         if int(guild_id) in env_ids():
-            return {"vip": True, "source": "env", "until": None, "note": ""}
+            return {"vip": True, "source": "env", "until": None, "note": "", "tier": "supreme", "groups": set(GROUPS)}
         entry = self.store.data["guilds"].get(str(guild_id))
         if entry:
             until = entry.get("until")
             if until is None or until > time.time():
-                return {"vip": True, "source": "granted", "until": until, "note": entry.get("note", "")}
-        return {"vip": False, "source": None, "until": None, "note": ""}
+                tier = entry.get("tier") if entry.get("tier") in TIERS else "basic"
+                return {"vip": True, "source": "granted", "until": until, "note": entry.get("note", ""), "tier": tier, "groups": set(TIERS[tier][1])}
+        return {"vip": False, "source": None, "until": None, "note": "", "tier": None, "groups": set()}
+
+    def has(self, guild_id, group):
+        return group in self.info(guild_id)["groups"]
+
+    def tier_name(self, guild_id):
+        info = self.info(guild_id)
+        return "All tiers" if info["source"] == "env" else TIERS[info["tier"]][0] if info["tier"] else None
 
     def is_vip(self, guild_id):
         return self.info(guild_id)["vip"]
@@ -100,6 +128,16 @@ class VIP(commands.Cog):
         if ctx.guild is None or not self.is_vip(ctx.guild.id):
             raise ModError("That's a **VIP** feature. Run `!vip` to see what VIP adds and how to get it.")
 
+    def need(self, ctx, group):
+        """Stops the command unless this server's plan includes `group`, and says which plans do."""
+        if ctx.guild is None:
+            raise ModError("That only works in a server.")
+        if not self.is_vip(ctx.guild.id):
+            raise ModError("That's a **VIP** feature. Run `!vip` to see what VIP adds and how to get it.")
+        if not self.has(ctx.guild.id, group):
+            names = [name for key, (name, groups) in TIERS.items() if group in groups]
+            raise ModError(f"That command needs **{' or '.join(names)}**. This server has **{self.tier_name(ctx.guild.id)}**. Run `!vipcommands` to see what each plan unlocks.")
+
     # Commands
     @commands.command(name="vip")
     @commands.guild_only()
@@ -109,10 +147,11 @@ class VIP(commands.Cog):
         embed = discord.Embed(title="Risk VIP", color=self.embed_color(ctx.guild.id) or discord.Color.gold() if info["vip"] else discord.Color.dark_grey())
         if info["vip"]:
             until = f"until <t:{int(info['until'])}:D>" if info["until"] else "with no end date"
-            embed.description = f"**{ctx.guild.name}** has VIP {until}."
+            embed.description = f"**{ctx.guild.name}** has **{self.tier_name(ctx.guild.id)}** {until}."
         else:
             embed.description = f"**{ctx.guild.name}** is on the free plan."
         embed.add_field(name="VIP includes", value="\n".join(f"• {p}" for p in PERKS), inline=False)
+        embed.add_field(name="All the commands", value="Run `!vipcommands` to see what every plan unlocks.", inline=False)
         url = os.getenv("VIP_URL", "").strip()
         if not info["vip"] and url.startswith("https://"):
             embed.add_field(name="Get VIP", value=url, inline=False)
@@ -123,16 +162,50 @@ class VIP(commands.Cog):
     @commands.command(name="vipgrant")
     @commands.is_owner()
     async def vipgrant(self, ctx, guild_id: int, days: int = 0, *, note: str = ""):
-        """Owner only. Gives a server VIP for some days (0 = no end). Usage: !vipgrant <server id> [days] [note]"""
+        """Owner only. Gives a server VIP for some days (0 = no end). Usage: !vipgrant <server id> [days] [basic|lifetime|white|supreme] [note]"""
         if self.bot.get_guild(guild_id) is None:
             raise ModError("Risk isn't in that server.")
         if not 0 <= days <= 3650:
             raise ModError("Days must be between 0 and 3650.")
+        first, _, rest = note.strip().partition(" ")
+        tier = first.lower() if first.lower() in TIERS else None
+        if tier:
+            note = rest
         entry = self.cfg(guild_id)
+        entry.setdefault("since", time.time())
         entry["until"] = time.time() + days * 86400 if days else None
-        entry["note"] = note[:100]
+        entry["note"] = note.strip()[:100]
+        if tier:
+            entry["tier"] = tier
+        elif entry.get("tier") not in TIERS:
+            entry["tier"] = "basic"
         self.store.save()
-        await ctx.reply(f"VIP is on for **{self.bot.get_guild(guild_id).name}** " + (f"for {days} days." if days else "with no end date."), mention_author=False)
+        await ctx.reply(f"**{TIERS[entry['tier']][0]}** is on for **{self.bot.get_guild(guild_id).name}** " + (f"for {days} days." if days else "with no end date."), mention_author=False)
+
+    @commands.command(name="viptier")
+    @commands.is_owner()
+    async def viptier(self, ctx, guild_id: int, tier: str):
+        """Owner only. Changes which plan a VIP server is on. Usage: !viptier <server id> <basic|lifetime|white|supreme>"""
+        tier = tier.lower()
+        if tier not in TIERS:
+            raise ModError("The plan must be one of: " + ", ".join(TIERS) + ".")
+        if not self.info(guild_id)["vip"] or self.info(guild_id)["source"] != "granted":
+            raise ModError("That server has no granted VIP. Grant it first with `!vipgrant`.")
+        self.cfg(guild_id)["tier"] = tier
+        self.store.save()
+        await ctx.reply(f"That server is now on **{TIERS[tier][0]}**.", mention_author=False)
+
+    @commands.command(name="vipcommands", aliases=["vipcmds"])
+    async def vipcommands(self, ctx):
+        """Lists every VIP command and which plan unlocks it. Usage: !vipcommands"""
+        mine = self.info(ctx.guild.id)["groups"] if ctx.guild else set()
+        embed = discord.Embed(title="VIP commands", description="Basic, VIP White, VIP Supreme and Lifetime each unlock their own set. White and Supreme stack: Supreme has White's commands too.", color=discord.Color.gold())
+        names = {"basic": "Every VIP plan", "lifetime": "Lifetime", "white": "VIP White and VIP Supreme", "supreme": "VIP Supreme"}
+        for group in ("basic", "white", "supreme", "lifetime"):
+            tick = "" if not mine else " (unlocked)" if group in mine else " (locked)"
+            embed.add_field(name=f"{names[group]}{tick}", value=" ".join(f"`{c}`" for c in GROUP_COMMANDS[group]), inline=False)
+        embed.set_footer(text="Use !help <command> for how each one works.")
+        await ctx.reply(embed=embed, mention_author=False)
 
     @commands.command(name="viprevoke")
     @commands.is_owner()
@@ -156,7 +229,7 @@ class VIP(commands.Cog):
             info = self.info(guild.id)
             if info["vip"]:
                 when = f"until <t:{int(info['until'])}:D>" if info["until"] else "no end"
-                rows.append(f"**{guild.name}** (`{guild.id}`) - {info['source']}, {when}")
+                rows.append(f"**{guild.name}** (`{guild.id}`) - {self.tier_name(guild.id)}, {info['source']}, {when}")
         await ctx.reply("\n".join(rows) or "No server has VIP.", mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="vipembed")

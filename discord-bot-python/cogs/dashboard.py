@@ -25,8 +25,9 @@ try:
 except ImportError:  # an older commands_list.py on the host
     CATEGORY_BY_COG = {}
 try:
-    from cogs.vip import LIMITS, PERKS
+    from cogs.vip import GROUP_COMMANDS, LIMITS, PERKS
 except ImportError:  # vip.py not uploaded yet: everyone is on the free plan
+    GROUP_COMMANDS = {}
     LIMITS, PERKS = {"responders": (500, 500), "command_rules": (500, 500), "schedules": (0, 50), "badwords": (10000, 10000), "level_rewards": (1000, 1000), "xp_multiplier": (100.0, 100.0), "ignored_channels": (500, 500)}, []
 try:
     from cogs.log_tools import CATEGORIES as LOG_CATEGORIES
@@ -704,6 +705,8 @@ class Dashboard(commands.Cog):
         color = cog.cfg(guild.id).get("color") if cog else None
         return {
             "active": info["vip"], "source": info["source"], "until": info["until"],
+            "tier": cog.tier_name(guild.id) if cog else None,
+            "commands": [{"plan": plan, "unlocked": plan in info["groups"], "names": names} for plan, names in GROUP_COMMANDS.items()],
             "color": f"#{color:06x}" if isinstance(color, int) else None,
             "perks": list(PERKS),
             "free": {key: low for key, (low, _) in LIMITS.items()},

@@ -1,12 +1,12 @@
 ---
 title: Economy commands
-date: 2026-11-05
+date: 2026-11-07
 tags: [risk, commands]
 ---
 
 # Economy commands
 
-29 commands. Run `!help <command>` or see the examples below.
+33 commands. Run `!help <command>` or see the examples below.
 
 - **addmoney** (needs Administrator): Adds or removes coins from someone's wallet. Example: `@user 1000`
 - **balance**: Shows a wallet and bank balance. Example: `@user`
@@ -25,6 +25,10 @@ tags: [risk, commands]
 - **highlow**: Guesses higher or lower to build a streak, then cash out. Example: `200`
 - **hunt**: Hunts animals with a rifle for coins.
 - **inventory**: Shows the items someone owns. Example: `@user`
+- **lottery**: Shows the lottery pot and your tickets. Actions: buy, info, draw.
+- **lottery buy**: Buys lottery tickets for 100 coins each (up to 50 per person). Example: `5`
+- **lottery draw** (needs Manage Server): Draws the lottery now (staff only).
+- **lottery info**: Shows the pot, the next draw and the last winner.
 - **mine**: Mines for ore with a pickaxe.
 - **monthly**: Claims your monthly coins.
 - **networth**: Shows wallet, bank and item value added together. Example: `@user`

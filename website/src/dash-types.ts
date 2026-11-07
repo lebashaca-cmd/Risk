@@ -159,6 +159,8 @@ export interface AnnouncementsSettings {
 
 export interface VipSettings {
   active: boolean;
+  tier: string | null;
+  commands: { plan: "basic" | "lifetime" | "white" | "supreme"; unlocked: boolean; names: string[] }[];
   source: "env" | "granted" | null;
   until: number | null;
   color: string | null;

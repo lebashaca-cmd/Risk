@@ -1,12 +1,12 @@
 ---
 title: Moderation commands
-date: 2026-11-05
+date: 2026-11-07
 tags: [risk, commands]
 ---
 
 # Moderation commands
 
-56 commands. Run `!help <command>` or see the examples below.
+62 commands. Run `!help <command>` or see the examples below.
 
 - **addrole** (needs Manage Roles): Gives one role to a member. Example: `@user @Member`
 - **antiinvite** (needs Manage Server): Deletes messages with Discord invite links. Example: `on`
@@ -14,6 +14,12 @@ tags: [risk, commands]
 - **antispam** (needs Manage Server): Deletes message floods and times the sender out for 5 minutes. Example: `on`
 - **automod** (needs Manage Server): Shows which automod protections are on.
 - **automodignore** (needs Manage Server): Toggles a channel or role that automod leaves alone. Example: `#staff-chat`
+- **badwords** (needs Manage Server): Manages words that get a message deleted. Actions: add, import, remove, list, clear. Example: `add word`
+- **badwords add** (needs Manage Server): Blocks a word or short phrase. Your command message is deleted so the word isn't shown. Example: `word`
+- **badwords clear** (needs Manage Server): Removes every blocked word. Example: `confirm`
+- **badwords import** (needs Manage Server): Blocks every word in an attached .txt or .env file (one per line, or comma separated). Example: `(attach the file)`
+- **badwords list** (needs Manage Server): Sends you the blocked words in a direct message.
+- **badwords remove** (needs Manage Server): Unblocks a word. Example: `word`
 - **ban** (needs Ban Members): Bans a member from the server. Example: `@user reason`
 - **banlist** (needs Ban Members): Shows the first 25 banned users.
 - **clear** (needs Manage Messages): Deletes a specified number of messages. Example: `10`

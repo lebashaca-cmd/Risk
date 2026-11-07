@@ -44,7 +44,8 @@ tags: [risk, cog]
 - [utility_extra.py](cog-utility_extra.md): 11 commands, 239 lines
 - [utility_more.py](cog-utility_more.md): 32 commands, 610 lines
 - [utility_tools.py](cog-utility_tools.md): 27 commands, 485 lines
-- [vip.py](cog-vip.md): 9 commands, 285 lines. Risk VIP: a per-server upgrade that raises limits and unlocks extra features.
+- [vip-plus.py](cog-vip-plus.md): 25 more VIP commands grouped by plan, 560 lines. The Basic, White, Supreme and Lifetime commands.
+- [vip.py](cog-vip.md): 11 commands, plans and VIP status.  Risk VIP: a per-server upgrade that raises limits and unlocks extra features.
 - [website.py](cog-website.md): 1 commands, 56 lines
 - [welcome.py](cog-welcome.md): 2 commands, 83 lines
 

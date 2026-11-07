@@ -38,6 +38,7 @@ CATEGORY_BY_FILE = {
     "economy_more": "Economy",
     "dashboard": "Info",
     "vip": "VIP",
+    "vip_plus": "VIP",
     "streams": "Community",
     "levels": "Levels",
     "stats": "Levels",
@@ -92,6 +93,13 @@ def collect(path, category):
     tree = ast.parse(path.read_text(encoding="utf-8"))
     found = []
 
+    prefix_groups = {}
+    for item in ast.walk(tree):
+        if isinstance(item, (ast.FunctionDef, ast.AsyncFunctionDef)):
+            for dec in item.decorator_list:
+                if isinstance(dec, ast.Call) and isinstance(dec.func, ast.Attribute) and dec.func.attr == "group" and isinstance(dec.func.value, ast.Name) and dec.func.value.id == "commands":
+                    prefix_groups[item.name] = keyword(dec, "name") or item.name
+
     def handle(func, groups):
         perm = None
         kind = None
@@ -105,7 +113,10 @@ def collect(path, category):
             owner = dec.func.value
             if attr == "has_permissions":
                 perm = permission_label(dec)
-            elif attr == "command" and isinstance(owner, ast.Name):
+            elif attr in ("command", "group") and isinstance(owner, ast.Name) and owner.id in prefix_groups and attr == "command":
+                # A subcommand of a prefix group, like "customcmd add".
+                kind, name = "prefix", f"{prefix_groups[owner.id]} {keyword(dec, 'name') or func.name}"
+            elif attr in ("command", "group") and isinstance(owner, ast.Name):
                 if owner.id in ("commands", "bot"):
                     kind, name = "prefix", keyword(dec, "name") or func.name
                 elif owner.id == "app_commands":

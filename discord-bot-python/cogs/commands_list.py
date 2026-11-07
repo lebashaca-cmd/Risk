@@ -29,6 +29,7 @@ CATEGORY_BY_COG = {
     "CommunityExtra": "Community",
     "Dashboard": "Info",
     "VIP": "VIP",
+    "VIPPlus": "VIP",
     "Streams": "Community",
     "Giveaway": "Community",
     "Tickets": "Tickets",
