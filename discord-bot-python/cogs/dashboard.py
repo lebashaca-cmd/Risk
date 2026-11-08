@@ -934,9 +934,39 @@ class Dashboard(commands.Cog):
             traceback.print_exc()
             return web.json_response({"error": "The bot hit an error while handling that. Check the bot's console for the details."}, status=500)
 
+    async def route_staff(self, request, method, parts):
+        """The staff panel. The staff cog decides who may do what; this only carries requests to it."""
+        staff = self.bot.get_cog("Staff")
+        if staff is None:
+            raise ApiError(503, "The staff panel isn't loaded on the bot. Upload cogs/staff.py and restart it.")
+        user = as_snowflake(request.headers.get("X-Dashboard-User", ""), "User id")
+        try:
+            if parts == ["me"] and method == "GET":
+                return await staff.me(user)
+            if parts == ["overview"] and method == "GET":
+                return await staff.overview(user)
+            if parts == ["owner"] and method == "GET":
+                return await staff.owner_panel(user)
+            actions = {"prices": staff.set_prices, "vip": staff.set_vip, "ban": staff.ban_server, "unban": staff.unban_server, "roles": staff.assign_role}
+            if len(parts) == 1 and parts[0] in actions and method in ("PUT", "POST"):
+                return await actions[parts[0]](user, await self.read_json(request))
+        except Exception as error:
+            # Matched by name so this works whichever copy of cogs/staff.py the bot loaded.
+            if type(error).__name__ == "StaffError":
+                raise ApiError(error.status, error.message)
+            raise
+        raise ApiError(404, "Not found.")
+
     async def route(self, request, method, parts):
         if parts == ["oauth"] and method == "POST":
             return await self.oauth(await self.read_json(request))
+
+        if parts and parts[0] == "staff":
+            return await self.route_staff(request, method, parts[1:])
+
+        if parts == ["prices"] and method == "GET":
+            staff = self.bot.get_cog("Staff")
+            return {"prices": staff.public_prices() if staff else {}}
 
         if parts == ["account"] and method == "GET":
             return self.read_account(as_snowflake(request.headers.get("X-Dashboard-User", ""), "User id"))

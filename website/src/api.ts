@@ -1,4 +1,4 @@
-import type { AccountStats, AllSettings, BotProfile, GuildPayload, MePayload, SectionId } from "./dash-types.js";
+import type { AccountStats, AllSettings, BotProfile, GuildPayload, MePayload, PlanKey, SectionId, StaffMe, StaffOverview, StaffOwnerPanel, StaffRole } from "./dash-types.js";
 import type { BotStatus, CommandsPayload, SiteConfig, TosPayload } from "./types.js";
 
 async function getJSON<T>(path: string): Promise<T> {
@@ -58,4 +58,15 @@ export const dashApi = {
   saveProfile: (id: string, body: { nick?: string; bio?: string; avatar?: string | null; banner?: string | null }) =>
     send<{ profile: BotProfile }>("PUT", `/api/dash/guild/${encodeURIComponent(id)}/profile`, body),
   logout: () => send<{ ok: boolean }>("POST", "/api/auth/logout"),
+};
+
+export const staffApi = {
+  me: () => send<StaffMe>("GET", "/api/staff/me"),
+  overview: () => send<StaffOverview>("GET", "/api/staff/overview"),
+  owner: () => send<StaffOwnerPanel>("GET", "/api/staff/owner"),
+  savePrices: (prices: Partial<Record<PlanKey, { price: string; url: string }>>) => send<{ prices: StaffOwnerPanel["prices"] }>("PUT", "/api/staff/prices", prices),
+  vip: (body: { guild_id: string; action: "grant" | "revoke"; days?: number; tier?: PlanKey; note?: string }) => send<{ id: string; vip: boolean; tier: string | null; until: number | null }>("POST", "/api/staff/vip", body),
+  ban: (guild_id: string, reason: string) => send<{ id: string; left: boolean; banned: number }>("POST", "/api/staff/ban", { guild_id, reason }),
+  unban: (guild_id: string) => send<{ id: string; banned: number }>("POST", "/api/staff/unban", { guild_id }),
+  role: (user_id: string, role: StaffRole | "none") => send<{ id: string; role: StaffRole | null }>("POST", "/api/staff/roles", { user_id, role }),
 };

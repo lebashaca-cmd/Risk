@@ -6,6 +6,7 @@ import { renderDashboard } from "./dashboard.js";
 import { renderHome } from "./home.js";
 import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
+import { renderStaff } from "./staff.js";
 import { renderVip } from "./vip.js";
 const outlet = document.getElementById("app");
 const fallbackConfig = { name: "Risk", inviteUrl: null, supportUrl: null };
@@ -19,6 +20,7 @@ const TITLES = {
     "/terms": "Terms of Service · Risk",
     "/privacy": "Privacy Policy · Risk",
     "/vip": "VIP · Risk",
+    "/staff": "Staff · Risk",
 };
 function normalize(path) {
     const trimmed = path.replace(/\/+$/, "");
@@ -105,6 +107,12 @@ function render() {
         }
         case "/terms": {
             const view = renderTerms();
+            node = view.node;
+            cleanup = view.cleanup;
+            break;
+        }
+        case "/staff": {
+            const view = renderStaff();
             node = view.node;
             cleanup = view.cleanup;
             break;
@@ -197,6 +205,12 @@ async function start() {
             link.href = config.inviteUrl;
         else
             link.hidden = true;
+    });
+    document.querySelectorAll("[data-staff]").forEach((link) => {
+        const target = config.staffUrl ?? "/staff";
+        link.href = target;
+        if (/^https?:/.test(target))
+            link.removeAttribute("data-link");
     });
     document.querySelectorAll("[data-dashboard]").forEach((link) => {
         const target = config.dashboardUrl ?? "/dashboard";

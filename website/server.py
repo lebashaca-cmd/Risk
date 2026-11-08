@@ -14,7 +14,7 @@ from dashboard import Dashboard
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 DATA_FILE = ROOT / "data" / "bot.json"
-PAGES = {"/", "/commands", "/terms", "/privacy", "/vip"}
+PAGES = {"/", "/commands", "/terms", "/privacy", "/vip", "/staff"}
 STATUS_TTL = 10
 API_LIMIT = (90, 60)
 
@@ -237,7 +237,12 @@ async def api_config(request):
         dashboard_url = f"https://{settings.dashboard_host}/"
     else:
         dashboard_url = "/dashboard"
-    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "dashboardHost": on_dashboard_host(request), "vip": settings.vip()}, 60)
+    staff_url = f"https://{settings.dashboard_host}/staff" if settings.dashboard_host and not on_dashboard_host(request) else "/staff"
+    vip = settings.vip()
+    for plan, saved in (await request.app["dashboard"].vip_prices(request)).items():
+        if plan in vip:
+            vip[plan] = {"price": saved["price"] or vip[plan]["price"], "url": saved["url"] or vip[plan]["url"]}
+    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "staffUrl": staff_url, "dashboardHost": on_dashboard_host(request), "vip": vip}, 15)
 
 
 async def api_status(request):
@@ -276,6 +281,9 @@ async def fallback(request):
     if settings.dashboard_host and is_dashboard_path and not on_dashboard_host(request):
         target = path[len("/dashboard"):] or "/"
         raise web.HTTPFound(f"https://{settings.dashboard_host}{target}")
+    if settings.dashboard_host and path == "/staff" and not on_dashboard_host(request):
+        # Sign-in lives on the dashboard address, so the staff panel does too.
+        raise web.HTTPFound(f"https://{settings.dashboard_host}/staff")
     if path in PAGES or is_dashboard_path or (on_dashboard_host(request) and DASH_ID.fullmatch(path)):
         return await page()(request)
     if Path(path).suffix:

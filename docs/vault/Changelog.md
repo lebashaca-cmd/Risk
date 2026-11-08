@@ -14,6 +14,7 @@ tags: [risk, changelog]
 | 19 | VIP, bot profile editor, Overview, command rules, auto-replies, announcements, blocked-word file import, no plan limits, stream alerts (Go Live, Discord status, Twitch, TikTok), live embeds, role pings, test commands, `{embed}` messages, `!cogstatus` |
 
 | 19 (later) | Dashboard account bar: Discord banner, avatar, server tag, badges, overall level, rank and cross-server stats |
+| 19 (later) | Staff panel at `/staff` with owner panel (prices, server bans, VIP, roles) |
 | 19 (later) | VIP plans (Basic, Lifetime, White, Supreme) and 25 new plan-gated commands in `cogs/vip_plus.py` |
 | 19 (later) | `/vip` page on the website with four plans (Basic, Lifetime, VIP White, VIP Supreme) in a slider |
 

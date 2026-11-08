@@ -52,3 +52,13 @@ export const dashApi = {
     saveProfile: (id, body) => send("PUT", `/api/dash/guild/${encodeURIComponent(id)}/profile`, body),
     logout: () => send("POST", "/api/auth/logout"),
 };
+export const staffApi = {
+    me: () => send("GET", "/api/staff/me"),
+    overview: () => send("GET", "/api/staff/overview"),
+    owner: () => send("GET", "/api/staff/owner"),
+    savePrices: (prices) => send("PUT", "/api/staff/prices", prices),
+    vip: (body) => send("POST", "/api/staff/vip", body),
+    ban: (guild_id, reason) => send("POST", "/api/staff/ban", { guild_id, reason }),
+    unban: (guild_id) => send("POST", "/api/staff/unban", { guild_id }),
+    role: (user_id, role) => send("POST", "/api/staff/roles", { user_id, role }),
+};
