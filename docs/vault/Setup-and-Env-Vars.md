@@ -31,6 +31,7 @@ tags: [risk, config]
 | Variable | Notes |
 |---|---|
 | `DASHBOARD_KEY` | Same value as the bot |
+| `DOCS_HOST` | Site only. For example `docs.yourdomain.com`. Serves the documentation there. The docs are always at `/docs/` too |
 | `DASHBOARD_HOST` | For example `dashboard.yourdomain.com`. Turns on `dashboard.<domain>/<server id>` URLs |
 | `CLIENT_ID` | The bot's application id |
 | `BOT_STATUS_URL` | Where the bot's status server answers |

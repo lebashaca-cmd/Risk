@@ -212,6 +212,9 @@ async function start() {
         if (/^https?:/.test(target))
             link.removeAttribute("data-link");
     });
+    document.querySelectorAll("[data-docs]").forEach((link) => {
+        link.href = config.docsUrl ?? "/docs/";
+    });
     document.querySelectorAll("[data-dashboard]").forEach((link) => {
         const target = config.dashboardUrl ?? "/dashboard";
         link.href = target;

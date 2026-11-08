@@ -95,13 +95,13 @@ const welcome = (draft, meta, changed) => {
         join.replaceChildren();
         if (!draft.enabled)
             return;
-        join.append(channelSelect("Welcome channel", meta, draft.channel, (v) => { draft.channel = v; changed(); }, "Choose a channel"), textArea("Welcome message", draft.text, (v) => { draft.text = v; changed(); }, { max: 1500, hint: "Write New_user where the member should be mentioned. Put {embed} at the start and the end to send it as an embed." }));
+        join.append(channelSelect("Welcome channel", meta, draft.channel, (v) => { draft.channel = v; changed(); }, "Choose a channel"), textArea("Welcome message", draft.text, (v) => { draft.text = v; changed(); }, { max: 1500, hint: "Write New_user where the member should be mentioned. Put {embed} at the start and the end to send it as an embed. Variables like {server}, {server.members} and {ordinal} work too." }));
     };
     const drawLeave = () => {
         leave.replaceChildren();
         if (!draft.leaveEnabled)
             return;
-        leave.append(channelSelect("Leave channel", meta, draft.leaveChannel, (v) => { draft.leaveChannel = v; changed(); }, "Choose a channel"), textArea("Leave message", draft.leaveText, (v) => { draft.leaveText = v; changed(); }, { max: 1500, hint: "Write New_user where the member's name should go. Put {embed} at the start and the end to send it as an embed." }));
+        leave.append(channelSelect("Leave channel", meta, draft.leaveChannel, (v) => { draft.leaveChannel = v; changed(); }, "Choose a channel"), textArea("Leave message", draft.leaveText, (v) => { draft.leaveText = v; changed(); }, { max: 1500, hint: "Write New_user where the member's name should go. Put {embed} at the start and the end to send it as an embed. Variables like {server} and {server.members} work too." }));
     };
     drawJoin();
     drawLeave();
@@ -190,7 +190,7 @@ const levels = (draft, meta, changed) => {
     drawRewards();
     return [
         group("XP", "Each message earns 15 to 25 XP, multiplied by the setting below.", numberInput("XP multiplier", draft.multiplier, (v) => { draft.multiplier = v; changed(); }, 0.1, 100, 0.1, "From 0.1 to 100. Try 2 for double XP."), numberInput("Seconds between XP gains", draft.cooldown, (v) => { draft.cooldown = v; changed(); }, 1, 3600, 1, "A member earns XP at most once in this time."), multiChannels("Channels that earn no XP", meta, draft.noxpChannels, (v) => { draft.noxpChannels = v; changed(); }), multiRoles("Roles that earn no XP", meta, draft.noxpRoles, (v) => { draft.noxpRoles = v; changed(); })),
-        group("Level-up message", null, selectInput("Where to announce", channelChoices(meta, null, [{ value: "same", label: "In the channel where they levelled up" }, { value: "off", label: "Don't announce" }]), draft.announce, (v) => { draft.announce = v; changed(); }), textArea("Message", draft.message, (v) => { draft.message = v; changed(); }, { max: 500, rows: 3, hint: "Use {user} to mention them, {name} for their name and {level} for the new level. Put {embed} at the start and the end to send it as an embed. Leave empty for the default." })),
+        group("Level-up message", null, selectInput("Where to announce", channelChoices(meta, null, [{ value: "same", label: "In the channel where they levelled up" }, { value: "off", label: "Don't announce" }]), draft.announce, (v) => { draft.announce = v; changed(); }), textArea("Message", draft.message, (v) => { draft.message = v; changed(); }, { max: 500, rows: 3, hint: "Use {user} to mention them, {name} for their name and {level} for the new level, plus {xp}, {nextlevel} and {messages}. Put {embed} at the start and the end to send it as an embed. Leave empty for the default." })),
         group("Role rewards", "Members get a role when they reach a level.", selectInput("When a member reaches a new reward", [{ value: "stack", label: "Keep earlier reward roles" }, { value: "replace", label: "Replace earlier reward roles" }], draft.mode, (v) => { draft.mode = v === "replace" ? "replace" : "stack"; changed(); }), rewards, add),
     ];
 };

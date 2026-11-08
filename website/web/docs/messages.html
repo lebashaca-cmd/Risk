@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Message templates · Risk docs</title>
+<meta name="description" content="Several features send a message you write yourself: welcome and leave messages, level-up messages, auto-replies, custom commands and the VIP welcome DM. You can drop variables into any of them, and Ri">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages" aria-current="page">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Message templates</h1>
+      <p>Several features send a message you write yourself: welcome and leave messages, level-up messages, auto-replies, custom commands and the VIP welcome DM. You can drop <strong>variables</strong> into any of them, and Risk fills in the real values when the message is sent.</p>
+<h2 id="the-basics">The basics<a class="anchor" href="#the-basics" aria-label="Link to this section">#</a></h2>
+<p>A variable is a word in curly braces, like <code>{server}</code>. If you write</p>
+<pre><code>Welcome to {server}, {name}! We now have {server.members} members.</code></pre>
+<p>Risk sends something like <code>Welcome to Risk HQ, Sam! We now have 1,204 members.</code></p>
+<p>Rules that always apply:</p>
+<ul><li>Variables are not case sensitive, so <code>{Server}</code> and <code>{server}</code> are the same.</li><li>A variable Risk doesn&#x27;t know is left exactly as you typed it, so you will spot typos.</li><li>Names and text from members are made safe, so a member called <code>@everyone</code> can never ping anyone.</li><li>You can use as many variables as you like in one message.</li></ul>
+<p>See the full list on the <a href="variables">variables</a> page, or type <code>!variables</code> in Discord.</p>
+<h2 id="sending-as-an-embed">Sending as an embed<a class="anchor" href="#sending-as-an-embed" aria-label="Link to this section">#</a></h2>
+<p>Put <code>{embed}</code> at the very start and the very end of a message to send it as an embed instead of plain text:</p>
+<pre><code>{embed}Welcome {user} to {server}!{embed}</code></pre>
+<p>In an embed the member appears in bold with their picture, and the real mention is sent above the embed so they still get the notification. Embeds use your VIP accent colour when the server has one.</p>
+<h2 id="which-variables-work-where">Which variables work where<a class="anchor" href="#which-variables-work-where" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Place</th><th>Notes</th></tr></thead><tbody><tr><td>Welcome message</td><td>Write <code>New_user</code> where the member goes. All other variables work</td></tr><tr><td>Leave message</td><td>Write <code>New_user</code> for the name. Leave messages never ping</td></tr><tr><td>Level-up message</td><td><code>{user}</code>, <code>{name}</code>, <code>{level}</code>, <code>{nextlevel}</code>, <code>{xp}</code> and <code>{messages}</code> plus all the others</td></tr><tr><td>Auto-replies</td><td><code>{user}</code> is the member&#x27;s name, and all the others work</td></tr><tr><td>VIP custom commands</td><td><code>{user}</code> is a mention, and all the others work</td></tr><tr><td>VIP welcome DM</td><td><code>{user}</code> is the member&#x27;s name</td></tr></tbody></table></div>
+<h2 id="ideas">Ideas<a class="anchor" href="#ideas" aria-label="Link to this section">#</a></h2>
+<ul><li>A welcome with a counter: <code>{embed}{party} Welcome {user}! You are the {ordinal} member of {server}.{embed}</code></li><li>A level-up with progress: <code>{star} {user} reached level {level} with {xp} XP. Next stop: level {nextlevel}.</code></li><li>A random auto-reply: <code>{choose:Yes|No|Maybe|Ask again later}</code></li><li>A dice command: <code>You rolled a {random:1-20}!</code></li><li>A server card reply: <code>{server} has {server.humans} people and {server.bots} bots. Created {server.created}.</code></li></ul>
+<h2 id="try-before-you-publish">Try before you publish<a class="anchor" href="#try-before-you-publish" aria-label="Link to this section">#</a></h2>
+<p><code>!testvars &lt;your message&gt;</code> shows the result using you as the member. It works in any channel, so test as often as you like. <code>!levelmessage</code> also shows a preview as soon as you save a new level-up message.</p>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="utility"><span>Previous</span>Utility, fun and lookups</a><a class="next" href="variables"><span>Next</span>Variables</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#the-basics">The basics</a></li><li class="l2"><a href="#sending-as-an-embed">Sending as an embed</a></li><li class="l2"><a href="#which-variables-work-where">Which variables work where</a></li><li class="l2"><a href="#ideas">Ideas</a></li><li class="l2"><a href="#try-before-you-publish">Try before you publish</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

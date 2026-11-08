@@ -35,9 +35,13 @@ except ImportError:  # log_tools.py missing or old
     LOG_CATEGORIES = {}
 from utils.helpers import ModError, explain_error
 from utils.store import JsonStore
+from utils.variables import expand
 
 DEFAULT_PREFIXES = ("!", "?", ",")
 NEVER_MATCHES = "​​ignored​​"
+# Server-wide basic rules for commands. Members with Manage Server ignore all of them.
+BASICS = {"blocked_channels": [], "only_channels": [], "blocked_roles": [], "delete_invocations": False, "cooldown": 0}
+BASICS_EXEMPT = {"help", "dashboard"}
 SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "announcements", "vip")
 READ_ONLY = ("overview",)
 MAX_BODY = 1_000_000
@@ -194,6 +198,7 @@ class Dashboard(commands.Cog):
         data.setdefault("disabled_commands", [])
         data.setdefault("ignored_channels", [])
         data.setdefault("rules", {})
+        data.setdefault("basics", dict(BASICS))
         data.setdefault("responders", [])
         data.setdefault("activity", [])
         return data
@@ -224,15 +229,38 @@ class Dashboard(commands.Cog):
             return True
         if root.name in config.get("disabled_commands", []):
             raise ModError(f"`{root.name}` is turned off in this server.")
+        basics = {**BASICS, **config.get("basics", {})}
+        here = {ctx.channel.id, getattr(ctx.channel, "parent_id", None)}
+        mine = {r.id for r in getattr(ctx.author, "roles", [])}
+        if root.name not in BASICS_EXEMPT:
+            if here & set(basics["blocked_channels"]):
+                raise ModError("Commands are turned off in this channel.")
+            if basics["only_channels"] and not here & set(basics["only_channels"]):
+                raise ModError("Commands only work in " + ", ".join(f"<#{c}>" for c in basics["only_channels"][:5]) + ".")
+            if mine & set(basics["blocked_roles"]):
+                raise ModError("You can't use commands in this server.")
+            if basics["cooldown"]:
+                key, now = (ctx.guild.id, "*", ctx.author.id), time.time()
+                wait = self.cooldowns.get(key, 0) + basics["cooldown"] - now
+                if wait > 0:
+                    raise ModError(f"Slow down. Try again in {int(wait) + 1}s.")
+                if len(self.cooldowns) > 5000:
+                    self.cooldowns = {k: v for k, v in self.cooldowns.items() if v > now - 3600}
+                self.cooldowns[key] = now
         rules = config.get("rules", {})
         rule = rules.get(root.name)
         if rule and root.name in list(rules)[: self.cap(ctx.guild.id, "command_rules")]:
+            if rule.get("staff_only"):
+                raise ModError(f"`{root.name}` is only for members who can manage the server.")
+            if here & set(rule.get("blocked_channels", [])):
+                raise ModError(f"`{root.name}` is turned off in this channel.")
+            if mine & set(rule.get("blocked_roles", [])):
+                raise ModError(f"`{root.name}` isn't available to your role.")
             channels = rule.get("channels", [])
-            here = {ctx.channel.id, getattr(ctx.channel, "parent_id", None)}
             if channels and not here & set(channels):
                 raise ModError(f"`{root.name}` only works in " + ", ".join(f"<#{c}>" for c in channels[:5]) + ".")
             roles = rule.get("roles", [])
-            if roles and not {r.id for r in getattr(ctx.author, "roles", [])} & set(roles):
+            if roles and not mine & set(roles):
                 raise ModError(f"`{root.name}` is limited to certain roles in this server.")
             cooldown = rule.get("cooldown", 0)
             if cooldown:
@@ -244,6 +272,18 @@ class Dashboard(commands.Cog):
                     self.cooldowns = {k: v for k, v in self.cooldowns.items() if v > now - 3600}
                 self.cooldowns[key] = now
         return True
+
+    @commands.Cog.listener()
+    async def on_command_completion(self, ctx):
+        """The 'delete the command message' basic rule."""
+        if ctx.guild is None or not self.store.data.get(str(ctx.guild.id), {}).get("basics", {}).get("delete_invocations"):
+            return
+        if not ctx.channel.permissions_for(ctx.guild.me).manage_messages:
+            return
+        try:
+            await ctx.message.delete()
+        except discord.HTTPException:
+            pass
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -264,7 +304,7 @@ class Dashboard(commands.Cog):
             if not hit or self.reply_times.get(key, 0) + 10 > now:
                 continue
             self.reply_times[key] = now
-            reply = item["reply"].replace("{user}", message.author.display_name).replace("{server}", guild.name)
+            reply = expand(item["reply"].replace("{user}", message.author.display_name), member=message.author, guild=guild, channel=message.channel)[:2000]
             kwargs = {"reference": message, "mention_author": False, "allowed_mentions": discord.AllowedMentions.none()}
             try:
                 if item.get("embed") and self.vip_info(guild.id)["vip"]:
@@ -614,10 +654,18 @@ class Dashboard(commands.Cog):
     def read_commands(self, guild):
         config = self.cfg(guild.id)
         rules = [
-            {"command": name, "roles": [str(r) for r in rule.get("roles", [])], "channels": [str(c) for c in rule.get("channels", [])], "cooldown": rule.get("cooldown", 0)}
+            {
+                "command": name, "roles": [str(r) for r in rule.get("roles", [])], "channels": [str(c) for c in rule.get("channels", [])],
+                "blockedRoles": [str(r) for r in rule.get("blocked_roles", [])], "blockedChannels": [str(c) for c in rule.get("blocked_channels", [])],
+                "staffOnly": bool(rule.get("staff_only")), "cooldown": rule.get("cooldown", 0),
+            }
             for name, rule in config["rules"].items()
         ]
-        return {"rules": rules}
+        basics = {**BASICS, **config.get("basics", {})}
+        return {"rules": rules, "basics": {
+            "blockedChannels": [str(c) for c in basics["blocked_channels"]], "onlyChannels": [str(c) for c in basics["only_channels"]],
+            "blockedRoles": [str(r) for r in basics["blocked_roles"]], "deleteInvocations": bool(basics["delete_invocations"]), "cooldown": basics["cooldown"],
+        }}
 
     def write_commands(self, guild, body):
         valid = {c.name for c in self.bot.commands}
@@ -633,10 +681,24 @@ class Dashboard(commands.Cog):
             rule = {
                 "roles": pick_roles(guild, item.get("roles", []), "Allowed roles", 250),
                 "channels": pick_channels(guild, item.get("channels", []), "Allowed channels", 500),
+                "blocked_roles": pick_roles(guild, item.get("blockedRoles", []), "Blocked roles", 250),
+                "blocked_channels": pick_channels(guild, item.get("blockedChannels", []), "Blocked channels", 500),
+                "staff_only": item.get("staffOnly") is True,
                 "cooldown": as_int(item.get("cooldown", 0), "Cooldown", 0, 3600),
             }
-            if rule["roles"] or rule["channels"] or rule["cooldown"]:
+            if any(rule.values()):
                 rules[name] = rule
+        basics = body.get("basics", {})
+        if not isinstance(basics, dict):
+            raise ApiError(400, "Basic rules must be an object.")
+        saved = {
+            "blocked_channels": pick_channels(guild, basics.get("blockedChannels", []), "Channels where commands are off", 500),
+            "only_channels": pick_channels(guild, basics.get("onlyChannels", []), "Command channels", 500),
+            "blocked_roles": pick_roles(guild, basics.get("blockedRoles", []), "Roles that can't use commands", 250),
+            "delete_invocations": basics.get("deleteInvocations") is True,
+            "cooldown": as_int(basics.get("cooldown", 0), "Cooldown between commands", 0, 60),
+        }
+        self.cfg(guild.id)["basics"] = saved
         self.cfg(guild.id)["rules"] = rules
         self.store.save()
 

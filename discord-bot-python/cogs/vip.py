@@ -33,17 +33,17 @@ PERKS = [
     "Basic commands: !vippoll, !vipannounce, !servercard, !userreport and more",
     "VIP White adds custom commands, auto reactions and a welcome DM",
     "VIP Supreme adds auto delete, server lock, backups and a member counter",
-    "Lifetime adds !founder and !motd",
+    "Lifetime never ends and includes every feature above, plus !founder and !motd",
 ]
 MIN_INTERVAL = 300
 
 # What each plan unlocks. A command asks for one group, and a server has it if its plan lists that group.
-# Basic is the base. White and Supreme stack (Supreme has White's commands too). Lifetime is Basic that never
-# ends, plus the Lifetime-only commands. A server in VIP_GUILD_IDS gets every group.
+# Basic is the base. White and Supreme stack (Supreme has White's commands too). Lifetime never ends and has every
+# group: Basic, White, Supreme and its own commands. A server in VIP_GUILD_IDS gets every group.
 GROUPS = ("basic", "lifetime", "white", "supreme")
 TIERS = {
     "basic": ("Basic", {"basic"}),
-    "lifetime": ("Lifetime", {"basic", "lifetime"}),
+    "lifetime": ("Lifetime", {"basic", "lifetime", "white", "supreme"}),
     "white": ("VIP White", {"basic", "white"}),
     "supreme": ("VIP Supreme", {"basic", "white", "supreme"}),
 }

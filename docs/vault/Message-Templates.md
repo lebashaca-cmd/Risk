@@ -15,6 +15,10 @@ tags: [risk, messages]
 | `{user}`, `{server}` | Auto-replies | Display name and server name |
 | `{embed}` at the very start **and** very end | Level-up, welcome, leave | Sends the message as an embed |
 
+## Variables
+
+Since PR 19 (later) every message that takes a template also fills in the variables from `discord-bot-python/utils/variables.py`: about 50 of them for the member, server, channel, time, random picks, emoji and level stats. Examples: `{server.members}`, `{ordinal}`, `{user.age}`, `{random:1-100}`, `{choose:a|b|c}`, `{xp}`, `{nextlevel}`. The registry `VARIABLES` is the single list: `!variables`, the docs site and the tests all read it. Unknown tokens are left as typed, and member-controlled text has `@` broken so it can't ping. `!testvars <text>` previews a message. The public list is on the docs site, [Docs site](website/docs-site.md).
+
 Example: `{embed} GG {user}, you reached level {level}! {embed}`
 
 In an embed the member is shown in bold with their avatar, and a normal mention is sent above it so they still get the ping. Leave messages never ping. The embed uses the VIP accent colour when the server has one.

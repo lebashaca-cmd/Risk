@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 
 from utils.helpers import embed_split, explain_error, message_payload
+from utils.variables import expand
 from utils.store import JsonStore
 
 
@@ -24,7 +25,7 @@ class Welcome(commands.Cog):
         entry = self.config.data.setdefault(str(ctx.guild.id), {})
         entry.update(channel=channel.id, text=text[:1500])
         self.config.save()
-        payload = message_payload(text, ctx.author, user_pattern="new_user", ping=False)
+        payload = message_payload(text, ctx.author, user_pattern="new_user", ping=False, channel=ctx.channel)
         await ctx.send(f"Welcome messages will go to {channel.mention}. Preview:\n{payload.get('content') or ''}".rstrip(), embed=payload.get("embed"), allowed_mentions=discord.AllowedMentions.none())
 
     @commands.command(name="welcomeoff")
@@ -49,7 +50,7 @@ class Welcome(commands.Cog):
         if channel is None:
             return
         vip = self.bot.get_cog("VIP")
-        payload = message_payload(entry["text"], member, user_pattern="new_user", color=vip.embed_color(member.guild.id) if vip else None)
+        payload = message_payload(entry["text"], member, user_pattern="new_user", color=vip.embed_color(member.guild.id) if vip else None, channel=channel)
         try:
             await channel.send(**payload, allowed_mentions=discord.AllowedMentions(users=[member]))
         except discord.HTTPException:
@@ -64,6 +65,7 @@ class Welcome(commands.Cog):
         if channel is None:
             return
         body, as_embed = embed_split(entry["leave_text"])
+        body = expand(body, member=member, channel=channel)
         name = discord.utils.escape_markdown(member.display_name)
         text = re.sub("new_user", name, body, flags=re.I)
         try:

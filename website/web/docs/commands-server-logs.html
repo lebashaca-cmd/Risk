@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Server logs commands · Risk docs</title>
+<meta name="description" content="Record what happens in your server.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs" aria-current="page">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Server logs commands</h1>
+      <p>Record what happens in your server. Anyone can use a command unless it says it needs a permission. If your server changed the prefix, use that instead of <code>!</code>.</p><p><label class="filter">Filter these commands <input type="search" data-filter placeholder="Type a command or a word" autocomplete="off"></label></p><div data-filter-list><div class="cmd" id="cmd-logchannel" data-search="logchannel sends one log category to its own channel, or back to the main one with off."><h3><code>!logchannel</code><a class="anchor" href="#cmd-logchannel" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Sends one log category to its own channel, or back to the main one with off.</p><p class="usage">Try it: <code>!logchannel voice #voice-logs</code></p></div>
+<div class="cmd" id="cmd-logevents" data-search="logevents lists every log category and whether it&#x27;s on."><h3><code>!logevents</code><a class="anchor" href="#cmd-logevents" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Lists every log category and whether it&#x27;s on.</p></div>
+<div class="cmd" id="cmd-logignore" data-search="logignore stops logging message edits and deletes in a channel."><h3><code>!logignore</code><a class="anchor" href="#cmd-logignore" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Stops logging message edits and deletes in a channel.</p><p class="usage">Try it: <code>!logignore #staff-chat</code></p></div>
+<div class="cmd" id="cmd-logignored" data-search="logignored lists the channels whose message logs are off."><h3><code>!logignored</code><a class="anchor" href="#cmd-logignored" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Lists the channels whose message logs are off.</p></div>
+<div class="cmd" id="cmd-logrecent" data-search="logrecent shows the most recent logged events since the bot started."><h3><code>!logrecent</code><a class="anchor" href="#cmd-logrecent" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs View Audit Log</span></p><p>Shows the most recent logged events since the bot started.</p><p class="usage">Try it: <code>!logrecent 15</code></p></div>
+<div class="cmd" id="cmd-logreset" data-search="logreset resets categories, extra channels and ignored channels to the defaults."><h3><code>!logreset</code><a class="anchor" href="#cmd-logreset" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Resets categories, extra channels and ignored channels to the defaults.</p><p class="usage">Try it: <code>!logreset confirm</code></p></div>
+<div class="cmd" id="cmd-logs" data-search="logs sets the server log channel (deletes, edits, voice, roles)."><h3><code>!logs</code><a class="anchor" href="#cmd-logs" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Sets the server log channel (deletes, edits, voice, roles).</p><p class="usage">Try it: <code>!logs #channel</code></p></div>
+<div class="cmd" id="cmd-logsearch" data-search="logsearch searches recent logged events for some text."><h3><code>!logsearch</code><a class="anchor" href="#cmd-logsearch" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs View Audit Log</span></p><p>Searches recent logged events for some text.</p><p class="usage">Try it: <code>!logsearch deleted</code></p></div>
+<div class="cmd" id="cmd-logstatus" data-search="logstatus shows the log channel and the current log settings."><h3><code>!logstatus</code><a class="anchor" href="#cmd-logstatus" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Shows the log channel and the current log settings.</p></div>
+<div class="cmd" id="cmd-logtest" data-search="logtest sends a test message to the log channel."><h3><code>!logtest</code><a class="anchor" href="#cmd-logtest" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Sends a test message to the log channel.</p></div>
+<div class="cmd" id="cmd-logtoggle" data-search="logtoggle turns a log category off or on."><h3><code>!logtoggle</code><a class="anchor" href="#cmd-logtoggle" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Turns a log category off or on.</p><p class="usage">Try it: <code>!logtoggle voice</code></p></div>
+<div class="cmd" id="cmd-logunignore" data-search="logunignore starts logging message edits and deletes in a channel again."><h3><code>!logunignore</code><a class="anchor" href="#cmd-logunignore" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs Manage Server</span></p><p>Starts logging message edits and deletes in a channel again.</p><p class="usage">Try it: <code>!logunignore #staff-chat</code></p></div>
+<div class="cmd" id="cmd-loguser" data-search="loguser shows recent logged events about a person."><h3><code>!loguser</code><a class="anchor" href="#cmd-loguser" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag">Needs View Audit Log</span></p><p>Shows recent logged events about a person.</p><p class="usage">Try it: <code>!loguser @user</code></p></div></div><p class="empty" data-filter-empty hidden>No command matches that.</p>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="commands-tickets"><span>Previous</span>Tickets commands</a><a class="next" href="commands-welcome"><span>Next</span>Welcome commands</a></nav>
+  </main>
+  
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

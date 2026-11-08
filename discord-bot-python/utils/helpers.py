@@ -109,18 +109,21 @@ def embed_split(text):
     return text, False
 
 
-def message_payload(template, member, subs=None, user_pattern=r"\{user\}", ping=True, color=None):
+def message_payload(template, member, subs=None, user_pattern=r"\{user\}", ping=True, color=None, channel=None, extra=None):
     """Keyword arguments for channel.send. Wrapping the template in {embed} ... {embed} sends it as an embed.
 
-    `subs` replaces plain tokens (like {level}). The member's name replaces user_pattern: a mention in a normal
+    `subs` replaces plain tokens (like {level}); every other {variable} comes from utils/variables.py. The member's name replaces user_pattern: a mention in a normal
     message, and their bold name in an embed (a mention is sent above the embed so they still get the ping).
     """
     import re
     import discord
 
+    from utils.variables import expand
+
     body, as_embed = embed_split(template)
     for token, value in (subs or {}).items():
         body = body.replace(token, value)
+    body = expand(body, member=member, channel=channel, extra=extra)
     if not as_embed:
         return {"content": re.sub(user_pattern, lambda _m: member.mention, body, flags=re.I)}
     body = re.sub(user_pattern, lambda _m: f"**{discord.utils.escape_markdown(member.display_name)}**", body, flags=re.I)

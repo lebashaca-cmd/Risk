@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Utility, fun and lookups · Risk docs</title>
+<meta name="description" content="!ping checks the response time, !uptime shows how long Risk has been online, !botinfo shows its stats, !invite gives the link to add it, !prefix shows or changes the server prefix, !dashboard gives th">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility" aria-current="page">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Utility, fun and lookups</h1>
+      <h2 id="info">Info<a class="anchor" href="#info" aria-label="Link to this section">#</a></h2>
+<p><code>!ping</code> checks the response time, <code>!uptime</code> shows how long Risk has been online, <code>!botinfo</code> shows its stats, <code>!invite</code> gives the link to add it, <code>!prefix</code> shows or changes the server prefix, <code>!dashboard</code> gives the dashboard link and <code>!tos</code> and <code>!privacy</code> show the policies.</p>
+<h2 id="server-and-user-info">Server and user info<a class="anchor" href="#server-and-user-info" aria-label="Link to this section">#</a></h2>
+<p><code>!serverinfo</code>, <code>!userinfo</code>, <code>!roleinfo</code>, <code>!channelinfo</code>, <code>!avatar</code>, <code>!banner</code>, <code>!servericon</code>, <code>!serverbanner</code>, <code>!membercount</code>, <code>!roles</code>, <code>!emojis</code>, <code>!emojiinfo</code>, <code>!inrole @Role</code>, <code>!whohas</code>, <code>!admins</code>, <code>!bots</code>, <code>!boosters</code>, <code>!newest</code>, <code>!oldest</code>, <code>!joined</code> and <code>!permissions</code>.</p>
+<h2 id="everyday-tools">Everyday tools<a class="anchor" href="#everyday-tools" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Goal</th><th>Command</th></tr></thead><tbody><tr><td>Reminders</td><td><code>!remindme 1h take out the trash</code>, <code>!reminders</code></td></tr><tr><td>Personal to-do list</td><td><code>!todo add buy milk</code>, <code>!todo list</code>, <code>!todo done 1</code></td></tr><tr><td>Away message</td><td><code>!afk lunch</code></td></tr><tr><td>Polls</td><td><code>!poll Pizza | Tacos</code> (a question, or options split by a bar)</td></tr><tr><td>Embeds</td><td><code>!embed #news Title | The text</code> (Manage Messages)</td></tr><tr><td>Countdown</td><td><code>!countdown</code> to a UTC date and time, <code>!daysuntil</code></td></tr><tr><td>Timestamps</td><td><code>!timestamp</code>, <code>!epoch</code>, <code>!snowflake</code></td></tr><tr><td>Math and converters</td><td><code>!calc 2*(3+4)</code>, <code>!convert</code>, <code>!base64</code>, <code>!binary</code>, <code>!hash</code>, <code>!uuid</code>, <code>!password</code>, <code>!qr text</code>, <code>!color</code>, <code>!palette</code></td></tr><tr><td>Text tools</td><td><code>!uppercase</code>, <code>!lowercase</code>, <code>!titlecase</code>, <code>!slugify</code>, <code>!urlencode</code>, <code>!wordcount</code>, <code>!leetspeak</code>, <code>!morse</code>, <code>!caesar</code>, <code>!rot13</code>, <code>!roman</code></td></tr><tr><td>Emoji</td><td><code>!enlarge</code>, <code>!addemoji</code>, <code>!removeemoji</code></td></tr><tr><td>Variables</td><td><code>!variables</code> lists them and <code>!testvars</code> previews a message</td></tr></tbody></table></div>
+<h2 id="lookups">Lookups<a class="anchor" href="#lookups" aria-label="Link to this section">#</a></h2>
+<p><code>!weather Chicago</code>, <code>!define serendipity</code>, <code>!wiki</code>, <code>!crypto</code>, <code>!pypi</code> and <code>!age</code> use public sources and need no setup.</p>
+<p>Four commands look up profiles on other sites: <code>!github</code>, <code>!spotify</code>, <code>!youtube</code> and <code>!tiktok</code>. They need the bot&#x27;s host to have a lookup service key. If they say a key isn&#x27;t set, the person running the bot has to add it.</p>
+<h2 id="ask-the-ai">Ask the AI<a class="anchor" href="#ask-the-ai" aria-label="Link to this section">#</a></h2>
+<p><code>!ask your question</code> sends a question to an AI model and replies with the answer. Code comes in code blocks and long answers can come as a file. There is a short cooldown per person, and the command says so if the AI service is busy or its key isn&#x27;t set.</p>
+<h2 id="fun">Fun<a class="anchor" href="#fun" aria-label="Link to this section">#</a></h2>
+<p>There are more than 70 fun commands: games like <code>!tictactoe</code>, <code>!connect4</code>, <code>!hangman</code>, <code>!trivia</code>, <code>!rps</code>, <code>!mathrace</code>, <code>!typing</code>, <code>!guess</code>, <code>!reactiontest</code>, <code>!russianroulette</code> and <code>!duel</code>; jokes and facts like <code>!joke</code>, <code>!dadjoke</code>, <code>!fact</code>, <code>!catfact</code>, <code>!riddle</code> and <code>!fortune</code>; reactions like <code>!hug</code>, <code>!pat</code>, <code>!slap</code>, <code>!wave</code> and <code>!highfive</code>; and silly tools like <code>!8ball</code>, <code>!ship</code>, <code>!rate</code>, <code>!roast</code>, <code>!compliment</code>, <code>!emojify</code>, <code>!mock</code>, <code>!uwu</code> and <code>!wheel</code>. Browse them all in the <a href="commands-fun">Fun commands</a>.</p>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>Every command here is open to everyone unless the reference says otherwise.</li><li>Staff can switch any command off or restrict it with <a href="command-rules">command rules</a>.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="streams"><span>Previous</span>Stream alerts</a><a class="next" href="messages"><span>Next</span>Message templates</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#info">Info</a></li><li class="l2"><a href="#server-and-user-info">Server and user info</a></li><li class="l2"><a href="#everyday-tools">Everyday tools</a></li><li class="l2"><a href="#lookups">Lookups</a></li><li class="l2"><a href="#ask-the-ai">Ask the AI</a></li><li class="l2"><a href="#fun">Fun</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

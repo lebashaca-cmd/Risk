@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Command rules · Risk docs</title>
+<meta name="description" content="Command rules let staff decide who can run commands, where, and how often. They live in the dashboard under Commands, and they have two layers: basic rules for every command and command rules for one ">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules" aria-current="page">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Command rules</h1>
+      <p>Command rules let staff decide who can run commands, where, and how often. They live in the dashboard under <strong>Commands</strong>, and they have two layers: <strong>basic rules</strong> for every command and <strong>command rules</strong> for one command at a time.</p>
+<p>Members with the <strong>Manage Server</strong> permission (or Administrator) ignore every rule, so staff can never lock themselves out. <code>!help</code> and <code>!dashboard</code> are never blocked by basic rules either.</p>
+<h2 id="basic-rules">Basic rules<a class="anchor" href="#basic-rules" aria-label="Link to this section">#</a></h2>
+<p>These apply to all commands in the server.</p>
+<div class="table-wrap"><table><thead><tr><th>Rule</th><th>What it does</th></tr></thead><tbody><tr><td>Commands are off in these channels</td><td>Risk answers nothing there, such as in a chat-only channel</td></tr><tr><td>Commands only work in these channels</td><td>The opposite: pick a bot channel and commands only work there. Leave empty to allow every channel</td></tr><tr><td>These roles can&#x27;t use commands</td><td>Members with any of these roles are blocked everywhere</td></tr><tr><td>Wait between a member&#x27;s commands</td><td>A pause of 0 to 60 seconds between any two commands from the same member</td></tr><tr><td>Delete the command message</td><td>After a command runs, Risk deletes what the member typed. Needs the Manage Messages permission</td></tr></tbody></table></div>
+<p>A member who breaks a basic rule gets a short message saying why, instead of silence.</p>
+<h2 id="rules-for-one-command">Rules for one command<a class="anchor" href="#rules-for-one-command" aria-label="Link to this section">#</a></h2>
+<p>Press <strong>Add a rule</strong>, pick a command, and set any of these:</p>
+<div class="table-wrap"><table><thead><tr><th>Setting</th><th>What it does</th></tr></thead><tbody><tr><td>Only these roles can use it</td><td>Everyone else is blocked. Leave empty to allow everyone</td></tr><tr><td>Only works in these channels</td><td>Leave empty to allow every channel</td></tr><tr><td>These roles can&#x27;t use it</td><td>Blocked roles win over the allowed list</td></tr><tr><td>Turned off in these channels</td><td>The command is blocked in those channels only</td></tr><tr><td>Managers only</td><td>Only people with Manage Server can use it</td></tr><tr><td>Cooldown per member</td><td>0 to 3,600 seconds before the same member can use that command again</td></tr></tbody></table></div>
+<p>You can have up to 500 rules. A rule on a command also covers its subcommands, so a rule on <code>giveaway</code> covers <code>giveaway start</code>.</p>
+<h2 id="how-the-checks-are-ordered">How the checks are ordered<a class="anchor" href="#how-the-checks-are-ordered" aria-label="Link to this section">#</a></h2>
+<p>Risk checks things from the widest to the narrowest and stops at the first one that blocks:</p>
+<ol><li>Is the member a manager? If so, everything is allowed.</li><li>Is the command switched off in <strong>General</strong>?</li><li>Basic rules: blocked channel, only-these channels, blocked roles, wait between commands.</li><li>The command&#x27;s own rule: managers only, blocked channels, blocked roles, allowed channels, allowed roles, cooldown.</li></ol>
+<h2 id="examples">Examples<a class="anchor" href="#examples" aria-label="Link to this section">#</a></h2>
+<ul><li><strong>Keep commands in one place.</strong> Set &quot;Commands only work in these channels&quot; to <code>#bot-commands</code>.</li><li><strong>Quiet the economy.</strong> Add a rule on <code>slots</code> with &quot;Turned off in these channels&quot; set to <code>#general</code>.</li><li><strong>Staff-only note tool.</strong> Add a rule on <code>note</code> with &quot;Managers only&quot; on.</li><li><strong>Slow a heavy command.</strong> Add a rule on <code>heist</code> with a 600 second cooldown.</li><li><strong>Mute a troublemaker&#x27;s commands.</strong> Put them in a role and add it to &quot;These roles can&#x27;t use commands&quot;.</li></ul>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>Rules only affect Risk commands. They don&#x27;t change Discord permissions.</li><li>Commands that already need a Discord permission still need it. Rules only make things stricter.</li><li>You can switch a whole command off in <strong>General</strong> without writing a rule.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="variables"><span>Previous</span>Variables</a><a class="next" href="vip"><span>Next</span>VIP plans</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#basic-rules">Basic rules</a></li><li class="l2"><a href="#rules-for-one-command">Rules for one command</a></li><li class="l2"><a href="#how-the-checks-are-ordered">How the checks are ordered</a></li><li class="l2"><a href="#examples">Examples</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

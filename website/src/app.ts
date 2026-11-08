@@ -220,6 +220,9 @@ async function start(): Promise<void> {
     link.href = target;
     if (/^https?:/.test(target)) link.removeAttribute("data-link");
   });
+  document.querySelectorAll<HTMLAnchorElement>("[data-docs]").forEach((link) => {
+    link.href = config.docsUrl ?? "/docs/";
+  });
   document.querySelectorAll<HTMLAnchorElement>("[data-dashboard]").forEach((link) => {
     const target = config.dashboardUrl ?? "/dashboard";
     link.href = target;

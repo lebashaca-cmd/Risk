@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Welcome and leave · Risk docs</title>
+<meta name="description" content="Risk can greet people when they join and say goodbye when they leave.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome" aria-current="page">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Welcome and leave</h1>
+      <p>Risk can greet people when they join and say goodbye when they leave.</p>
+<h2 id="set-up-a-welcome-message">Set up a welcome message<a class="anchor" href="#set-up-a-welcome-message" aria-label="Link to this section">#</a></h2>
+<pre><code>!welcome #welcome {embed} Welcome New_user to {server}! You are the {ordinal} member. {embed}</code></pre>
+<ul><li>Write <code>New_user</code> where the new member should appear. In a normal message it becomes a mention. Inside an embed it shows their bold name and a normal mention is sent above the embed, so they still get notified.</li><li>Put <code>{embed}</code> at the very start and the very end to send the message as an embed with their profile picture. The embed uses your VIP accent colour if you have one.</li><li>Any <a href="variables">variable</a> works too, like <code>{server.members}</code> or <code>{user.age}</code>.</li></ul>
+<p>Turn it off with <code>!welcomeoff</code>. Your leave settings are kept.</p>
+<h2 id="leave-messages">Leave messages<a class="anchor" href="#leave-messages" aria-label="Link to this section">#</a></h2>
+<p>Set the leave message and channel in the dashboard under <strong>Welcome and leave</strong>. Write <code>New_user</code> where the member&#x27;s name should go. Leave messages never ping anyone.</p>
+<h2 id="test-a-message-first">Test a message first<a class="anchor" href="#test-a-message-first" aria-label="Link to this section">#</a></h2>
+<p>Run <code>!testvars Welcome {user.mention}, you are the {ordinal} member!</code> to see how variables turn out, using yourself as the member.</p>
+<h2 id="vip-welcome-dm">VIP welcome DM<a class="anchor" href="#vip-welcome-dm" aria-label="Link to this section">#</a></h2>
+<p>VIP White servers can also send each new member a private welcome message with <code>!welcomedm set &lt;text&gt;</code>. See <a href="vip-commands">VIP commands</a>.</p>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>Risk needs permission to send messages in the welcome channel.</li><li>The dashboard shows the same fields, so you can edit the text there and see the limits as you type.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="community"><span>Previous</span>Community tools</a><a class="next" href="streams"><span>Next</span>Stream alerts</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#set-up-a-welcome-message">Set up a welcome message</a></li><li class="l2"><a href="#leave-messages">Leave messages</a></li><li class="l2"><a href="#test-a-message-first">Test a message first</a></li><li class="l2"><a href="#vip-welcome-dm">VIP welcome DM</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

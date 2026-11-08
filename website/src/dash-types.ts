@@ -126,11 +126,23 @@ export interface CommandRule {
   command: string;
   roles: string[];
   channels: string[];
+  blockedRoles: string[];
+  blockedChannels: string[];
+  staffOnly: boolean;
+  cooldown: number;
+}
+
+export interface CommandBasics {
+  blockedChannels: string[];
+  onlyChannels: string[];
+  blockedRoles: string[];
+  deleteInvocations: boolean;
   cooldown: number;
 }
 
 export interface CommandsSettings {
   rules: CommandRule[];
+  basics: CommandBasics;
 }
 
 export interface Responder {

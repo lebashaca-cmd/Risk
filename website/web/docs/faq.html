@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Troubleshooting · Risk docs</title>
+<meta name="description" content="Risk&#x27;s role is below the member or role it is trying to change, or it is missing the permission. Move Risk&#x27;s role higher in the role list and check the permissions it needs.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq" aria-current="page">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Troubleshooting</h1>
+      <h2 id="risk-doesn-t-answer-a-command">Risk doesn&#x27;t answer a command<a class="anchor" href="#risk-doesn-t-answer-a-command" aria-label="Link to this section">#</a></h2>
+<ol><li>Check the prefix. The defaults <code>!</code>, <code>?</code> and <code>,</code> always work. If staff set another prefix, that works too.</li><li>Check that Risk can <strong>see and send messages</strong> in that channel.</li><li>The command may be switched off or restricted. Ask staff to look at <strong>General</strong> and <strong>Commands</strong> in the <a href="dashboard">dashboard</a> and the <a href="command-rules">command rules</a>. Risk tells you when a rule blocks you.</li><li>Wait a moment and try again. Commands have cooldowns, and Risk says how long.</li><li>Type <code>!ping</code>. If that works, only the one command is the problem.</li></ol>
+<h2 id="discord-says-i-don-t-have-permission">&quot;Discord says I don&#x27;t have permission&quot;<a class="anchor" href="#discord-says-i-don-t-have-permission" aria-label="Link to this section">#</a></h2>
+<p>Risk&#x27;s role is below the member or role it is trying to change, or it is missing the permission. Move Risk&#x27;s role higher in the role list and check the <a href="permissions">permissions</a> it needs.</p>
+<h2 id="the-dashboard-doesn-t-show-my-server">The dashboard doesn&#x27;t show my server<a class="anchor" href="#the-dashboard-doesn-t-show-my-server" aria-label="Link to this section">#</a></h2>
+<ul><li>You need <strong>Manage Server</strong> or Administrator on that server.</li><li>Risk must be in the server. Add it first if not.</li><li>Sign out and in again after changing your roles.</li></ul>
+<h2 id="a-dashboard-section-says-it-isn-t-available">A dashboard section says it isn&#x27;t available<a class="anchor" href="#a-dashboard-section-says-it-isn-t-available" aria-label="Link to this section">#</a></h2>
+<p>The bot is running an older copy of that feature. Update the bot&#x27;s files and restart it. The other sections keep working.</p>
+<h2 id="level-rewards-or-autorole-don-t-work">Level rewards or autorole don&#x27;t work<a class="anchor" href="#level-rewards-or-autorole-don-t-work" aria-label="Link to this section">#</a></h2>
+<p>The role must sit <strong>below</strong> Risk&#x27;s top role, can&#x27;t be a managed (integration) role and can&#x27;t be @everyone. Then run <code>!rewardsync</code> to hand out rewards to members who already qualify.</p>
+<h2 id="welcome-messages-don-t-appear">Welcome messages don&#x27;t appear<a class="anchor" href="#welcome-messages-don-t-appear" aria-label="Link to this section">#</a></h2>
+<p>Run <code>!welcome</code> again with the channel, and check that Risk can send messages there. <code>!welcomeoff</code> removes the channel and text, so set it up again afterwards.</p>
+<h2 id="my-variable-shows-up-as-text">My variable shows up as text<a class="anchor" href="#my-variable-shows-up-as-text" aria-label="Link to this section">#</a></h2>
+<p>Risk leaves a variable alone when it doesn&#x27;t recognise it. Check the spelling against the <a href="variables">variables</a> list and use <code>!testvars</code> to try the message. Some only work in some places: <code>{level}</code> and <code>{xp}</code> only in level-up messages.</p>
+<h2 id="stream-alerts-don-t-post">Stream alerts don&#x27;t post<a class="anchor" href="#stream-alerts-don-t-post" aria-label="Link to this section">#</a></h2>
+<ul><li>Run <code>!streamtest</code>. If that doesn&#x27;t post, the alert channel or Risk&#x27;s permissions are the problem.</li><li>Twitch needs keys on the bot&#x27;s host, and TikTok is unofficial and can fail. <code>!twitchtest</code> and <code>!tiktoktest</code> tell you what Risk sees.</li></ul>
+<h2 id="vip-doesn-t-show-up">VIP doesn&#x27;t show up<a class="anchor" href="#vip-doesn-t-show-up" aria-label="Link to this section">#</a></h2>
+<p><code>!vip</code> shows the plan for the server you run it in. VIP belongs to one server, so check you are in the right one, then ask in the support server with the server ID.</p>
+<h2 id="still-stuck">Still stuck<a class="anchor" href="#still-stuck" aria-label="Link to this section">#</a></h2>
+<p>Ask in the support server and mention the command you ran and what Risk answered.</p>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="permissions"><span>Previous</span>Permissions</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#risk-doesn-t-answer-a-command">Risk doesn&#x27;t answer a command</a></li><li class="l2"><a href="#discord-says-i-don-t-have-permission">&quot;Discord says I don&#x27;t have permission&quot;</a></li><li class="l2"><a href="#the-dashboard-doesn-t-show-my-server">The dashboard doesn&#x27;t show my server</a></li><li class="l2"><a href="#a-dashboard-section-says-it-isn-t-available">A dashboard section says it isn&#x27;t available</a></li><li class="l2"><a href="#level-rewards-or-autorole-don-t-work">Level rewards or autorole don&#x27;t work</a></li><li class="l2"><a href="#welcome-messages-don-t-appear">Welcome messages don&#x27;t appear</a></li><li class="l2"><a href="#my-variable-shows-up-as-text">My variable shows up as text</a></li><li class="l2"><a href="#stream-alerts-don-t-post">Stream alerts don&#x27;t post</a></li><li class="l2"><a href="#vip-doesn-t-show-up">VIP doesn&#x27;t show up</a></li><li class="l2"><a href="#still-stuck">Still stuck</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>
