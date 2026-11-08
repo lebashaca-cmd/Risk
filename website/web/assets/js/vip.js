@@ -10,7 +10,7 @@ const CORE = [
 // Edit this list to change what each plan says. Prices and checkout links come from the site's environment.
 const PLANS = [
     { key: "basic", name: "Basic", period: "per month", note: "Cancel any time. VIP stays on until the end of the month you paid for.", perks: [...CORE, "Renews every month until you cancel"] },
-    { key: "lifetime", name: "Lifetime", period: "one time", note: "Pay once. VIP never expires on that server.", perks: [...CORE, "Lifetime-only: !founder supporter card and !motd message of the day", "Never expires"], featured: true },
+    { key: "lifetime", name: "Lifetime", period: "one time", note: "Pay once. Every VIP feature, forever, on that server.", perks: ["Everything in Basic, VIP White and VIP Supreme", "Custom commands, auto reactions, welcome DM, auto delete, server lock, backups and more", "Up to 200 custom commands", "Lifetime-only: !founder supporter card and !motd message of the day", "Never expires, and new VIP features are included"], featured: true },
     {
         key: "white",
         name: "VIP White",

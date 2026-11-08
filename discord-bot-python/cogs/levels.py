@@ -110,7 +110,9 @@ class Levels(commands.Cog):
             channel = member.guild.get_channel(int(target)) or channel
         template = config["message"] or DEFAULT_MESSAGE
         vip = self.bot.get_cog("VIP")
-        payload = message_payload(template, member, {"{level}": str(level), "{name}": member.display_name}, color=vip.embed_color(member.guild.id) if vip else None)
+        entry = self.entry(member.guild.id, member.id)
+        extra = {"level": str(level), "xp": f"{entry['xp']:,}", "nextlevel": str(level + 1), "messages": f"{entry.get('msgs', 0):,}"}
+        payload = message_payload(template, member, {"{level}": str(level), "{name}": member.display_name}, color=vip.embed_color(member.guild.id) if vip else None, channel=channel, extra=extra)
         if payload.get("content"):
             payload["content"] = payload["content"][:1900]
         try:
@@ -299,7 +301,7 @@ class Levels(commands.Cog):
     @commands.command(name="levelmessage")
     @commands.has_permissions(manage_guild=True)
     async def levelmessage(self, ctx, *, text: str):
-        """Sets the level-up message using {user}, {name} and {level}, or reset. Put {embed} at the start and the end to send it as an embed. Usage: !levelmessage {embed} Nice one {user}, level {level}! {embed}"""
+        """Sets the level-up message using {user}, {name}, {level}, {xp}, {nextlevel}, {messages} and any other {variable}, or reset. Put {embed} at the start and the end to send it as an embed. Usage: !levelmessage {embed} Nice one {user}, level {level}! {embed}"""
         config = self.cfg(ctx.guild.id)
         if text.lower() == "reset":
             config["message"] = None
@@ -308,7 +310,7 @@ class Levels(commands.Cog):
             return
         config["message"] = text[:300]
         self.settings.save()
-        payload = message_payload(text, ctx.author, {"{level}": "5", "{name}": ctx.author.display_name})
+        payload = message_payload(text, ctx.author, {"{level}": "5", "{name}": ctx.author.display_name}, channel=ctx.channel, extra={"level": "5", "xp": "1,540", "nextlevel": "6", "messages": "412"})
         shown = f"Saved. Preview:\n{(payload.get('content') or '')[:300]}".rstrip()
         await ctx.reply(shown, embed=payload.get("embed"), mention_author=False, allowed_mentions=NO_MENTIONS)
 

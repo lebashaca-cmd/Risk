@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Variables · Risk docs</title>
+<meta name="description" content="Variables are placeholders you type inside a message. Risk swaps each one for the real value when the message is sent. They work in welcome and leave messages, level-up messages, auto-replies, custom ">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables" aria-current="page">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Variables</h1>
+      <p>Variables are placeholders you type inside a message. Risk swaps each one for the real value when the message is sent. They work in welcome and leave messages, level-up messages, auto-replies, custom commands and more. The <a href="messages">message templates</a> page explains where each one works.</p>
+<p>There are 57 variables. Type <code>!variables</code> in Discord for the same list, <code>!variables Server</code> for one group, and <code>!testvars &lt;message&gt;</code> to see a message with the values filled in.</p>
+<h2 id="how-to-use-them">How to use them<a class="anchor" href="#how-to-use-them" aria-label="Link to this section">#</a></h2>
+<ul><li>Wrap the name in curly braces: <code>{server}</code>.</li><li>They are not case sensitive.</li><li>An unknown variable is left as typed.</li><li>Variables with a colon take a value after it: <code>{random:1-100}</code> and <code>{choose:red|green|blue}</code>.</li><li>Times marked &quot;shown in each reader&#x27;s own time zone&quot; use Discord&#x27;s time display, so everyone sees their own local time.</li></ul>
+<h3 id="var-member">Member<a class="anchor" href="#var-member" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{user}</code></td><td>Mentions the member in a normal message, and shows their bold name inside an {embed}.</td><td>@Sam</td></tr>
+<tr><td><code>{name}</code></td><td>The member&#x27;s display name, without a mention.</td><td>Sam</td></tr>
+<tr><td><code>{username}</code></td><td>The member&#x27;s account name, not their server nickname.</td><td>sam</td></tr>
+<tr><td><code>{user.id}</code></td><td>The member&#x27;s Discord ID.</td><td>123456789012345678</td></tr>
+<tr><td><code>{user.mention}</code></td><td>Always a mention, even inside an embed.</td><td>@Sam</td></tr>
+<tr><td><code>{user.avatar}</code></td><td>A link to the member&#x27;s profile picture.</td><td>https://cdn.discordapp.com/…</td></tr>
+<tr><td><code>{user.created}</code></td><td>The date the account was made, shown in each reader&#x27;s own time zone.</td><td>March 4, 2021</td></tr>
+<tr><td><code>{user.age}</code></td><td>How old the account is.</td><td>3 years</td></tr>
+<tr><td><code>{user.joined}</code></td><td>The date the member joined this server.</td><td>June 1, 2026</td></tr>
+<tr><td><code>{user.toprole}</code></td><td>The name of the member&#x27;s highest role.</td><td>Moderator</td></tr>
+<tr><td><code>{user.rolecount}</code></td><td>How many roles the member has.</td><td>4</td></tr>
+<tr><td><code>{ordinal}</code></td><td>The member&#x27;s join position with its ending: 1st, 2nd, 3rd...</td><td>1,204th</td></tr>
+<tr><td><code>{position}</code></td><td>The member&#x27;s join position as a plain number.</td><td>1204</td></tr>
+</tbody></table></div>
+<h3 id="var-server">Server<a class="anchor" href="#var-server" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{server}</code></td><td>The server&#x27;s name.</td><td>Risk HQ</td></tr>
+<tr><td><code>{server.id}</code></td><td>The server&#x27;s ID.</td><td>987654321098765432</td></tr>
+<tr><td><code>{server.owner}</code></td><td>The server owner&#x27;s display name.</td><td>Alex</td></tr>
+<tr><td><code>{server.members}</code></td><td>How many members the server has, bots included.</td><td>1,204</td></tr>
+<tr><td><code>{server.humans}</code></td><td>How many members are people, not bots.</td><td>1,190</td></tr>
+<tr><td><code>{server.bots}</code></td><td>How many members are bots.</td><td>14</td></tr>
+<tr><td><code>{server.channels}</code></td><td>How many channels the server has.</td><td>32</td></tr>
+<tr><td><code>{server.roles}</code></td><td>How many roles the server has.</td><td>18</td></tr>
+<tr><td><code>{server.boosts}</code></td><td>How many boosts the server has.</td><td>9</td></tr>
+<tr><td><code>{server.boostlevel}</code></td><td>The server&#x27;s boost level, 0 to 3.</td><td>2</td></tr>
+<tr><td><code>{server.created}</code></td><td>The date the server was made.</td><td>January 9, 2020</td></tr>
+<tr><td><code>{server.icon}</code></td><td>A link to the server&#x27;s icon.</td><td>https://cdn.discordapp.com/…</td></tr>
+<tr><td><code>{server.description}</code></td><td>The server&#x27;s community description.</td><td>A friendly place to chat</td></tr>
+<tr><td><code>{server.emojis}</code></td><td>How many custom emojis the server has.</td><td>25</td></tr>
+</tbody></table></div>
+<h3 id="var-layout">Layout<a class="anchor" href="#var-layout" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{embed}</code></td><td>Put it at the very start and very end of a message to send the whole message as an embed.</td><td>{embed}Hello!{embed}</td></tr>
+<tr><td><code>{newline}</code></td><td>A line break. Useful in places that only take one line, like the dashboard&#x27;s text boxes.</td><td>(a new line)</td></tr>
+</tbody></table></div>
+<h3 id="var-channel">Channel<a class="anchor" href="#var-channel" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{channel}</code></td><td>The name of the channel the message is sent in.</td><td>general</td></tr>
+<tr><td><code>{channel.mention}</code></td><td>A clickable link to the channel.</td><td>#general</td></tr>
+<tr><td><code>{bot}</code></td><td>The bot&#x27;s name.</td><td>Risk</td></tr>
+</tbody></table></div>
+<h3 id="var-time">Time<a class="anchor" href="#var-time" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{date}</code></td><td>Today&#x27;s date in UTC.</td><td>8 November 2026</td></tr>
+<tr><td><code>{time}</code></td><td>The current time in UTC.</td><td>14:05 UTC</td></tr>
+<tr><td><code>{day}</code></td><td>The day of the week in UTC.</td><td>Sunday</td></tr>
+<tr><td><code>{month}</code></td><td>The month name in UTC.</td><td>November</td></tr>
+<tr><td><code>{year}</code></td><td>The year in UTC.</td><td>2026</td></tr>
+<tr><td><code>{timestamp}</code></td><td>The current Unix timestamp, in seconds.</td><td>1794233100</td></tr>
+<tr><td><code>{now}</code></td><td>The current date and time, shown in each reader&#x27;s own time zone.</td><td>November 8, 2026 2:05 PM</td></tr>
+<tr><td><code>{now.relative}</code></td><td>&#x27;just now&#x27; that keeps counting for readers. Best for a message that stays on screen.</td><td>a few seconds ago</td></tr>
+</tbody></table></div>
+<h3 id="var-random">Random<a class="anchor" href="#var-random" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{random:1-100}</code></td><td>A random whole number between the two you give. Use any range, such as {random:1-6}.</td><td>42</td></tr>
+<tr><td><code>{choose:a|b|c}</code></td><td>One of your options, picked at random. Separate them with |.</td><td>b</td></tr>
+<tr><td><code>{coin}</code></td><td>Heads or tails.</td><td>Heads</td></tr>
+<tr><td><code>{dice}</code></td><td>A six-sided dice roll.</td><td>4</td></tr>
+</tbody></table></div>
+<h3 id="var-emoji">Emoji<a class="anchor" href="#var-emoji" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{check}</code></td><td>The check emoji.</td><td>✅</td></tr>
+<tr><td><code>{cross}</code></td><td>The cross emoji.</td><td>❌</td></tr>
+<tr><td><code>{star}</code></td><td>The star emoji.</td><td>⭐</td></tr>
+<tr><td><code>{party}</code></td><td>The party emoji.</td><td>🎉</td></tr>
+<tr><td><code>{wave}</code></td><td>The wave emoji.</td><td>👋</td></tr>
+<tr><td><code>{heart}</code></td><td>The heart emoji.</td><td>❤️</td></tr>
+<tr><td><code>{fire}</code></td><td>The fire emoji.</td><td>🔥</td></tr>
+<tr><td><code>{crown}</code></td><td>The crown emoji.</td><td>👑</td></tr>
+<tr><td><code>{sparkles}</code></td><td>The sparkles emoji.</td><td>✨</td></tr>
+</tbody></table></div>
+<h3 id="var-levels">Levels<a class="anchor" href="#var-levels" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{level}</code></td><td>The level the member just reached. Level-up messages only.</td><td>7</td></tr>
+<tr><td><code>{xp}</code></td><td>The member&#x27;s total XP. Level-up messages only.</td><td>1,540</td></tr>
+<tr><td><code>{nextlevel}</code></td><td>The next level to reach. Level-up messages only.</td><td>8</td></tr>
+<tr><td><code>{messages}</code></td><td>How many messages the member has sent. Level-up messages only.</td><td>412</td></tr>
+</tbody></table></div>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="messages"><span>Previous</span>Message templates</a><a class="next" href="command-rules"><span>Next</span>Command rules</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#how-to-use-them">How to use them</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

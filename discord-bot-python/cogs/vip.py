@@ -33,17 +33,17 @@ PERKS = [
     "Basic commands: !vippoll, !vipannounce, !servercard, !userreport and more",
     "VIP White adds custom commands, auto reactions and a welcome DM",
     "VIP Supreme adds auto delete, server lock, backups and a member counter",
-    "Lifetime adds !founder and !motd",
+    "Lifetime never ends and includes every feature above, plus !founder and !motd",
 ]
 MIN_INTERVAL = 300
 
 # What each plan unlocks. A command asks for one group, and a server has it if its plan lists that group.
-# Basic is the base. White and Supreme stack (Supreme has White's commands too). Lifetime is Basic that never
-# ends, plus the Lifetime-only commands. A server in VIP_GUILD_IDS gets every group.
+# Basic is the base. White and Supreme stack (Supreme has White's commands too). Lifetime never ends and has every
+# group: Basic, White, Supreme and its own commands. A server in VIP_GUILD_IDS gets every group.
 GROUPS = ("basic", "lifetime", "white", "supreme")
 TIERS = {
     "basic": ("Basic", {"basic"}),
-    "lifetime": ("Lifetime", {"basic", "lifetime"}),
+    "lifetime": ("Lifetime", {"basic", "lifetime", "white", "supreme"}),
     "white": ("VIP White", {"basic", "white"}),
     "supreme": ("VIP Supreme", {"basic", "white", "supreme"}),
 }
@@ -128,6 +128,33 @@ class VIP(commands.Cog):
         if ctx.guild is None or not self.is_vip(ctx.guild.id):
             raise ModError("That's a **VIP** feature. Run `!vip` to see what VIP adds and how to get it.")
 
+    def grant(self, guild_id, days=0, tier=None, note=""):
+        """Turns VIP on for a server. Used by !vipgrant and by the staff panel. Returns the saved entry."""
+        if not 0 <= days <= 3650:
+            raise ValueError("Days must be between 0 and 3650.")
+        if tier is not None and tier not in TIERS:
+            raise ValueError("The plan must be one of: " + ", ".join(TIERS) + ".")
+        entry = self.cfg(guild_id)
+        entry.setdefault("since", time.time())
+        entry["until"] = time.time() + days * 86400 if days else None
+        entry["note"] = str(note).strip()[:100]
+        if tier:
+            entry["tier"] = tier
+        elif entry.get("tier") not in TIERS:
+            entry["tier"] = "basic"
+        self.store.save()
+        return entry
+
+    def revoke(self, guild_id):
+        """Ends a granted VIP. Returns False if the server had none."""
+        entry = self.store.data["guilds"].get(str(guild_id))
+        if not entry or "until" not in entry or (entry["until"] is not None and entry["until"] <= time.time()):
+            return False
+        entry.pop("note", None)
+        entry["until"] = 1
+        self.store.save()
+        return True
+
     def need(self, ctx, group):
         """Stops the command unless this server's plan includes `group`, and says which plans do."""
         if ctx.guild is None:
@@ -171,15 +198,7 @@ class VIP(commands.Cog):
         tier = first.lower() if first.lower() in TIERS else None
         if tier:
             note = rest
-        entry = self.cfg(guild_id)
-        entry.setdefault("since", time.time())
-        entry["until"] = time.time() + days * 86400 if days else None
-        entry["note"] = note.strip()[:100]
-        if tier:
-            entry["tier"] = tier
-        elif entry.get("tier") not in TIERS:
-            entry["tier"] = "basic"
-        self.store.save()
+        entry = self.grant(guild_id, days, tier, note)
         await ctx.reply(f"**{TIERS[entry['tier']][0]}** is on for **{self.bot.get_guild(guild_id).name}** " + (f"for {days} days." if days else "with no end date."), mention_author=False)
 
     @commands.command(name="viptier")
@@ -211,13 +230,8 @@ class VIP(commands.Cog):
     @commands.is_owner()
     async def viprevoke(self, ctx, guild_id: int):
         """Owner only. Removes a server's VIP. Usage: !viprevoke <server id>"""
-        entry = self.store.data["guilds"].get(str(guild_id))
-        if not entry or "until" not in entry:
+        if not self.revoke(guild_id):
             raise ModError("That server has no granted VIP.")
-        entry.pop("until", None)
-        entry.pop("note", None)
-        entry["until"] = 1
-        self.store.save()
         await ctx.reply("VIP removed. Their settings are kept, but the VIP limits no longer apply.", mention_author=False)
 
     @commands.command(name="viplist")

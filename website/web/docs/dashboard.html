@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The dashboard · Risk docs</title>
+<meta name="description" content="The dashboard is a website where staff change Risk&#x27;s settings. Everything you can save there is also stored by the bot, so changes take effect right away and the commands and the dashboard always agre">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard" aria-current="page">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>The dashboard</h1>
+      <p>The dashboard is a website where staff change Risk&#x27;s settings. Everything you can save there is also stored by the bot, so changes take effect right away and the commands and the dashboard always agree.</p>
+<h2 id="signing-in">Signing in<a class="anchor" href="#signing-in" aria-label="Link to this section">#</a></h2>
+<ol><li>Type <code>!dashboard</code> in your server, or open the dashboard link from the main site.</li><li>Choose <strong>Sign in with Discord</strong> and approve the request. Risk only asks to see your account and the list of servers you are in.</li><li>Pick a server. Only servers where you have <strong>Manage Server</strong> (or Administrator) and Risk is present are listed.</li></ol>
+<p>Risk checks your permissions again on every save, so removing someone&#x27;s role removes their dashboard access immediately.</p>
+<h2 id="the-account-bar">The account bar<a class="anchor" href="#the-account-bar" aria-label="Link to this section">#</a></h2>
+<p>At the top you see your Discord profile picture, banner and server tag if you have one, your overall level across the servers Risk shares with you, and quick stats. It is read only.</p>
+<h2 id="sections">Sections<a class="anchor" href="#sections" aria-label="Link to this section">#</a></h2>
+<h3 id="overview">Overview<a class="anchor" href="#overview" aria-label="Link to this section">#</a></h3>
+<p>A read-only landing page: server stats (members, bots, channels, roles, boosts), a setup checklist that links to the tab each step lives in, how many auto-replies, rules and announcements you have, and the last ten changes made in the dashboard.</p>
+<h3 id="general">General<a class="anchor" href="#general" aria-label="Link to this section">#</a></h3>
+<ul><li><strong>Prefix.</strong> One to five characters. It is added to the defaults <code>!</code>, <code>?</code> and <code>,</code>.</li><li><strong>Disabled commands.</strong> Switch a whole command off for the server. Members with Manage Server can still use it.</li><li><strong>Ignored channels.</strong> Risk does not answer commands in these channels, except for staff.</li></ul>
+<h3 id="welcome-and-leave">Welcome and leave<a class="anchor" href="#welcome-and-leave" aria-label="Link to this section">#</a></h3>
+<p>Pick a channel and write a message. <code>New_user</code> is replaced by the member, and you can use any <a href="variables">variable</a>. Wrap the message in <code>{embed}</code> to send it as an embed. Turning welcome off keeps your leave settings. See <a href="welcome">Welcome and leave</a>.</p>
+<h3 id="server-logs">Server logs<a class="anchor" href="#server-logs" aria-label="Link to this section">#</a></h3>
+<p>Choose the main log channel, send some categories to their own channels, switch categories off and ignore noisy channels. Every dashboard save adds a &quot;Dashboard Updated&quot; entry so you can see who changed what. See <a href="logs">Server logs</a>.</p>
+<h3 id="levels">Levels<a class="anchor" href="#levels" aria-label="Link to this section">#</a></h3>
+<p>Choose where level-ups are announced, write the level-up message, set an XP multiplier and cooldown, add level rewards (a role at a level), choose whether rewards stack or replace each other, and list channels and roles that earn no XP. See <a href="levels">Levels</a>.</p>
+<h3 id="auto-moderation">Auto-moderation<a class="anchor" href="#auto-moderation" aria-label="Link to this section">#</a></h3>
+<p>Switch on link, invite and spam filters, set the mention limit, manage the blocked-word list (you can import a <code>.txt</code> or <code>.env</code> file with up to 10,000 words) and list channels and roles that auto-mod ignores. See <a href="moderation">Moderation</a>.</p>
+<h3 id="community">Community<a class="anchor" href="#community" aria-label="Link to this section">#</a></h3>
+<p>Autorole, the suggestions channel, starboard channel and threshold, birthday channel, reports channel, counting channel, ticket log channel and the server rules text.</p>
+<h3 id="commands">Commands<a class="anchor" href="#commands" aria-label="Link to this section">#</a></h3>
+<p>Two kinds of rules for commands. <strong>Basic rules</strong> apply to every command, and <strong>command rules</strong> apply to one command. See <a href="command-rules">Command rules</a>.</p>
+<h3 id="auto-replies">Auto-replies<a class="anchor" href="#auto-replies" aria-label="Link to this section">#</a></h3>
+<p>Answer messages that match a trigger. Choose whether the trigger must be contained in the message, be the whole message or start the message. Replies never ping anyone, and the same reply is not repeated more than once every ten seconds. Replies can use <a href="variables">variables</a>. With VIP you can send a reply as an embed.</p>
+<h3 id="announcements-vip">Announcements (VIP)<a class="anchor" href="#announcements-vip" aria-label="Link to this section">#</a></h3>
+<p>Repeat a message in a channel on a timer from every five minutes up to every 30 days. See <a href="vip">VIP plans</a>.</p>
+<h3 id="vip">VIP<a class="anchor" href="#vip" aria-label="Link to this section">#</a></h3>
+<p>Shows the plan your server is on, when it ends, what it unlocks, and lets you pick the accent colour of Risk&#x27;s embeds in your server.</p>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>Each section has a <strong>Save</strong> button and a <strong>Discard</strong> button. A section with unsaved changes is marked, and the message under the buttons says so.</li><li>If a section says it is unavailable, the bot is running an older file for that feature. Update the bot and refresh.</li><li>The dashboard cannot do anything your account could not already do in Discord. It cannot grant itself permissions or touch servers you don&#x27;t manage.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="getting-started"><span>Previous</span>Getting started</a><a class="next" href="moderation"><span>Next</span>Moderation and auto-mod</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#signing-in">Signing in</a></li><li class="l2"><a href="#the-account-bar">The account bar</a></li><li class="l2"><a href="#sections">Sections</a></li><li class="l3"><a href="#overview">Overview</a></li><li class="l3"><a href="#general">General</a></li><li class="l3"><a href="#welcome-and-leave">Welcome and leave</a></li><li class="l3"><a href="#server-logs">Server logs</a></li><li class="l3"><a href="#levels">Levels</a></li><li class="l3"><a href="#auto-moderation">Auto-moderation</a></li><li class="l3"><a href="#community">Community</a></li><li class="l3"><a href="#commands">Commands</a></li><li class="l3"><a href="#auto-replies">Auto-replies</a></li><li class="l3"><a href="#announcements-vip">Announcements (VIP)</a></li><li class="l3"><a href="#vip">VIP</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

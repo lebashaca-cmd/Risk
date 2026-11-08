@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Getting started · Risk docs</title>
+<meta name="description" content="This page takes you from nothing to a working server in a few minutes. You need the Manage Server permission on the server you want to add Risk to.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started" aria-current="page">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Getting started</h1>
+      <p>This page takes you from nothing to a working server in a few minutes. You need the Manage Server permission on the server you want to add Risk to.</p>
+<h2 id="1-add-risk-to-your-server">1. Add Risk to your server<a class="anchor" href="#1-add-risk-to-your-server" aria-label="Link to this section">#</a></h2>
+<ol><li>Use the <strong>Add to server</strong> button on the main site.</li><li>Pick your server and keep every permission ticked. Risk asks only for what its features need, and a missing permission is the most common reason a command fails.</li><li>Open your server&#x27;s role list and drag Risk&#x27;s role <strong>above</strong> any roles it should manage (level rewards, autorole, verify). Discord only lets a bot manage roles that sit below its own.</li></ol>
+<h2 id="2-try-a-command">2. Try a command<a class="anchor" href="#2-try-a-command" aria-label="Link to this section">#</a></h2>
+<p>Type <code>!ping</code> in any channel. Risk answers with its response time. If nothing happens, check that Risk can see and send in that channel, then read <a href="faq">Troubleshooting</a>.</p>
+<p>Type <code>!commands</code> to see the categories, or <code>!help &lt;command&gt;</code> for details on one command.</p>
+<h2 id="3-open-the-dashboard">3. Open the dashboard<a class="anchor" href="#3-open-the-dashboard" aria-label="Link to this section">#</a></h2>
+<p>Type <code>!dashboard</code> and open the link, then sign in with Discord. You will see every server where you have Manage Server and Risk is present. Pick one to change its settings. The <a href="dashboard">dashboard guide</a> explains each section.</p>
+<h2 id="4-set-up-the-basics">4. Set up the basics<a class="anchor" href="#4-set-up-the-basics" aria-label="Link to this section">#</a></h2>
+<p>A good first ten minutes:</p>
+<ol><li><strong>Welcome message.</strong> <code>!welcome #welcome {embed} Welcome New_user to {server}! {embed}</code> greets new members. See <a href="welcome">Welcome and leave</a>.</li><li><strong>Log channel.</strong> <code>!logchannel</code> and the log commands record joins, leaves, edits, deletes and moderation. See <a href="logs">Server logs</a>.</li><li><strong>Auto-mod.</strong> Turn on <code>!antilink on</code>, <code>!antispam on</code> and <code>!maxmentions 5</code> if you want automatic filtering. See <a href="moderation">Moderation</a>.</li><li><strong>Level rewards.</strong> <code>!levelreward 10 @Regular</code> gives a role at level 10. See <a href="levels">Levels</a>.</li><li><strong>Autorole.</strong> <code>!autorole set @Member</code> gives new members a role as they join.</li></ol>
+<h2 id="5-change-the-prefix-optional">5. Change the prefix (optional)<a class="anchor" href="#5-change-the-prefix-optional" aria-label="Link to this section">#</a></h2>
+<p><code>!prefix $</code> adds <code>$</code> as an extra prefix for your server. The defaults <code>!</code>, <code>?</code> and <code>,</code> keep working, so nobody gets locked out. In the dashboard it is under General.</p>
+<h2 id="next-steps">Next steps<a class="anchor" href="#next-steps" aria-label="Link to this section">#</a></h2>
+<ul><li>Browse <a href="commands">all commands</a>.</li><li>Make messages your own with <a href="messages">message templates</a> and <a href="variables">variables</a>.</li><li>Run a support desk with <a href="tickets">tickets</a>.</li><li>Look at <a href="vip">VIP</a> if you want custom commands, scheduled announcements and more.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="./"><span>Previous</span>Risk documentation</a><a class="next" href="dashboard"><span>Next</span>The dashboard</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#1-add-risk-to-your-server">1. Add Risk to your server</a></li><li class="l2"><a href="#2-try-a-command">2. Try a command</a></li><li class="l2"><a href="#3-open-the-dashboard">3. Open the dashboard</a></li><li class="l2"><a href="#4-set-up-the-basics">4. Set up the basics</a></li><li class="l2"><a href="#5-change-the-prefix-optional">5. Change the prefix (optional)</a></li><li class="l2"><a href="#next-steps">Next steps</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

@@ -14,7 +14,7 @@ from dashboard import Dashboard
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 DATA_FILE = ROOT / "data" / "bot.json"
-PAGES = {"/", "/commands", "/terms", "/privacy", "/vip"}
+PAGES = {"/", "/commands", "/terms", "/privacy", "/vip", "/staff"}
 STATUS_TTL = 10
 API_LIMIT = (90, 60)
 
@@ -71,6 +71,8 @@ class Settings:
         self.trust_proxy = env("TRUST_PROXY") in ("1", "true", "yes")
         host = env("DASHBOARD_HOST").lower()
         self.dashboard_host = host.removeprefix("https://").removeprefix("http://").strip("/")
+        docs = env("DOCS_HOST").lower()
+        self.docs_host = docs.removeprefix("https://").removeprefix("http://").strip("/")
         permissions = env("INVITE_PERMISSIONS")
         self.permissions = int(permissions) if permissions.isdigit() else INVITE_PERMISSIONS
 
@@ -227,6 +229,24 @@ def on_dashboard_host(request):
 
 
 DASH_ID = re.compile(r"/\d{15,21}")
+DOCS_DIR = WEB_DIR / "docs"
+DOCS_FILE = re.compile(r"[a-z0-9-]+(\.(css|js|json))?")
+
+
+def on_docs_host(request):
+    settings = request.app["settings"]
+    return bool(settings.docs_host) and request_host(request, settings) == settings.docs_host
+
+
+def docs_response(rel):
+    """Serve a page of the documentation site. rel is the path inside it, like / or /moderation or /docs.css."""
+    name = rel.strip("/") or "index"
+    if not DOCS_FILE.fullmatch(name):
+        return web.Response(status=404, text="Not found.")
+    target = DOCS_DIR / (name if "." in name else name + ".html")
+    if not target.is_file():
+        return web.Response(status=404, text="That documentation page doesn't exist. Go back to the docs home and search for it.")
+    return web.FileResponse(target, headers={"Cache-Control": "no-cache"})
 
 
 async def api_config(request):
@@ -237,7 +257,13 @@ async def api_config(request):
         dashboard_url = f"https://{settings.dashboard_host}/"
     else:
         dashboard_url = "/dashboard"
-    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "dashboardHost": on_dashboard_host(request), "vip": settings.vip()}, 60)
+    staff_url = f"https://{settings.dashboard_host}/staff" if settings.dashboard_host and not on_dashboard_host(request) else "/staff"
+    docs_url = f"https://{settings.docs_host}/" if settings.docs_host else "/docs/"
+    vip = settings.vip()
+    for plan, saved in (await request.app["dashboard"].vip_prices(request)).items():
+        if plan in vip:
+            vip[plan] = {"price": saved["price"] or vip[plan]["price"], "url": saved["url"] or vip[plan]["url"]}
+    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "staffUrl": staff_url, "docsUrl": docs_url, "dashboardHost": on_dashboard_host(request), "vip": vip}, 15)
 
 
 async def api_status(request):
@@ -272,10 +298,19 @@ async def fallback(request):
     if path.startswith("/api/"):
         return web.json_response({"error": "Not found."}, status=404)
     settings = request.app["settings"]
+    if on_docs_host(request):
+        return docs_response(path)
+    if request.path == "/docs":
+        raise web.HTTPFound("/docs/")
+    if request.path.startswith("/docs/"):
+        return docs_response(request.path[len("/docs"):])
     is_dashboard_path = path == "/dashboard" or path.startswith("/dashboard/")
     if settings.dashboard_host and is_dashboard_path and not on_dashboard_host(request):
         target = path[len("/dashboard"):] or "/"
         raise web.HTTPFound(f"https://{settings.dashboard_host}{target}")
+    if settings.dashboard_host and path == "/staff" and not on_dashboard_host(request):
+        # Sign-in lives on the dashboard address, so the staff panel does too.
+        raise web.HTTPFound(f"https://{settings.dashboard_host}/staff")
     if path in PAGES or is_dashboard_path or (on_dashboard_host(request) and DASH_ID.fullmatch(path)):
         return await page()(request)
     if Path(path).suffix:

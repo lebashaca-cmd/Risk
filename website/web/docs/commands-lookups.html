@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lookups commands · Risk docs</title>
+<meta name="description" content="Look up profiles and media on other sites.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups" aria-current="page">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Lookups commands</h1>
+      <p>Look up profiles and media on other sites. Anyone can use a command unless it says it needs a permission. If your server changed the prefix, use that instead of <code>!</code>.</p><p><label class="filter">Filter these commands <input type="search" data-filter placeholder="Type a command or a word" autocomplete="off"></label></p><div data-filter-list><div class="cmd" id="cmd-github" data-search="github shows a github profile or repo."><h3><code>!github</code><a class="anchor" href="#cmd-github" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Shows a GitHub profile or repo.</p><p class="usage">Try it: <code>!github username</code></p></div>
+<div class="cmd" id="cmd-spotify" data-search="spotify searches spotify or shows a link."><h3><code>!spotify</code><a class="anchor" href="#cmd-spotify" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Searches Spotify or shows a link.</p><p class="usage">Try it: <code>!spotify song name</code></p></div>
+<div class="cmd" id="cmd-tiktok" data-search="tiktok shows a tiktok profile."><h3><code>!tiktok</code><a class="anchor" href="#cmd-tiktok" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Shows a TikTok profile.</p><p class="usage">Try it: <code>!tiktok username</code></p></div>
+<div class="cmd" id="cmd-youtube" data-search="youtube shows a youtube video, channel or playlist, or searches."><h3><code>!youtube</code><a class="anchor" href="#cmd-youtube" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Shows a YouTube video, channel or playlist, or searches.</p><p class="usage">Try it: <code>!youtube @channel</code></p></div></div><p class="empty" data-filter-empty hidden>No command matches that.</p>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="commands-sticky"><span>Previous</span>Sticky commands</a><a class="next" href="commands-ai"><span>Next</span>AI commands</a></nav>
+  </main>
+  
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

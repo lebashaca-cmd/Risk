@@ -126,11 +126,23 @@ export interface CommandRule {
   command: string;
   roles: string[];
   channels: string[];
+  blockedRoles: string[];
+  blockedChannels: string[];
+  staffOnly: boolean;
+  cooldown: number;
+}
+
+export interface CommandBasics {
+  blockedChannels: string[];
+  onlyChannels: string[];
+  blockedRoles: string[];
+  deleteInvocations: boolean;
   cooldown: number;
 }
 
 export interface CommandsSettings {
   rules: CommandRule[];
+  basics: CommandBasics;
 }
 
 export interface Responder {
@@ -221,4 +233,47 @@ export interface GuildPayload {
   meta: Meta;
   settings: AllSettings;
   unavailable?: Partial<Record<SectionId, string>>;
+}
+
+// Staff panel
+export type StaffRole = "staff" | "developer" | "owner";
+export type PlanKey = "basic" | "lifetime" | "white" | "supreme";
+
+export interface StaffMe {
+  role: StaffRole | null;
+  owner: boolean;
+  staffServer: boolean;
+}
+
+export interface StaffTotals {
+  servers: number;
+  members: number;
+  vip: number;
+  banned: number;
+}
+
+export interface StaffOverview extends StaffTotals {
+  role: StaffRole;
+  owner: boolean;
+}
+
+export interface StaffServer {
+  id: string;
+  name: string;
+  members: number;
+  vip: boolean;
+  tier: string | null;
+  until: number | null;
+  source: "env" | "granted" | null;
+}
+
+export interface StaffOwnerPanel extends StaffTotals {
+  role: StaffRole;
+  canAssignOwner: boolean;
+  serverList: StaffServer[];
+  bannedList: { id: string; name?: string | null; reason?: string; by?: string; at?: number }[];
+  prices: Partial<Record<PlanKey, { price: string | null; url: string | null }>>;
+  plans: PlanKey[];
+  roles: { id: string; role: StaffRole; name: string | null }[];
+  log: { at: number; by: string; action: string; detail: string }[];
 }

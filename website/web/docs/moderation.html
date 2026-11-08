@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Moderation and auto-mod · Risk docs</title>
+<meta name="description" content="Risk has 60+ moderation commands plus automatic filters. Every moderation command checks the permission of the person using it, and Risk also needs the matching permission itself and a role above the ">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation" aria-current="page">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Moderation and auto-mod</h1>
+      <p>Risk has 60+ moderation commands plus automatic filters. Every moderation command checks the permission of the person using it, and Risk also needs the matching permission itself and a role above the member it acts on.</p>
+<h2 id="warnings-timeouts-kicks-and-bans">Warnings, timeouts, kicks and bans<a class="anchor" href="#warnings-timeouts-kicks-and-bans" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Goal</th><th>Command</th></tr></thead><tbody><tr><td>Warn and record it</td><td><code>!warn @user reason</code></td></tr><tr><td>See or remove warnings</td><td><code>!warnings @user</code>, <code>!delwarn</code>, <code>!clearwarnings @user</code></td></tr><tr><td>Stop someone talking for a while</td><td><code>!timeout @user 10m reason</code>, undo with <code>!untimeout @user</code></td></tr><tr><td>Remove someone</td><td><code>!kick @user reason</code></td></tr><tr><td>Ban</td><td><code>!ban @user reason</code>, <code>!softban @user</code> (ban then unban to wipe messages), <code>!idban &lt;id&gt;</code> for people who left</td></tr><tr><td>Ban for a set time</td><td><code>!tempban @user 3d reason</code>, list with <code>!tempbans</code></td></tr><tr><td>Undo</td><td><code>!unban &lt;id&gt;</code>, <code>!unbanall</code>, list with <code>!banlist</code></td></tr></tbody></table></div>
+<p>Durations use <code>s</code>, <code>m</code>, <code>h</code> and <code>d</code>, like <code>30m</code>, <code>12h</code> or <code>3d</code>.</p>
+<h2 id="cleaning-up">Cleaning up<a class="anchor" href="#cleaning-up" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!clear 10</code> deletes the last ten messages.</li><li><code>!purgeuser @user 50</code> deletes one member&#x27;s recent messages in the channel.</li><li><code>!purgebots</code> removes recent bot messages.</li><li><code>!nuke</code> clones and replaces a channel to wipe it completely.</li><li><code>!snipe</code> and <code>!editsnipe</code> show the last deleted or edited message (Manage Messages).</li></ul>
+<h2 id="locking-things-down">Locking things down<a class="anchor" href="#locking-things-down" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!lock</code> and <code>!unlock</code> stop or allow @everyone from sending in a channel.</li><li><code>!hide</code> and <code>!unhide</code> hide a channel from @everyone.</li><li><code>!slowmode 10s</code> sets slowmode, <code>!slowmode off</code> removes it.</li><li><code>!lockdown raid</code> locks every text channel at once, and <code>!unlockdown</code> undoes it. Use it during a raid.</li></ul>
+<h2 id="roles-and-channels">Roles and channels<a class="anchor" href="#roles-and-channels" aria-label="Link to this section">#</a></h2>
+<p><code>!addrole</code>, <code>!removerole</code>, <code>!roleall @Member</code> (give everyone a role), <code>!unroleall</code>, <code>!createrole</code>, <code>!deleterole</code>, <code>!rolecolor</code>, <code>!rolename</code>, <code>!createchannel</code>, <code>!deletechannel</code>, <code>!renamechannel</code>, <code>!clonechannel</code>, <code>!settopic</code>, <code>!nick</code> and <code>!resetnick</code>.</p>
+<h2 id="voice-moderation">Voice moderation<a class="anchor" href="#voice-moderation" aria-label="Link to this section">#</a></h2>
+<p><code>!vckick</code>, <code>!vcmove</code>, <code>!vcmute</code>, <code>!vcunmute</code>, <code>!vcdeafen</code>, <code>!vcundeafen</code>, <code>!vcmuteall</code>, <code>!vcdisconnectall</code>.</p>
+<h2 id="auto-mod">Auto-mod<a class="anchor" href="#auto-mod" aria-label="Link to this section">#</a></h2>
+<p>Auto-mod watches messages and deletes the ones that break your rules. Members who can manage messages are never filtered. <code>!automod</code> shows what is on.</p>
+<div class="table-wrap"><table><thead><tr><th>Filter</th><th>What it does</th></tr></thead><tbody><tr><td><code>!antilink on</code></td><td>Deletes messages with links</td></tr><tr><td><code>!antiinvite on</code></td><td>Deletes Discord invite links</td></tr><tr><td><code>!antispam on</code></td><td>Deletes message floods (six messages in five seconds) and times the sender out for five minutes</td></tr><tr><td><code>!maxmentions 5</code></td><td>Deletes messages that mention more than that many people or roles. <code>0</code> turns it off</td></tr><tr><td><code>!badwords add word</code></td><td>Blocks a word or short phrase. Your command message is deleted so the word isn&#x27;t shown</td></tr></tbody></table></div>
+<p>Manage the blocked words with <code>!badwords list</code>, <code>!badwords remove word</code>, <code>!badwords clear</code> and <code>!badwords import</code> (attach a <code>.txt</code> or <code>.env</code> file with one word per line or separated by commas). The list can hold 10,000 words, and matching stays fast because Risk compiles the list into one pattern.</p>
+<p>Use <code>!automodignore #channel</code> or <code>!automodignore @role</code> to leave a channel or role alone. Run it again to remove the exception.</p>
+<p>Every one of these settings is also in the dashboard under Auto-moderation.</p>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>Joins, leaves, bans and message edits and deletes can be recorded with <a href="logs">server logs</a>.</li><li>If a command says Discord denied permission, Risk&#x27;s role is probably below the member&#x27;s top role, or it lacks the needed permission.</li><li>Members with Manage Server can run commands that a <a href="command-rules">command rule</a> would otherwise block, so don&#x27;t rely on rules to restrict staff.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="dashboard"><span>Previous</span>The dashboard</a><a class="next" href="levels"><span>Next</span>Levels and XP</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#warnings-timeouts-kicks-and-bans">Warnings, timeouts, kicks and bans</a></li><li class="l2"><a href="#cleaning-up">Cleaning up</a></li><li class="l2"><a href="#locking-things-down">Locking things down</a></li><li class="l2"><a href="#roles-and-channels">Roles and channels</a></li><li class="l2"><a href="#voice-moderation">Voice moderation</a></li><li class="l2"><a href="#auto-mod">Auto-mod</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

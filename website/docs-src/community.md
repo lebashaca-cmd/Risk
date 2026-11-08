@@ -1,0 +1,55 @@
+# Community tools
+
+Smaller features that make a server feel alive.
+
+## Giveaways
+
+- `!giveaway start 30m 1 Steam gift card` runs a giveaway for 30 minutes with one winner. People enter with a reaction or button.
+- `!giveaway end`, `!giveaway cancel`, `!giveaway reroll`, `!giveaway list` and `!giveaway info` manage them.
+- `!giveaway drop` starts a quick first-to-claim drop.
+- `!giveaway require <id> @Member` limits a giveaway to a role, and `off` removes the limit.
+
+All giveaway commands need Manage Server.
+
+## Starboard
+
+Messages that collect enough star reactions are copied to a starboard channel. `!starboard set #starboard` chooses the channel, `!starboard threshold 3` sets how many stars it takes, `!starboard show` shows the settings and `!starboard off` turns it off.
+
+## Suggestions
+
+Members use `!suggest add a music channel` and the suggestion is posted for everyone to vote on. Staff pick the channel with `!suggestchannel #suggestions` and answer with `!approve` or `!deny` and an optional reason.
+
+## Birthdays
+
+Members save theirs with `!birthday set 05-17` (month and day). Staff choose where birthday messages go with `!birthdaychannel #birthdays`. `!birthday list` and `!birthday next` show what's coming.
+
+## Counting game
+
+`!counting set #counting` starts a channel where everyone counts up together. A wrong number resets the count. `!counting reset` and `!counting off` give you control.
+
+## Reaction roles and verify
+
+- `!reactionrole add <message id> 🎮 @Gamer` gives a role to anyone who reacts with that emoji on a message in the current channel. Remove with `!reactionrole remove` and list with `!reactionrole list`.
+- `!verifysetup #verify @Member` posts a **Verify** button. Whoever presses it receives the role.
+- `!autorole set @Member` gives every new member a role when they join. `!autorole show` and `!autorole off` manage it.
+
+## Tags
+
+Tags are short saved answers. `!tag add rules Be kind to each other` saves one, `!tag rules` shows it, and `!tags` lists them all. `!tag edit`, `!tag remove` and `!tag info` manage them.
+
+## Rules and reports
+
+`!setrules 1. Be kind. 2. No spam.` saves the rules and `!rules` shows them. Members can use `!report @user spamming links`, which goes to the staff channel you choose with `!reportchannel #reports`.
+
+## Staff notes
+
+`!note add @user text`, `!note list @user` and `!note remove` keep private notes about members. Only people with Manage Messages can see them.
+
+## Sticky messages
+
+`!sticky` keeps a message pinned at the bottom of a channel, reposting it as people talk. `!unsticky` removes it.
+
+## Good to know
+
+- Most of these settings can also be changed in the dashboard under **Community**.
+- Reaction roles, autorole and verify only work for roles that sit below Risk's role.

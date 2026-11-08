@@ -23,8 +23,11 @@ ADMINISTRATOR = 0x8
 SECTIONS = {"general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "announcements", "vip"}
 PROFILE_MAX = 7_500_000
 SESSION_COOKIE = "risk_session"
+NEXT_COOKIE = "risk_next"
+STAFF_BODY_MAX = 100_000
 STATE_COOKIE = "risk_oauth"
 PRESENCE_TTL = 20
+PRICES_TTL = 30
 ACCOUNT_TTL = 30
 BADGES = (
     (1, "Discord Staff"), (2, "Partnered Server Owner"), (4, "HypeSquad Events"), (8, "Bug Hunter"),
@@ -50,6 +53,7 @@ class Dashboard:
         self.settings = settings
         self.sessions = {}
         self.presence = {}
+        self.prices = None
         self.client_secret = env("DISCORD_CLIENT_SECRET")
         self.key = env("DASHBOARD_KEY")
         self.site_url = env("SITE_URL").rstrip("/")
@@ -127,8 +131,9 @@ class Dashboard:
         if not self.enabled:
             raise web.HTTPServiceUnavailable(reason="The dashboard isn't set up on this site yet.")
         host = self.settings.dashboard_host
+        staff = request.query.get("next") == "/staff"
         if host and not self.on_dashboard_host(request):
-            raise web.HTTPFound(f"https://{host}/api/auth/login")
+            raise web.HTTPFound(f"https://{host}/api/auth/login" + ("?next=%2Fstaff" if staff else ""))
         state = secrets.token_urlsafe(24)
         query = urlencode({
             "client_id": self.settings.client_id,
@@ -139,6 +144,10 @@ class Dashboard:
         })
         response = web.HTTPFound(f"https://discord.com/oauth2/authorize?{query}")
         self.set_cookie(request, response, STATE_COOKIE, state, OAUTH_TTL)
+        if staff:
+            self.set_cookie(request, response, NEXT_COOKIE, "staff", OAUTH_TTL)
+        else:
+            response.del_cookie(NEXT_COOKIE, path="/")
         return response
 
     async def callback(self, request):
@@ -180,9 +189,10 @@ class Dashboard:
         self.purge()
         sid = secrets.token_urlsafe(32)
         self.sessions[sid] = Session(profile, manageable)
-        response = web.HTTPFound(self.home())
+        response = web.HTTPFound("/staff" if request.cookies.get(NEXT_COOKIE) == "staff" else self.home())
         self.set_cookie(request, response, SESSION_COOKIE, sid, SESSION_TTL)
         response.del_cookie(STATE_COOKIE, path="/")
+        response.del_cookie(NEXT_COOKIE, path="/")
         return response
 
     async def lookup_via_bot(self, request, code, redirect_uri):
@@ -258,8 +268,10 @@ class Dashboard:
         return "/" if self.settings.dashboard_host else "/dashboard"
 
     def back(self, request, reason):
-        response = web.HTTPFound(f"{self.home()}?login={reason}")
+        base = "/staff" if request.cookies.get(NEXT_COOKIE) == "staff" else self.home()
+        response = web.HTTPFound(f"{base}?login={reason}")
         response.del_cookie(STATE_COOKIE, path="/")
+        response.del_cookie(NEXT_COOKIE, path="/")
         return response
 
     async def revoke(self, session, token):
@@ -313,6 +325,53 @@ class Dashboard:
         if status == 200:
             session.account = (time.monotonic(), payload)
         return self.reply(payload, status)
+
+    async def staff(self, request):
+        """Carries the staff panel's requests to the bot. The bot decides who may do what: this only passes
+        along who is signed in, so a person can never claim to be someone else."""
+        method = request.method
+        if method not in ("GET", "PUT", "POST"):
+            raise web.HTTPMethodNotAllowed(method, ["GET", "PUT", "POST"])
+        if method != "GET":
+            self.check_write(request)
+        _, session = self.require(request)
+        action = request.match_info["action"]
+        if method == "GET" and action not in ("me", "overview", "owner"):
+            raise web.HTTPNotFound(reason="Unknown staff request.")
+        if method != "GET" and action not in ("prices", "vip", "ban", "unban", "roles"):
+            raise web.HTTPNotFound(reason="Unknown staff request.")
+        body = None
+        if method != "GET":
+            if request.content_length is not None and request.content_length > STAFF_BODY_MAX:
+                raise web.HTTPRequestEntityTooLarge(max_size=STAFF_BODY_MAX, actual_size=request.content_length)
+            try:
+                body = await request.json()
+            except ValueError:
+                raise web.HTTPBadRequest(reason="The request wasn't valid JSON.")
+            if not isinstance(body, dict):
+                raise web.HTTPBadRequest(reason="The request must be a JSON object.")
+        status, payload = await self.ask_bot(request, method, f"staff/{action}", session.user["id"], body)
+        return self.reply(payload, status)
+
+    async def vip_prices(self, request):
+        """Prices and checkout links the owners set in the staff panel (cached for a short while)."""
+        cached = self.prices
+        if cached and time.monotonic() - cached[0] < PRICES_TTL:
+            return cached[1]
+        if not self.enabled:
+            return {}
+        status, payload = await self.ask_bot(request, "GET", "prices", timeout=3)
+        found = payload.get("prices") if status == 200 and isinstance(payload.get("prices"), dict) else {}
+        clean = {}
+        for plan, entry in found.items():
+            if plan in ("basic", "lifetime", "white", "supreme") and isinstance(entry, dict):
+                price, url = entry.get("price"), entry.get("url")
+                clean[plan] = {
+                    "price": price[:20] if isinstance(price, str) and price.strip() else None,
+                    "url": url if isinstance(url, str) and url.startswith("https://") and len(url) <= 500 else None,
+                }
+        self.prices = (time.monotonic(), clean)
+        return clean
 
     async def logout(self, request):
         self.check_write(request)
@@ -432,6 +491,7 @@ class Dashboard:
         app.router.add_get("/api/auth/callback", self.callback)
         app.router.add_get("/api/auth/me", self.me)
         app.router.add_get("/api/dash/account", self.account)
+        app.router.add_route("*", "/api/staff/{action}", self.staff)
         app.router.add_post("/api/auth/logout", self.logout)
         app.router.add_get("/api/dash/guild/{gid:\\d+}", self.guild_settings)
         app.router.add_put("/api/dash/guild/{gid:\\d+}/{section}", self.save_section)

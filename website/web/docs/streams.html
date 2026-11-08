@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Stream alerts · Risk docs</title>
+<meta name="description" content="Risk announces when someone in your server, or a streamer you follow, goes live. The alert is an embed titled &quot;&lt;name&gt; is live&quot; with a link to the stream. When the stream ends, Risk posts a &quot;stopped st">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams" aria-current="page">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Stream alerts</h1>
+      <p>Risk announces when someone in your server, or a streamer you follow, goes live. The alert is an embed titled &quot;&lt;name&gt; is live&quot; with a link to the stream. When the stream ends, Risk posts a &quot;stopped streaming&quot; embed with how long it lasted.</p>
+<h2 id="turn-it-on">Turn it on<a class="anchor" href="#turn-it-on" aria-label="Link to this section">#</a></h2>
+<p><code>!streamalerts #streams @StreamPing</code> picks the channel. The role at the end is optional. Turn alerts off with <code>!streamalerts off</code>. <code>!streamrole @Streams</code> sets or clears the ping role later.</p>
+<p>Run <code>!streamtest</code> to post a sample alert and check that the channel and role are right.</p>
+<h2 id="where-alerts-come-from">Where alerts come from<a class="anchor" href="#where-alerts-come-from" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Source</th><th>What you do</th><th>Notes</th></tr></thead><tbody><tr><td>Discord Go Live (screen share in a voice channel)</td><td>Nothing</td><td>The alert links to the voice channel</td></tr><tr><td>Discord &quot;Streaming&quot; status</td><td>The bot&#x27;s host must enable the presence setting</td><td>If the status links to Twitch, the alert shows the live preview</td></tr><tr><td>Twitch channels</td><td><code>!twitchadd shroud @StreamPing</code></td><td>Checked about every minute. Shows the live preview</td></tr><tr><td>TikTok accounts</td><td><code>!tiktokadd @name @StreamPing</code></td><td>Unofficial, so it can stop working if TikTok changes. Checked about every 90 seconds, 25 accounts per server</td></tr></tbody></table></div>
+<p>A role you give to <code>!twitchadd</code> or <code>!tiktokadd</code> is used for that streamer instead of the server-wide role.</p>
+<p>Remove a streamer with <code>!twitchremove</code> or <code>!tiktokremove</code>, and list them with <code>!twitchlist</code> and <code>!tiktoklist</code>.</p>
+<h2 id="checking-things">Checking things<a class="anchor" href="#checking-things" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!twitchtest &lt;channel&gt;</code> checks one Twitch channel right now and shows what the alert would look like.</li><li><code>!tiktoktest @name</code> checks one TikTok account right now and says what Risk sees. Run it while the person is live.</li><li><code>!streaming</code> shows who is streaming now, <code>!streamstats @user</code> one member&#x27;s total, and <code>!streamers</code> ranks members by time streamed.</li></ul>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>TikTok has no public live API, so Risk reads the same page data the TikTok website uses. If that is blocked or changes shape, Risk keeps the previous state instead of guessing, so you may miss alerts rather than get false ones.</li><li>The Twitch and Discord status sources need setup on the bot&#x27;s side. If <code>!twitchtest</code> says it isn&#x27;t configured, the person running the bot has to add Twitch keys.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="welcome"><span>Previous</span>Welcome and leave</a><a class="next" href="utility"><span>Next</span>Utility, fun and lookups</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#turn-it-on">Turn it on</a></li><li class="l2"><a href="#where-alerts-come-from">Where alerts come from</a></li><li class="l2"><a href="#checking-things">Checking things</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Server logs · Risk docs</title>
+<meta name="description" content="Server logs write what happens in your server into a channel, so staff can see who deleted a message, who joined, who got a role and what moderators did.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs" aria-current="page">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Server logs</h1>
+      <p>Server logs write what happens in your server into a channel, so staff can see who deleted a message, who joined, who got a role and what moderators did.</p>
+<h2 id="turn-logging-on">Turn logging on<a class="anchor" href="#turn-logging-on" aria-label="Link to this section">#</a></h2>
+<ol><li>Make a private channel for staff, like <code>#server-logs</code>.</li><li>Run <code>!logs #server-logs</code>. Risk starts posting events there.</li><li>Run <code>!logtest</code> to check it works, and <code>!logstatus</code> to see the settings.</li></ol>
+<h2 id="what-is-logged">What is logged<a class="anchor" href="#what-is-logged" aria-label="Link to this section">#</a></h2>
+<p>Events are grouped into categories. <code>!logevents</code> lists them with their on or off state.</p>
+<div class="table-wrap"><table><thead><tr><th>Category</th><th>What it records</th></tr></thead><tbody><tr><td>messages</td><td>Deleted, bulk-deleted and edited messages</td></tr><tr><td>voice</td><td>Joining, leaving and moving voice channels</td></tr><tr><td>roles</td><td>Roles given or taken, and role changes</td></tr><tr><td>nicknames</td><td>Nickname changes</td></tr><tr><td>members</td><td>Members joining and leaving</td></tr><tr><td>bans</td><td>Bans and unbans</td></tr><tr><td>channels</td><td>Channels created, deleted or changed</td></tr><tr><td>emojis</td><td>Emoji changes</td></tr><tr><td>invites</td><td>Invites created or deleted</td></tr><tr><td>threads</td><td>Threads created, changed or deleted</td></tr><tr><td>server</td><td>Server name, icon and settings</td></tr><tr><td>timeouts</td><td>Timeouts and boosts</td></tr><tr><td>moderation</td><td>Actions from moderation commands (warn, timeout, softban and more)</td></tr></tbody></table></div>
+<h2 id="tuning-it">Tuning it<a class="anchor" href="#tuning-it" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!logtoggle voice</code> turns one category off, and running it again turns it back on.</li><li><code>!logchannel voice #voice-logs</code> sends one category to its own channel. <code>!logchannel voice off</code> sends it back to the main one.</li><li><code>!logignore #staff-chat</code> stops logging message edits and deletes in a channel. <code>!logunignore #staff-chat</code> undoes it, and <code>!logignored</code> lists them.</li><li><code>!logreset confirm</code> puts every setting back to the default.</li></ul>
+<h2 id="looking-things-up">Looking things up<a class="anchor" href="#looking-things-up" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!logrecent</code> shows the most recent events since the bot started.</li><li><code>!logsearch deleted</code> searches recent events for some text.</li><li><code>!loguser @user</code> shows recent events about one person.</li></ul>
+<p>These three need the View Audit Log permission. They read the bot&#x27;s recent memory, which is cleared when the bot restarts, so they are for quick checks. The log channel is your permanent record.</p>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>The dashboard has the same controls under <strong>Server logs</strong>, and adds a &quot;Dashboard Updated&quot; entry whenever someone saves a change there.</li><li>Risk needs View Channel and Send Messages in the log channel. If logs stop appearing, check that first.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="tickets"><span>Previous</span>Tickets</a><a class="next" href="community"><span>Next</span>Community tools</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#turn-logging-on">Turn logging on</a></li><li class="l2"><a href="#what-is-logged">What is logged</a></li><li class="l2"><a href="#tuning-it">Tuning it</a></li><li class="l2"><a href="#looking-things-up">Looking things up</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

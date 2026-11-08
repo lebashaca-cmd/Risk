@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-07T21:34:10+00:00",
+  "generatedAt": "2026-11-08T14:58:38+00:00",
   "prefixes": [
     "!",
     "?",
@@ -717,6 +717,16 @@
       "permission": null
     },
     {
+      "name": "testvars",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows what a message looks like with its {variables} filled in, using you as the member.",
+      "examples": [
+        "Welcome {user.mention}, you are the {ordinal} member!"
+      ],
+      "permission": null
+    },
+    {
       "name": "timestamp",
       "kind": "prefix",
       "category": "Utility",
@@ -783,6 +793,16 @@
       "description": "Generates random UUIDs.",
       "examples": [
         "3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "variables",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the {variables} you can put in welcome messages, level messages, auto-replies and custom commands.",
+      "examples": [
+        "[Member|Server|Time|Random|Emoji|Levels|Layout|Channel]"
       ],
       "permission": null
     },

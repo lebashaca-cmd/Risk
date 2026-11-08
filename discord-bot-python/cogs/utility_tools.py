@@ -11,6 +11,7 @@ from discord.ext import commands, tasks
 
 from utils.helpers import NO_MENTIONS, Duration, explain_error, human_duration
 from utils.store import JsonStore
+from utils.variables import catalog, expand
 
 NUMBER_EMOJI = ["1️⃣", "2️⃣", "3️⃣", "4️⃣", "5️⃣", "6️⃣", "7️⃣", "8️⃣", "9️⃣", "🔟"]
 HEX = re.compile(r"^#?([0-9a-fA-F]{6}|[0-9a-fA-F]{3})$")
@@ -101,6 +102,29 @@ class UtilityTools(commands.Cog):
         embed = discord.Embed(title=ctx.guild.name, color=discord.Color.light_grey())
         embed.set_image(url=ctx.guild.icon.replace(size=1024).url)
         await ctx.send(embed=embed)
+
+    @commands.command(name="variables", aliases=["vars", "placeholders"])
+    async def variables(self, ctx, *, group: str = None):
+        """Lists the {variables} you can put in welcome messages, level messages, auto-replies and custom commands. Usage: !variables [Member|Server|Time|Random|Emoji|Levels|Layout|Channel]"""
+        items = catalog()
+        groups = list(dict.fromkeys(item["group"] for item in items))
+        if group is None:
+            embed = discord.Embed(title="Message variables", description="Type these inside a message and Risk fills them in. Say `!variables <group>` for the list. Full guide with examples is on the docs site.", color=discord.Color.blurple())
+            for name in groups:
+                embed.add_field(name=name, value=" ".join(f"`{i['token'].split(':')[0].rstrip('}') + ('}' if ':' not in i['token'] else ':…}')}`" for i in items if i["group"] == name)[:1000], inline=False)
+            return await ctx.reply(embed=embed, mention_author=False)
+        match = next((g for g in groups if g.lower() == group.strip().lower()), None)
+        if match is None:
+            return await ctx.reply("Pick one of: " + ", ".join(groups) + ".", mention_author=False)
+        lines = [f"`{i['token']}` {i['description']}" for i in items if i["group"] == match]
+        embed = discord.Embed(title=f"{match} variables", description="\n".join(lines)[:4000], color=discord.Color.blurple())
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @commands.command(name="testvars", aliases=["varpreview"])
+    async def testvars(self, ctx, *, text: str):
+        """Shows what a message looks like with its {variables} filled in, using you as the member. Usage: !testvars Welcome {user.mention}, you are the {ordinal} member!"""
+        out = expand(text, member=ctx.author, channel=ctx.channel)
+        await ctx.reply(out[:1900], mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="membercount", aliases=["members"])
     @commands.guild_only()

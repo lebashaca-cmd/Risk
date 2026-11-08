@@ -6,6 +6,7 @@ import { renderDashboard } from "./dashboard.js";
 import { renderHome } from "./home.js";
 import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
+import { renderStaff } from "./staff.js";
 import { renderVip } from "./vip.js";
 import type { SiteConfig } from "./types.js";
 
@@ -22,6 +23,7 @@ const TITLES: Record<string, string> = {
   "/terms": "Terms of Service · Risk",
   "/privacy": "Privacy Policy · Risk",
   "/vip": "VIP · Risk",
+  "/staff": "Staff · Risk",
 };
 
 function normalize(path: string): string {
@@ -121,6 +123,12 @@ function render(): void {
       cleanup = view.cleanup;
       break;
     }
+    case "/staff": {
+      const view = renderStaff();
+      node = view.node;
+      cleanup = view.cleanup;
+      break;
+    }
     case "/vip": {
       node = renderVip(config);
       break;
@@ -206,6 +214,14 @@ async function start(): Promise<void> {
   document.querySelectorAll<HTMLAnchorElement>("[data-invite]").forEach((link) => {
     if (config.inviteUrl) link.href = config.inviteUrl;
     else link.hidden = true;
+  });
+  document.querySelectorAll<HTMLAnchorElement>("[data-staff]").forEach((link) => {
+    const target = config.staffUrl ?? "/staff";
+    link.href = target;
+    if (/^https?:/.test(target)) link.removeAttribute("data-link");
+  });
+  document.querySelectorAll<HTMLAnchorElement>("[data-docs]").forEach((link) => {
+    link.href = config.docsUrl ?? "/docs/";
   });
   document.querySelectorAll<HTMLAnchorElement>("[data-dashboard]").forEach((link) => {
     const target = config.dashboardUrl ?? "/dashboard";

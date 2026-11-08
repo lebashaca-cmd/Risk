@@ -16,6 +16,9 @@ tags: [risk, config]
 | `DISCORD_CLIENT_SECRET` | Dashboard sign-in | The OAuth2 client secret from the Developer Portal. Lives on the bot, not on Render |
 | `NERVE_API_KEY` | `!tiktok`, `!github`, `!spotify`, `!youtube` | See [Lookups](Lookups.md) |
 | `VIP_GUILD_IDS` | VIP | Comma-separated server ids that always have VIP |
+| `STAFF_GUILD_ID` | Staff panel | The ID of your own Risk server. Panel access is only given to its members |
+| `STAFF_ROLE_IDS`, `DEV_ROLE_IDS` | Staff panel | Optional Discord role IDs that count as Staff and Developer, comma separated |
+| `OWNER_IDS` | Staff panel | Optional extra owner user IDs (the application owner is always an owner) |
 | `VIP_URL` | VIP | Optional https link shown as "Get VIP". Point it at the site's `/vip` page |
 | `VIP_BASIC_URL` (or old `VIP_MONTHLY_URL`), `VIP_LIFETIME_URL`, `VIP_WHITE_URL`, `VIP_SUPREME_URL` | Site | https checkout links for the four plans on `/vip` |
 | `VIP_BASIC_PRICE`, `VIP_LIFETIME_PRICE`, `VIP_WHITE_PRICE`, `VIP_SUPREME_PRICE` | Site | Price text on `/vip` (defaults `$4.99`, `$29.99`, `$9.99`, `$19.99`) |
@@ -28,6 +31,7 @@ tags: [risk, config]
 | Variable | Notes |
 |---|---|
 | `DASHBOARD_KEY` | Same value as the bot |
+| `DOCS_HOST` | Site only. For example `docs.yourdomain.com`. Serves the documentation there. The docs are always at `/docs/` too |
 | `DASHBOARD_HOST` | For example `dashboard.yourdomain.com`. Turns on `dashboard.<domain>/<server id>` URLs |
 | `CLIENT_ID` | The bot's application id |
 | `BOT_STATUS_URL` | Where the bot's status server answers |

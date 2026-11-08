@@ -26,6 +26,9 @@ Open http://localhost:8080.
 | `INVITE_URL` | Use your own invite link instead of building one. |
 | `INVITE_PERMISSIONS` | Override the permissions number in the invite link. |
 | `SUPPORT_URL` | Optional support server link. Also used on the VIP page. |
+| `STAFF_GUILD_ID` (bot) | The ID of your own Risk server. Staff panel access is only ever given to members of this server. |
+| `STAFF_ROLE_IDS`, `DEV_ROLE_IDS` (bot) | Optional Discord role IDs in that server that count as Staff and Developer in the panel. Comma separated. |
+| `OWNER_IDS` (bot) | Optional extra owner user IDs. The bot application's owner is always an owner. |
 | `VIP_BASIC_URL` | https checkout link for the Basic (monthly) plan, from a Stripe Payment Link, Ko-fi, Patreon or similar. The old name `VIP_MONTHLY_URL` still works. Until a link is set the button says "Not on sale yet". |
 | `VIP_LIFETIME_URL`, `VIP_WHITE_URL`, `VIP_SUPREME_URL` | Checkout links for Lifetime, VIP White and VIP Supreme. |
 | `VIP_BASIC_PRICE`, `VIP_LIFETIME_PRICE`, `VIP_WHITE_PRICE`, `VIP_SUPREME_PRICE` | Price text on the page. Defaults `$4.99`, `$29.99`, `$9.99`, `$19.99`. |
@@ -92,6 +95,10 @@ How it fits together: the site (this folder) handles the Discord sign-in and for
    - `DASHBOARD_HOST` = `dashboard.<your domain>` (no `https://`)
 4. **Custom domain.** In Render, Settings, Custom Domains, add `dashboard.<your domain>` and create the DNS record Render shows. Add your main domain too if you want the site there. Render's `onrender.com` address can't have subdomains, so this step needs a domain you own.
 5. **Discord redirect.** In the Developer Portal, OAuth2, Redirects, add `https://dashboard.<your domain>/api/auth/callback`.
+
+### Docs site
+
+The documentation is plain HTML in `web/docs/`, built by `python tools/build_docs.py` from `docs-src/*.md`, `data/bot.json` and the bot's `utils/variables.py`. It is always available at `/docs/`. To also serve it at a subdomain, add `docs.<your domain>` as a custom domain on Render and set `DOCS_HOST` = `docs.<your domain>` (no `https://`). Rebuild after changing commands (`python tools/export_bot_data.py ../discord-bot-python` first).
 
 Without `DASHBOARD_HOST` the dashboard still works on the main address at `/dashboard/<server id>`. If `DASHBOARD_HOST` is set, `/dashboard/...` on the main site redirects to the subdomain.
 

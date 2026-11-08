@@ -21,7 +21,7 @@ The extra VIP commands. Every command calls `VIP.need(ctx, group)` first, so a s
 | Basic | `vipcolor`, `vippoll`, `vipsay`, `vipannounce`, `viprolecolor`, `servercard`, `topmessages`, `userreport`, `rolereport` |
 | White | `customcmd`, `autoreact`, `welcomedm`, `embededit`, `stafflist` |
 | Supreme | `autodelete`, `slowmodeall`, `lockall`, `unlockall`, `serverbackup`, `membercounter`, `permaudit` |
-| Lifetime | `founder`, `motd` |
+| Lifetime | `founder`, `motd` (and every command above, since Lifetime has every group) |
 
 See [VIP commands](../commands/cmd-vip.md) for each command's usage and the permission it needs.
 

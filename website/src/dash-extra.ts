@@ -131,6 +131,9 @@ export const commands: ExtraRenderer<CommandsSettings> = (draft, meta, changed) 
           selectInput("Command", choices, rule.command, (v) => { rule.command = v; draw(); changed(); }),
           multiRoles("Only these roles can use it", meta, rule.roles, (v) => { rule.roles = v; changed(); }, "Leave empty to allow everyone."),
           multiChannels("Only works in these channels", meta, rule.channels, (v) => { rule.channels = v; changed(); }, "Leave empty to allow every channel."),
+          multiRoles("These roles can't use it", meta, rule.blockedRoles, (v) => { rule.blockedRoles = v; changed(); }, "Blocked roles win over the allowed list."),
+          multiChannels("Turned off in these channels", meta, rule.blockedChannels, (v) => { rule.blockedChannels = v; changed(); }),
+          toggle("Managers only", "Only members with Manage Server can use it.", rule.staffOnly, (v) => { rule.staffOnly = v; changed(); }),
           numberInput("Cooldown per member (seconds)", rule.cooldown, (v) => { rule.cooldown = v; changed(); }, 0, 3600, 1, "0 means no cooldown."),
           h("div", { class: "dash-card-actions" }, remove),
         ),
@@ -143,12 +146,22 @@ export const commands: ExtraRenderer<CommandsSettings> = (draft, meta, changed) 
     const taken = new Set(draft.rules.map((r) => r.command));
     const first = names.find((n) => !taken.has(n));
     if (!first) return;
-    draft.rules.push({ command: first, roles: [], channels: [], cooldown: 10 });
+    draft.rules.push({ command: first, roles: [], channels: [], blockedRoles: [], blockedChannels: [], staffOnly: false, cooldown: 10 });
     draw();
     changed();
   });
   draw();
-  return [group("Command rules", "Limit who can run a command, where, and how often. Members with Manage Server ignore these rules.", list, count, add)];
+  const basics = draft.basics;
+  const basicRules = group(
+    "Basic rules",
+    "These apply to every command. Members with Manage Server ignore them, and help always works.",
+    multiChannels("Commands are off in these channels", meta, basics.blockedChannels, (v) => { basics.blockedChannels = v; changed(); }),
+    multiChannels("Commands only work in these channels", meta, basics.onlyChannels, (v) => { basics.onlyChannels = v; changed(); }, "Leave empty to allow every channel."),
+    multiRoles("These roles can't use commands", meta, basics.blockedRoles, (v) => { basics.blockedRoles = v; changed(); }),
+    numberInput("Wait between a member's commands (seconds)", basics.cooldown, (v) => { basics.cooldown = v; changed(); }, 0, 60, 1, "0 means no wait."),
+    toggle("Delete the command message", "Risk removes what the member typed after the command runs. Needs the Manage Messages permission.", basics.deleteInvocations, (v) => { basics.deleteInvocations = v; changed(); }),
+  );
+  return [basicRules, group("Command rules", "Limit who can run one command, where, and how often. Members with Manage Server ignore these rules.", list, count, add)];
 };
 
 // Auto-replies
@@ -180,7 +193,7 @@ export const responders: ExtraRenderer<RespondersSettings> = (draft, meta, chang
           { class: "dash-card" },
           textInput("Trigger", item.trigger, (v) => { item.trigger = v; changed(); }, { max: 60, placeholder: "for example: server ip" }),
           selectInput("When to reply", MATCHES, item.match, (v) => { item.match = v as Responder["match"]; changed(); }),
-          textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 500, rows: 3, hint: "You can use {user} and {server}. Risk waits 10 seconds before repeating a reply." }),
+          textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 500, rows: 3, hint: "You can use {user}, {server}, {server.members}, {choose:a|b} and 40 more variables (see the docs). Risk waits 10 seconds before repeating a reply." }),
           meta.vip ? embed : h("div", {}, lockControls(embed, true), h("p", { class: "dash-hint" }, vipBadge(), " Embed replies are for VIP servers.")),
           h("div", { class: "dash-card-actions" }, remove),
         ),

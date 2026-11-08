@@ -20,6 +20,7 @@ from discord.ext import commands, tasks
 
 from utils.helpers import ModError, NO_MENTIONS, explain_error
 from utils.store import JsonStore
+from utils.variables import expand
 
 NUMBERS = ["1\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}", "2\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}",
            "3\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}", "4\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}",
@@ -344,7 +345,7 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
                 name = text[len(prefix):].split(None, 1)[0].lower() if text[len(prefix):].strip() else ""
                 reply = items.get(name)
                 if reply:
-                    out = reply.replace("{user}", message.author.mention).replace("{server}", message.guild.name)
+                    out = expand(reply.replace("{user}", message.author.mention), member=message.author, guild=message.guild, channel=message.channel)
                     await message.channel.send(out[:2000], allowed_mentions=discord.AllowedMentions(users=[message.author]))
                 return
 
@@ -433,7 +434,7 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
         if not text or member.bot or vip is None or not vip.has(member.guild.id, "white"):
             return
         try:
-            await member.send(text.replace("{user}", member.display_name).replace("{server}", member.guild.name)[:2000])
+            await member.send(expand(text.replace("{user}", member.display_name), member=member, guild=member.guild)[:2000])
         except discord.HTTPException:
             pass
 

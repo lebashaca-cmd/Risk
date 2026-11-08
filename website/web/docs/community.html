@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Community tools · Risk docs</title>
+<meta name="description" content="Smaller features that make a server feel alive.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community" aria-current="page">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Community tools</h1>
+      <p>Smaller features that make a server feel alive.</p>
+<h2 id="giveaways">Giveaways<a class="anchor" href="#giveaways" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!giveaway start 30m 1 Steam gift card</code> runs a giveaway for 30 minutes with one winner. People enter with a reaction or button.</li><li><code>!giveaway end</code>, <code>!giveaway cancel</code>, <code>!giveaway reroll</code>, <code>!giveaway list</code> and <code>!giveaway info</code> manage them.</li><li><code>!giveaway drop</code> starts a quick first-to-claim drop.</li><li><code>!giveaway require &lt;id&gt; @Member</code> limits a giveaway to a role, and <code>off</code> removes the limit.</li></ul>
+<p>All giveaway commands need Manage Server.</p>
+<h2 id="starboard">Starboard<a class="anchor" href="#starboard" aria-label="Link to this section">#</a></h2>
+<p>Messages that collect enough star reactions are copied to a starboard channel. <code>!starboard set #starboard</code> chooses the channel, <code>!starboard threshold 3</code> sets how many stars it takes, <code>!starboard show</code> shows the settings and <code>!starboard off</code> turns it off.</p>
+<h2 id="suggestions">Suggestions<a class="anchor" href="#suggestions" aria-label="Link to this section">#</a></h2>
+<p>Members use <code>!suggest add a music channel</code> and the suggestion is posted for everyone to vote on. Staff pick the channel with <code>!suggestchannel #suggestions</code> and answer with <code>!approve</code> or <code>!deny</code> and an optional reason.</p>
+<h2 id="birthdays">Birthdays<a class="anchor" href="#birthdays" aria-label="Link to this section">#</a></h2>
+<p>Members save theirs with <code>!birthday set 05-17</code> (month and day). Staff choose where birthday messages go with <code>!birthdaychannel #birthdays</code>. <code>!birthday list</code> and <code>!birthday next</code> show what&#x27;s coming.</p>
+<h2 id="counting-game">Counting game<a class="anchor" href="#counting-game" aria-label="Link to this section">#</a></h2>
+<p><code>!counting set #counting</code> starts a channel where everyone counts up together. A wrong number resets the count. <code>!counting reset</code> and <code>!counting off</code> give you control.</p>
+<h2 id="reaction-roles-and-verify">Reaction roles and verify<a class="anchor" href="#reaction-roles-and-verify" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!reactionrole add &lt;message id&gt; 🎮 @Gamer</code> gives a role to anyone who reacts with that emoji on a message in the current channel. Remove with <code>!reactionrole remove</code> and list with <code>!reactionrole list</code>.</li><li><code>!verifysetup #verify @Member</code> posts a <strong>Verify</strong> button. Whoever presses it receives the role.</li><li><code>!autorole set @Member</code> gives every new member a role when they join. <code>!autorole show</code> and <code>!autorole off</code> manage it.</li></ul>
+<h2 id="tags">Tags<a class="anchor" href="#tags" aria-label="Link to this section">#</a></h2>
+<p>Tags are short saved answers. <code>!tag add rules Be kind to each other</code> saves one, <code>!tag rules</code> shows it, and <code>!tags</code> lists them all. <code>!tag edit</code>, <code>!tag remove</code> and <code>!tag info</code> manage them.</p>
+<h2 id="rules-and-reports">Rules and reports<a class="anchor" href="#rules-and-reports" aria-label="Link to this section">#</a></h2>
+<p><code>!setrules 1. Be kind. 2. No spam.</code> saves the rules and <code>!rules</code> shows them. Members can use <code>!report @user spamming links</code>, which goes to the staff channel you choose with <code>!reportchannel #reports</code>.</p>
+<h2 id="staff-notes">Staff notes<a class="anchor" href="#staff-notes" aria-label="Link to this section">#</a></h2>
+<p><code>!note add @user text</code>, <code>!note list @user</code> and <code>!note remove</code> keep private notes about members. Only people with Manage Messages can see them.</p>
+<h2 id="sticky-messages">Sticky messages<a class="anchor" href="#sticky-messages" aria-label="Link to this section">#</a></h2>
+<p><code>!sticky</code> keeps a message pinned at the bottom of a channel, reposting it as people talk. <code>!unsticky</code> removes it.</p>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>Most of these settings can also be changed in the dashboard under <strong>Community</strong>.</li><li>Reaction roles, autorole and verify only work for roles that sit below Risk&#x27;s role.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="logs"><span>Previous</span>Server logs</a><a class="next" href="welcome"><span>Next</span>Welcome and leave</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#giveaways">Giveaways</a></li><li class="l2"><a href="#starboard">Starboard</a></li><li class="l2"><a href="#suggestions">Suggestions</a></li><li class="l2"><a href="#birthdays">Birthdays</a></li><li class="l2"><a href="#counting-game">Counting game</a></li><li class="l2"><a href="#reaction-roles-and-verify">Reaction roles and verify</a></li><li class="l2"><a href="#tags">Tags</a></li><li class="l2"><a href="#rules-and-reports">Rules and reports</a></li><li class="l2"><a href="#staff-notes">Staff notes</a></li><li class="l2"><a href="#sticky-messages">Sticky messages</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

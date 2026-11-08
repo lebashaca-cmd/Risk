@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Levels and XP · Risk docs</title>
+<meta name="description" content="Members earn XP by chatting. XP adds up to a level, and levels can hand out roles.">
+<link rel="icon" href="/favicon.png">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels" aria-current="page">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-sticky">Sticky</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Levels and XP</h1>
+      <p>Members earn XP by chatting. XP adds up to a level, and levels can hand out roles.</p>
+<h2 id="how-xp-works">How XP works<a class="anchor" href="#how-xp-works" aria-label="Link to this section">#</a></h2>
+<ul><li>Each message earns 15 to 25 XP, multiplied by your server&#x27;s multiplier.</li><li>A member can earn XP at most once per cooldown (60 seconds by default), so spamming doesn&#x27;t help.</li><li>The level for a total is the whole number part of the square root of XP divided by 100. In other words, reaching level <strong>n</strong> takes <code>100 × n × n</code> XP in total: level 1 is 100, level 5 is 2,500 and level 10 is 10,000.</li><li>Channels and roles you list as no-XP earn nothing.</li></ul>
+<h2 id="commands-for-members">Commands for members<a class="anchor" href="#commands-for-members" aria-label="Link to this section">#</a></h2>
+<ul><li><code>!rank</code> shows your level and XP, and <code>!profile</code> shows every stat Risk keeps for you with your rank in each.</li><li><code>!leaderboard</code> shows the top members.</li><li><code>!nextlevel</code> shows how much XP is left for the next level, <code>!xpneeded 20</code> the total XP for a level, and <code>!levelinfo</code> how levels are set up in this server.</li><li><code>!levelstats</code> shows server-wide numbers.</li></ul>
+<h2 id="settings-for-staff">Settings for staff<a class="anchor" href="#settings-for-staff" aria-label="Link to this section">#</a></h2>
+<div class="table-wrap"><table><thead><tr><th>Goal</th><th>Command</th></tr></thead><tbody><tr><td>Choose where level-ups appear</td><td><code>!levelchannel #levels</code> (or <code>here</code>, or <code>off</code>)</td></tr><tr><td>Write the level-up message</td><td><code>!levelmessage {embed} Nice one {user}, level {level}! {embed}</code></td></tr><tr><td>Change XP speed</td><td><code>!xpmultiplier 2</code> (from 0.1 to 100)</td></tr><tr><td>Change the cooldown</td><td><code>!xpcooldown 45</code></td></tr><tr><td>Stop XP in a channel or for a role</td><td><code>!noxp #bot-spam</code> or <code>!noxp @Muted</code> (run again to undo)</td></tr><tr><td>Give a role at a level</td><td><code>!levelreward 10 @Regular</code></td></tr><tr><td>Remove a reward</td><td><code>!delreward 10</code></td></tr><tr><td>List rewards</td><td><code>!levelrewards</code></td></tr><tr><td>Stack rewards or keep only the newest</td><td><code>!rewardmode stack</code> or <code>!rewardmode replace</code></td></tr><tr><td>Give reward roles to members who already qualify</td><td><code>!rewardsync</code></td></tr></tbody></table></div>
+<p>Staff can also adjust people directly with <code>!addxp</code>, <code>!removexp</code>, <code>!setxp</code>, <code>!setlevel</code>, <code>!resetxp</code> and <code>!resetlevels</code>.</p>
+<h2 id="the-level-up-message">The level-up message<a class="anchor" href="#the-level-up-message" aria-label="Link to this section">#</a></h2>
+<p>The default message is <code>🎉 {user} reached level **{level}**!</code>. You can use these in it, along with every <a href="variables">variable</a>:</p>
+<ul><li><code>{user}</code> mentions the member and <code>{name}</code> is their name.</li><li><code>{level}</code> is the new level, <code>{nextlevel}</code> the one after, <code>{xp}</code> their total XP and <code>{messages}</code> how many messages they have sent.</li><li>Put <code>{embed}</code> at the start and the end to send it as an embed with their picture.</li></ul>
+<h2 id="good-to-know">Good to know<a class="anchor" href="#good-to-know" aria-label="Link to this section">#</a></h2>
+<ul><li>Reward roles must sit below Risk&#x27;s top role, and can&#x27;t be managed roles or @everyone.</li><li><code>!levelmessage reset</code> goes back to the default.</li><li>All of this is under <strong>Levels</strong> in the <a href="dashboard">dashboard</a> too.</li></ul>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="moderation"><span>Previous</span>Moderation and auto-mod</a><a class="next" href="economy"><span>Next</span>Economy and games</a></nav>
+  </main>
+  <nav class="toc" aria-label="On this page"><p class="nav-title">On this page</p><ul><li class="l2"><a href="#how-xp-works">How XP works</a></li><li class="l2"><a href="#commands-for-members">Commands for members</a></li><li class="l2"><a href="#settings-for-staff">Settings for staff</a></li><li class="l2"><a href="#the-level-up-message">The level-up message</a></li><li class="l2"><a href="#good-to-know">Good to know</a></li></ul></nav>
+</div>
+<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+</body>
+</html>

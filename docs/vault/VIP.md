@@ -22,7 +22,7 @@ A server is on one plan. Each command asks for a group, and the plan decides whi
 | Plan | Groups it has |
 |---|---|
 | Basic | Basic |
-| Lifetime | Basic and Lifetime (never expires) |
+| Lifetime | Every group: Basic, Lifetime, White and Supreme (never expires) |
 | VIP White | Basic and White |
 | VIP Supreme | Basic, White and Supreme |
 | Server in `VIP_GUILD_IDS` | Every group |
