@@ -103,6 +103,11 @@ class VIP(commands.Cog):
         info = self.info(guild_id)
         return "All tiers" if info["source"] == "env" else TIERS[info["tier"]][0] if info["tier"] else None
 
+    def tier_key(self, guild_id):
+        """basic, lifetime, white or supreme. Servers that are VIP through VIP_GUILD_IDS count as lifetime (all groups)."""
+        info = self.info(guild_id)
+        return info["tier"] or ("lifetime" if info["source"] == "env" else "basic")
+
     def is_vip(self, guild_id):
         return self.info(guild_id)["vip"]
 

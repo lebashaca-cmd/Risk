@@ -674,10 +674,18 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 .vip .dash-fine { margin-inline: auto; max-width: 40rem; }
 
 /* Staff panel */
-.staff-tiles { max-width: 50rem; margin-top: 1.5rem; }
-.staff-sub { font-size: 1.15rem; margin: 2.5rem 0 0.75rem; }
-.staff-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; margin-bottom: 1rem; }
-.staff-body { display: grid; gap: 1rem; max-width: 50rem; }
+.staff { max-width: 56rem; margin-inline: auto; text-align: center; }
+.staff > h1, .staff > .lede, .staff .dash-fine, .staff .dash-hero, .staff .dash-hero .actions { margin-inline: auto; text-align: center; justify-content: center; }
+.staff-overview { display: grid; gap: 0.25rem; margin-top: 1.5rem; }
+.staff-tiles { grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr)); max-width: none; margin-inline: auto; }
+.staff-tiles .dash-tile { text-align: center; }
+.staff-sub { font-size: 1.15rem; margin: 1.75rem 0 0.75rem; text-align: center; }
+.staff-tabs { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: center; margin-bottom: 1rem; }
+.staff-body { display: grid; gap: 1rem; max-width: 50rem; margin-inline: auto; text-align: left; }
+.staff-switch { cursor: pointer; }
+.staff-off { display: inline-flex; align-items: center; gap: 0.5rem; color: var(--mist); font-size: 0.88rem; white-space: nowrap; }
+.staff-off input { width: 1.1rem; height: 1.1rem; accent-color: #e5484d; }
+.staff-maint { margin: 0.5rem 0 0.75rem; }
 .staff-card h2 { margin: 0 0 0.25rem; font-size: 1.1rem; }
 .staff-card h3 { margin: 0.75rem 0 0.25rem; font-size: 0.98rem; }
 .staff-grant { display: grid; grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr)); gap: 0.75rem; margin: 0.75rem 0; }

@@ -16,6 +16,7 @@ import time
 import discord
 from discord.ext import commands
 
+from utils.helpers import ping
 from utils.store import JsonStore
 
 LEVELS = {"staff": 1, "developer": 2, "owner": 3}
@@ -53,6 +54,7 @@ class Staff(commands.Cog, name="Staff"):
 
     def __init__(self, bot):
         self.bot = bot
+        self.started = time.time()
         self.store = JsonStore("staff")
         for key, empty in (("roles", {}), ("banned", {}), ("prices", {}), ("log", [])):
             self.store.data.setdefault(key, empty)
@@ -117,11 +119,22 @@ class Staff(commands.Cog, name="Staff"):
     def totals(self):
         vip = self.bot.get_cog("VIP")
         guilds = list(self.bot.guilds)
+        plans = {plan: 0 for plan in PLANS}
+        for g in guilds:
+            if vip and vip.info(g.id)["vip"]:
+                plans[vip.tier_key(g.id)] = plans.get(vip.tier_key(g.id), 0) + 1
+        week = time.time() - 7 * 86400
         return {
             "servers": len(guilds),
             "members": sum(g.member_count or 0 for g in guilds),
-            "vip": sum(1 for g in guilds if vip and vip.info(g.id)["vip"]),
+            "vip": sum(plans.values()),
             "banned": len(self.store.data["banned"]),
+            "planCounts": plans,
+            "newServers": sum(1 for g in guilds if getattr(getattr(g, "me", None), "joined_at", None) is not None and g.me.joined_at.timestamp() >= week),
+            "biggest": max((g.member_count or 0 for g in guilds), default=0),
+            "uptime": int(time.time() - self.started),
+            "latencyMs": ping(self.bot),
+            "commands": len(self.bot.commands),
         }
 
     async def me(self, user_id):
@@ -163,6 +176,34 @@ class Staff(commands.Cog, name="Staff"):
             "prices": self.public_prices(), "plans": list(PLANS),
             "roles": roles, "log": list(reversed(self.store.data["log"]))[:50],
         }
+
+    # ------------------------------------------------------------------ global switches (from OwnerControl)
+    def control(self):
+        control = self.bot.get_cog("OwnerControl")
+        if control is None:
+            raise StaffError(503, "The owner controls aren't loaded. Upload cogs/owner_control.py and restart the bot.")
+        return control
+
+    async def control_panel(self, user_id):
+        await self.require(user_id, "developer")
+        control = self.control()
+        return {"commands": control.command_list(), "blocked": control.blocked_list(), "maintenance": dict(control.store.data["maintenance"])}
+
+    async def control_action(self, user_id, what, body):
+        await self.require(user_id, "developer")
+        control = self.control()
+        try:
+            if what == "commands":
+                return await control.set_command(user_id, body)
+            if what == "blocked":
+                return await control.set_blocked(user_id, body, body.get("remove") is not True)
+            if what == "maintenance":
+                return await control.set_maintenance(user_id, body)
+        except Exception as error:
+            if type(error).__name__ == "ApiErr":
+                raise StaffError(error.status, error.message)
+            raise
+        raise StaffError(404, "Unknown control.")
 
     # ------------------------------------------------------------------ owner actions
     async def set_prices(self, user_id, body):

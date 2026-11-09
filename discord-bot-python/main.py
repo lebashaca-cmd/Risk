@@ -6,7 +6,7 @@ from aiohttp import web
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from utils.helpers import explain_error
+from utils.helpers import Silent, explain_error
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 COGS_DIR = os.path.join(BASE_DIR, 'cogs')
@@ -68,9 +68,17 @@ async def dashboard_handler(request):
     return await dashboard.handle(request)
 
 
+async def owner_handler(request):
+    control = bot.get_cog('OwnerControl')
+    if control is None:
+        return web.json_response({"error": "The owner API isn't loaded yet."}, status=503)
+    return await control.handle(request)
+
+
 async def start_status_server():
     app = web.Application(client_max_size=8 * 1024 * 1024)
     app.router.add_route('*', '/dash/{tail:.*}', dashboard_handler)
+    app.router.add_route('*', '/owner/{tail:.*}', owner_handler)
     app.router.add_get('/', status_handler)
     app.router.add_get('/status', status_handler)
     runner = web.AppRunner(app)
@@ -97,7 +105,7 @@ async def cogstatus(ctx):
     lines = [f'{len(loaded)} of {len(files)} cog files loaded, {len(bot.commands)} commands.']
     for name in missing:
         lines.append(f'Not loaded: {name} - {bot.load_errors.get(name + ".py", "no error recorded")}')
-    for name in ('streams', 'vip', 'vip_plus', 'staff', 'dashboard'):
+    for name in ('streams', 'vip', 'vip_plus', 'staff', 'owner_control', 'dashboard'):
         if name not in files:
             lines.append(f'Missing file: cogs/{name}.py was not uploaded to this host.')
     await ctx.reply('\n'.join(lines)[:1900], mention_author=False)
@@ -135,7 +143,7 @@ async def on_ready():
 
 @bot.event
 async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandNotFound):
+    if isinstance(error, (commands.CommandNotFound, Silent)):
         return
     if ctx.command is not None and ctx.command.has_error_handler():
         return

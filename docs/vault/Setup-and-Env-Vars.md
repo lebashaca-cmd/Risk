@@ -18,6 +18,7 @@ tags: [risk, config]
 | `VIP_GUILD_IDS` | VIP | Comma-separated server ids that always have VIP |
 | `STAFF_GUILD_ID` | Staff panel | The ID of your own Risk server. Panel access is only given to its members |
 | `STAFF_ROLE_IDS`, `DEV_ROLE_IDS` | Staff panel | Optional Discord role IDs that count as Staff and Developer, comma separated |
+| `OWNER_PANEL_KEY` | Owner app | At least 32 random characters. Turns on the signed `/owner` API used by the Windows control panel. Keep it secret |
 | `OWNER_IDS` | Staff panel | Optional extra owner user IDs (the application owner is always an owner) |
 | `VIP_URL` | VIP | Optional https link shown as "Get VIP". Point it at the site's `/vip` page |
 | `VIP_BASIC_URL` (or old `VIP_MONTHLY_URL`), `VIP_LIFETIME_URL`, `VIP_WHITE_URL`, `VIP_SUPREME_URL` | Site | https checkout links for the four plans on `/vip` |

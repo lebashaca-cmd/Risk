@@ -336,9 +336,9 @@ class Dashboard:
             self.check_write(request)
         _, session = self.require(request)
         action = request.match_info["action"]
-        if method == "GET" and action not in ("me", "overview", "owner"):
+        if method == "GET" and action not in ("me", "overview", "owner", "control"):
             raise web.HTTPNotFound(reason="Unknown staff request.")
-        if method != "GET" and action not in ("prices", "vip", "ban", "unban", "roles"):
+        if method != "GET" and action not in ("prices", "vip", "ban", "unban", "roles", "control-commands", "control-blocked", "control-maintenance"):
             raise web.HTTPNotFound(reason="Unknown staff request.")
         body = None
         if method != "GET":

@@ -1009,6 +1009,10 @@ class Dashboard(commands.Cog):
                 return await staff.overview(user)
             if parts == ["owner"] and method == "GET":
                 return await staff.owner_panel(user)
+            if parts == ["control"] and method == "GET":
+                return await staff.control_panel(user)
+            if len(parts) == 1 and parts[0].startswith("control-") and method in ("PUT", "POST"):
+                return await staff.control_action(user, parts[0][len("control-"):], await self.read_json(request))
             actions = {"prices": staff.set_prices, "vip": staff.set_vip, "ban": staff.ban_server, "unban": staff.unban_server, "roles": staff.assign_role}
             if len(parts) == 1 and parts[0] in actions and method in ("PUT", "POST"):
                 return await actions[parts[0]](user, await self.read_json(request))

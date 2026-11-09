@@ -14,6 +14,10 @@ class ModError(commands.CommandError):
     pass
 
 
+class Silent(commands.CommandError):
+    """Stops a command without saying anything (used for blocked users)."""
+
+
 def parse_duration(text):
     text = (text or "").strip().lower()
     parts = _PART.findall(text)
@@ -130,3 +134,9 @@ def message_payload(template, member, subs=None, user_pattern=r"\{user\}", ping=
     embed = discord.Embed(description=body[:4000], color=color if color is not None else discord.Color.dark_grey())
     embed.set_thumbnail(url=member.display_avatar.url)
     return {"embed": embed, "content": member.mention if ping else None}
+
+
+def ping(bot):
+    """The bot's latency in milliseconds, or None when it isn't connected (discord.py reports NaN then)."""
+    latency = bot.latency
+    return round(latency * 1000) if latency == latency and latency not in (float("inf"), float("-inf")) else None
