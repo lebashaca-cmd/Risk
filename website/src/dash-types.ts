@@ -262,6 +262,15 @@ export interface StaffControl {
   commands: { name: string; category: string; description: string; off: boolean }[];
   blocked: { id: string; reason: string; at: number | null }[];
   maintenance: { on: boolean; message: string };
+  statusPage: StaffStatusPage | null;
+}
+
+export interface StaffStatusPage {
+  buttons: { label: string; url: string; style: "primary" | "quiet" }[];
+  customButtons: boolean;
+  defaults: { label: string; url: string; style: "primary" | "quiet" }[];
+  notice: { on: boolean; level: "info" | "good" | "warn" | "bad"; text: string };
+  incidents: { id: string; title: string; text: string; level: "info" | "good" | "warn" | "bad"; at: number; resolved_at: number | null }[];
 }
 
 export interface StaffOverview extends StaffTotals {

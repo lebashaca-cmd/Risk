@@ -14,7 +14,7 @@ from dashboard import Dashboard
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 DATA_FILE = ROOT / "data" / "bot.json"
-PAGES = {"/", "/commands", "/terms", "/privacy", "/vip", "/staff"}
+PAGES = {"/", "/commands", "/terms", "/privacy", "/vip", "/staff", "/status"}
 STATUS_TTL = 10
 API_LIMIT = (90, 60)
 
@@ -270,6 +270,13 @@ async def api_status(request):
     return json_ok(await get_status(request.app), 5)
 
 
+async def api_status_page(request):
+    """Live state from the probe, plus what the bot says about buttons, notices, incidents, usage and uptime."""
+    status = await get_status(request.app)
+    page = await request.app["dashboard"].status_page(request)
+    return json_ok({"status": status, "page": page}, 10)
+
+
 async def api_commands(request):
     data = read_bot_data()
     return json_ok({"prefixes": data.get("prefixes", ["!"]), "commands": data.get("commands", [])}, 300)
@@ -346,6 +353,7 @@ def make_app():
 
     app.router.add_get("/api/config", api_config)
     app.router.add_get("/api/status", api_status)
+    app.router.add_get("/api/status-page", api_status_page)
     app.router.add_get("/api/commands", api_commands)
     app.router.add_get("/api/tos", api_tos)
     app.router.add_get("/api/privacy", api_privacy)

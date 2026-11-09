@@ -8,6 +8,7 @@ import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
 import { renderStaff } from "./staff.js";
 import { renderVip } from "./vip.js";
+import { renderStatusPage } from "./status-page.js";
 import type { SiteConfig } from "./types.js";
 
 const outlet = document.getElementById("app");
@@ -24,6 +25,7 @@ const TITLES: Record<string, string> = {
   "/privacy": "Privacy Policy · Risk",
   "/vip": "VIP · Risk",
   "/staff": "Staff · Risk",
+  "/status": "Status · Risk",
 };
 
 function normalize(path: string): string {
@@ -125,6 +127,12 @@ function render(): void {
     }
     case "/staff": {
       const view = renderStaff();
+      node = view.node;
+      cleanup = view.cleanup;
+      break;
+    }
+    case "/status": {
+      const view = renderStatusPage(config);
       node = view.node;
       cleanup = view.cleanup;
       break;

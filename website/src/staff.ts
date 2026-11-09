@@ -1,6 +1,7 @@
 import { ApiFailure, dashApi, staffApi } from "./api.js";
 import type { PlanKey, StaffControl, StaffOverview, StaffOwnerPanel, StaffRole, StaffServer, StaffTotals } from "./dash-types.js";
 import { h, mount } from "./dom.js";
+import { statusPageSection } from "./staff-status.js";
 import { toast } from "./ui.js";
 
 type View = { node: HTMLElement; cleanup: () => void };
@@ -346,44 +347,41 @@ export function renderStaff(): View {
     );
 
   const draw = (overview: StaffOverview, panel: StaffOwnerPanel | null, control: StaffControl | null, refresh: Refresh): void => {
-    const sections: [string, string, () => HTMLElement][] = panel
+    type Section = [string, string, () => HTMLElement];
+    const groups: [string, Section[]][] = panel
       ? [
-          ["servers", "Servers", () => serversSection(panel, refresh)],
-          ...(control
-            ? ([
-                ["commands", "Commands", () => commandsSection(control)],
-                ["blocked", "Blocked users", () => blockedSection(control, refresh)],
-                ["bot", "Maintenance", () => botSection(control, refresh)],
-              ] as [string, string, () => HTMLElement][])
-            : []),
-          ["prices", "Prices", () => pricesSection(panel, refresh)],
-          ["bans", "Banned servers", () => bansSection(panel, refresh)],
-          ["roles", "Roles", () => rolesSection(panel, refresh)],
-          ["log", "Recent changes", () => logSection(panel)],
+          ["People and servers", [["servers", "Servers", () => serversSection(panel, refresh)], ["bans", "Banned servers", () => bansSection(panel, refresh)], ["roles", "Roles", () => rolesSection(panel, refresh)]]],
+          ["Bot control", control ? [["commands", "Commands", () => commandsSection(control)], ["blocked", "Blocked users", () => blockedSection(control, refresh)], ["bot", "Maintenance", () => botSection(control, refresh)]] : []],
+          ["Public pages", [...(control ? ([["status", "Status page", () => statusPageSection(control.statusPage, refresh)]] as Section[]) : []), ["prices", "Prices", () => pricesSection(panel, refresh)]]],
+          ["History", [["log", "Recent changes", () => logSection(panel)]]],
         ]
       : [];
+    const sections = groups.flatMap(([, items]) => items);
     const holder = h("div", { class: "staff-body" });
-    const tabs = h("div", { class: "staff-tabs", role: "tablist", "aria-label": "Owner panel" });
+    const side = h("nav", { class: "staff-side", role: "tablist", "aria-label": "Owner panel", "aria-orientation": "vertical" });
     const open = (id: string): void => {
       const found = sections.find(([key]) => key === id);
       if (!found) return;
       sessionStorageSet(id);
-      tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+      side.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
       mount(holder, found[2]());
     };
-    sections.forEach(([id, label]) => {
-      const tab = h("button", { class: "dash-tab", type: "button", role: "tab", "data-tab": id }, label);
-      tab.addEventListener("click", () => open(id));
-      tabs.appendChild(tab);
-    });
+    for (const [title, items] of groups) {
+      if (!items.length) continue;
+      side.appendChild(h("p", { class: "staff-side-title" }, title));
+      for (const [id, label] of items) {
+        const tab = h("button", { class: "dash-tab", type: "button", role: "tab", "data-tab": id }, label);
+        tab.addEventListener("click", () => open(id));
+        side.appendChild(tab);
+      }
+    }
     mount(
       root,
       h("h1", {}, "Staff panel"),
-      h("p", { class: "lede" }, `You're signed in as ${overview.role}. ${panel ? "You can open the owner panel below." : "You can see the totals."}`),
+      h("p", { class: "lede" }, `You're signed in as ${overview.role}. ${panel ? "The owner panel is below the totals." : "You can see the totals."}`),
       tiles(overview),
       panel ? h("h2", { class: "staff-sub" }, "Owner panel") : null,
-      panel ? tabs : null,
-      panel ? holder : null,
+      panel ? h("div", { class: "staff-shell" }, side, holder) : null,
       h("p", { class: "dash-fine" }, "This page is only for the Risk staff team. Servers that have Risk installed don't get access."),
     );
     if (panel) open(sessionStorageGet() ?? "servers");
