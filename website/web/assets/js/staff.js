@@ -1,5 +1,6 @@
 import { ApiFailure, dashApi, staffApi } from "./api.js";
 import { h, mount } from "./dom.js";
+import { statusPageSection } from "./staff-status.js";
 import { toast } from "./ui.js";
 const PLAN_NAMES = { basic: "Basic", lifetime: "Lifetime", white: "VIP White", supreme: "VIP Supreme" };
 const nf = new Intl.NumberFormat("en");
@@ -260,38 +261,36 @@ export function renderStaff() {
     const reasonText = new URLSearchParams(window.location.search).get("login");
     const signIn = (enabled) => h("div", { class: "dash-hero" }, h("h1", {}, "Staff panel"), h("p", { class: "lede" }, "For the Risk team. Sign in with Discord to continue."), reasonText ? notice("error", "Sign-in didn't finish. Try again.") : null, enabled ? h("div", { class: "actions" }, h("a", { class: "btn btn-primary", href: "/api/auth/login?next=/staff" }, "Sign in with Discord")) : notice("info", "Sign-in isn't switched on for this site yet."));
     const draw = (overview, panel, control, refresh) => {
-        const sections = panel
+        const groups = panel
             ? [
-                ["servers", "Servers", () => serversSection(panel, refresh)],
-                ...(control
-                    ? [
-                        ["commands", "Commands", () => commandsSection(control)],
-                        ["blocked", "Blocked users", () => blockedSection(control, refresh)],
-                        ["bot", "Maintenance", () => botSection(control, refresh)],
-                    ]
-                    : []),
-                ["prices", "Prices", () => pricesSection(panel, refresh)],
-                ["bans", "Banned servers", () => bansSection(panel, refresh)],
-                ["roles", "Roles", () => rolesSection(panel, refresh)],
-                ["log", "Recent changes", () => logSection(panel)],
+                ["People and servers", [["servers", "Servers", () => serversSection(panel, refresh)], ["bans", "Banned servers", () => bansSection(panel, refresh)], ["roles", "Roles", () => rolesSection(panel, refresh)]]],
+                ["Bot control", control ? [["commands", "Commands", () => commandsSection(control)], ["blocked", "Blocked users", () => blockedSection(control, refresh)], ["bot", "Maintenance", () => botSection(control, refresh)]] : []],
+                ["Public pages", [...(control ? [["status", "Status page", () => statusPageSection(control.statusPage, refresh)]] : []), ["prices", "Prices", () => pricesSection(panel, refresh)]]],
+                ["History", [["log", "Recent changes", () => logSection(panel)]]],
             ]
             : [];
+        const sections = groups.flatMap(([, items]) => items);
         const holder = h("div", { class: "staff-body" });
-        const tabs = h("div", { class: "staff-tabs", role: "tablist", "aria-label": "Owner panel" });
+        const side = h("nav", { class: "staff-side", role: "tablist", "aria-label": "Owner panel", "aria-orientation": "vertical" });
         const open = (id) => {
             const found = sections.find(([key]) => key === id);
             if (!found)
                 return;
             sessionStorageSet(id);
-            tabs.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
+            side.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
             mount(holder, found[2]());
         };
-        sections.forEach(([id, label]) => {
-            const tab = h("button", { class: "dash-tab", type: "button", role: "tab", "data-tab": id }, label);
-            tab.addEventListener("click", () => open(id));
-            tabs.appendChild(tab);
-        });
-        mount(root, h("h1", {}, "Staff panel"), h("p", { class: "lede" }, `You're signed in as ${overview.role}. ${panel ? "You can open the owner panel below." : "You can see the totals."}`), tiles(overview), panel ? h("h2", { class: "staff-sub" }, "Owner panel") : null, panel ? tabs : null, panel ? holder : null, h("p", { class: "dash-fine" }, "This page is only for the Risk staff team. Servers that have Risk installed don't get access."));
+        for (const [title, items] of groups) {
+            if (!items.length)
+                continue;
+            side.appendChild(h("p", { class: "staff-side-title" }, title));
+            for (const [id, label] of items) {
+                const tab = h("button", { class: "dash-tab", type: "button", role: "tab", "data-tab": id }, label);
+                tab.addEventListener("click", () => open(id));
+                side.appendChild(tab);
+            }
+        }
+        mount(root, h("h1", {}, "Staff panel"), h("p", { class: "lede" }, `You're signed in as ${overview.role}. ${panel ? "The owner panel is below the totals." : "You can see the totals."}`), tiles(overview), panel ? h("h2", { class: "staff-sub" }, "Owner panel") : null, panel ? h("div", { class: "staff-shell" }, side, holder) : null, h("p", { class: "dash-fine" }, "This page is only for the Risk staff team. Servers that have Risk installed don't get access."));
         if (panel)
             open(sessionStorageGet() ?? "servers");
     };

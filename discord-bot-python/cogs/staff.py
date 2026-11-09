@@ -187,7 +187,8 @@ class Staff(commands.Cog, name="Staff"):
     async def control_panel(self, user_id):
         await self.require(user_id, "developer")
         control = self.control()
-        return {"commands": control.command_list(), "blocked": control.blocked_list(), "maintenance": dict(control.store.data["maintenance"])}
+        page = self.bot.get_cog("StatusPage")
+        return {"commands": control.command_list(), "blocked": control.blocked_list(), "maintenance": dict(control.store.data["maintenance"]), "statusPage": page.editable() if page else None}
 
     async def control_action(self, user_id, what, body):
         await self.require(user_id, "developer")
@@ -199,6 +200,8 @@ class Staff(commands.Cog, name="Staff"):
                 return await control.set_blocked(user_id, body, body.get("remove") is not True)
             if what == "maintenance":
                 return await control.set_maintenance(user_id, body)
+            if what in ("buttons", "notice", "incident-add", "incident-resolve", "incident-remove"):
+                return control.page_call(user_id, what.replace("-", "/"), body)
         except Exception as error:
             if type(error).__name__ == "ApiErr":
                 raise StaffError(error.status, error.message)

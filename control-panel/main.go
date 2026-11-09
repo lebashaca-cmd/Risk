@@ -55,10 +55,12 @@ var apiPath = regexp.MustCompile(`^[A-Za-z0-9/_-]{1,80}$`)
 func main() {
 	port := flag.Int("port", 0, "port to listen on (default: any free port)")
 	noBrowser := flag.Bool("no-browser", false, "don't open a window; print the address instead")
+	installFlag := flag.Bool("install", false, "install as a Windows app (Start menu, Apps list) and open it")
+	uninstallFlag := flag.Bool("uninstall", false, "remove the Windows app and its shortcuts")
 	cfgFlag := flag.String("config", "", "path to the settings file (default: next to this program)")
 	flag.Parse()
 
-	a := &app{client: &http.Client{Timeout: 20 * time.Second}}
+	a := &app{client: &http.Client{Timeout: 60 * time.Second}}
 	a.cfgPath = *cfgFlag
 	if a.cfgPath == "" {
 		exe, err := os.Executable()
@@ -68,6 +70,9 @@ func main() {
 		a.cfgPath = filepath.Join(filepath.Dir(exe), "RiskPanel.config.json")
 	}
 	a.load()
+	if runInstallFlags(*installFlag, *uninstallFlag, a) {
+		return
+	}
 	buf := make([]byte, 24)
 	if _, err := rand.Read(buf); err != nil {
 		fail("Can't make a random token: " + err.Error())
@@ -126,6 +131,8 @@ func (a *app) routes() http.Handler {
 	files := http.FileServer(http.FS(sub))
 	mux.Handle("/", files)
 	mux.HandleFunc("/local/config", a.handleConfig)
+	mux.HandleFunc("/local/prefs", a.handlePrefs)
+	mux.HandleFunc("/local/install", a.handleInstall)
 	mux.HandleFunc("/local/ping", func(w http.ResponseWriter, r *http.Request) {
 		a.lastPing.Store(time.Now().Unix())
 		a.everPinged.Store(true)
@@ -236,6 +243,34 @@ func (a *app) handleConfig(w http.ResponseWriter, r *http.Request) {
 	jsonOut(w, 200, map[string]bool{"ok": true})
 }
 
+// prefsPath keeps the look and behaviour choices next to the settings file. They hold no secrets.
+func (a *app) prefsPath() string {
+	return strings.TrimSuffix(a.cfgPath, filepath.Ext(a.cfgPath)) + ".prefs.json"
+}
+
+func (a *app) handlePrefs(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodGet {
+		data, err := os.ReadFile(a.prefsPath())
+		if err != nil || !json.Valid(data) {
+			data = []byte("{}")
+		}
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write(data)
+		return
+	}
+	raw, err := io.ReadAll(io.LimitReader(r.Body, 8192))
+	var probe map[string]any
+	if err != nil || json.Unmarshal(raw, &probe) != nil || probe == nil {
+		jsonOut(w, 400, map[string]string{"error": "That wasn't valid."})
+		return
+	}
+	if err := os.WriteFile(a.prefsPath(), raw, 0o600); err != nil {
+		jsonOut(w, 500, map[string]string{"error": "Couldn't save: " + err.Error()})
+		return
+	}
+	jsonOut(w, 200, map[string]bool{"ok": true})
+}
+
 func cleanURL(raw string) (string, error) {
 	raw = strings.TrimSpace(raw)
 	if !strings.Contains(raw, "://") {
@@ -277,7 +312,7 @@ func (a *app) call(c config, method, tail string, body []byte) (int, []byte, err
 		return 0, nil, fmt.Errorf("Can't reach the bot at %s. Is it online? (%v)", c.URL, shorten(err))
 	}
 	defer resp.Body.Close()
-	data, _ := io.ReadAll(io.LimitReader(resp.Body, 8<<20))
+	data, _ := io.ReadAll(io.LimitReader(resp.Body, 40<<20))
 	return resp.StatusCode, data, nil
 }
 

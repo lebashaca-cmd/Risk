@@ -23,8 +23,20 @@ Two ways for the owner to control the bot. Both use the same bot-side code, `cog
 
 - Needs `OWNER_PANEL_KEY` (32+ characters). Without it the answer is 503 and nothing can be reached.
 - Each request carries `X-Owner-Time`, `X-Owner-Nonce` and `X-Owner-Sig`: an HMAC-SHA256 of method, path, time, nonce and the body's SHA-256. Requests more than 30 seconds off are refused and a nonce works once. A wrong signature is answered after half a second. There is no lockout, because a lockout would let a stranger shut the owner out.
-- Actions: `GET status panel commands blocked logs guild/<id>`, `POST commands blocked/add blocked/remove maintenance presence say leave reload shutdown restart`, and the staff actions `prices vip ban unban roles`. The staff actions go through the `Staff` cog as the first id in `OWNER_IDS` (or the application owner).
+- Actions: `GET status panel commands blocked logs cogs appprofile statuspage guild/<id>`, `POST commands blocked/add blocked/remove maintenance presence appprofile say leave reload shutdown restart broadcast backup statuspage/buttons statuspage/notice incident/add incident/resolve incident/remove`, and the staff actions `prices vip ban unban roles`. The staff actions go through the `Staff` cog as the first id in `OWNER_IDS` (or the application owner).
 - Every change is added to the staff log with its actor.
+
+## Status shown on Discord
+
+`presence` sets what members see under the bot's name: activity (playing, watching, listening, competing, streaming, custom), text, status (online, idle, dnd, invisible) and, for streaming, a Twitch or YouTube link. Text can use `{servers}`, `{members}`, `{commands}`, `{ping}`, `{prefix}`, `{uptime}`, `{vip}`. Turn on rotation to cycle up to 10 messages every 30 seconds to a day. A plain status with variables is refreshed every 5 minutes. Discord doesn't allow buttons in a bot's status, so the "Add to server" button comes from the bot's profile instead: `appprofile` edits the About Me text, the custom install link and up to 5 tags through `PATCH /applications/@me`.
+
+## Website status page
+
+`cogs/status_page.py` keeps what `/status` on the website shows: buttons (label, link, bright or quiet; a link is `https://...`, a `/path` or `{invite} {site} {docs} {dashboard} {vip} {status}`), a notice banner, incidents, command counts and 30 days of uptime (the bot marks a half hour as up every 5 minutes). Edit it in the app under Website status, or in the website's staff panel under Status page.
+
+## App settings and Windows install
+
+Settings holds seven looks (basic, glassmorphism, neumorphism, neobrutalism, flat, minimalism, skeuomorphism), accent colour, corners, text size, spacing, animations, start page, refresh rate and clock. They are saved next to the program in `RiskPanel.prefs.json`. On Windows, Settings can install the app: it copies the program to `%LocalAppData%\Programs\RiskControlPanel`, adds a Start menu shortcut (and optionally a desktop one and start with Windows) and an Apps list entry. `RiskPanel.exe --install` and `--uninstall` do the same. This part was written without a Windows machine to test on.
 
 ## Global switches
 

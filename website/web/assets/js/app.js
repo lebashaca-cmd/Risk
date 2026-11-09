@@ -8,6 +8,7 @@ import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
 import { renderStaff } from "./staff.js";
 import { renderVip } from "./vip.js";
+import { renderStatusPage } from "./status-page.js";
 const outlet = document.getElementById("app");
 const fallbackConfig = { name: "Risk", inviteUrl: null, supportUrl: null };
 let config = fallbackConfig;
@@ -21,6 +22,7 @@ const TITLES = {
     "/privacy": "Privacy Policy · Risk",
     "/vip": "VIP · Risk",
     "/staff": "Staff · Risk",
+    "/status": "Status · Risk",
 };
 function normalize(path) {
     const trimmed = path.replace(/\/+$/, "");
@@ -113,6 +115,12 @@ function render() {
         }
         case "/staff": {
             const view = renderStaff();
+            node = view.node;
+            cleanup = view.cleanup;
+            break;
+        }
+        case "/status": {
+            const view = renderStatusPage(config);
             node = view.node;
             cleanup = view.cleanup;
             break;

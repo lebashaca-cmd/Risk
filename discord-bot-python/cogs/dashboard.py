@@ -1030,6 +1030,9 @@ class Dashboard(commands.Cog):
         if parts and parts[0] == "staff":
             return await self.route_staff(request, method, parts[1:])
 
+        if parts == ["status-page"] and method == "GET":
+            page = self.bot.get_cog("StatusPage")
+            return page.public() if page else {"buttons": [], "notice": {"on": False}, "incidents": [], "usage": None, "uptime": None}
         if parts == ["prices"] and method == "GET":
             staff = self.bot.get_cog("Staff")
             return {"prices": staff.public_prices() if staff else {}}

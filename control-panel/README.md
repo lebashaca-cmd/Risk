@@ -4,6 +4,12 @@ A private Windows app for the bot's owner. From it you can see the bot's status,
 
 It is for **you only**. It can't do anything unless it has your secret key, and only your bot accepts that key.
 
+## What's in it
+
+Overview and command use, servers, banned servers, commands, blocked users, staff and roles, Website status (buttons, notice, incidents for the `/status` page), prices, Broadcast and backup, console, Bot and cogs, and Settings.
+
+**Settings** lets you pick a look: basic, glassmorphism, neumorphism, neobrutalism, flat, minimalism or skeuomorphism, plus accent colour, corners, text size and more. On Windows it also installs the panel like a normal app (Start menu, Settings > Apps, optional desktop shortcut and start with Windows). From a terminal: `RiskPanel.exe --install` or `--uninstall`.
+
 ## Set up (once)
 
 1. Make a key. Any long random text works, at least 32 characters. For example, in a terminal:

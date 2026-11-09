@@ -8,6 +8,7 @@ key, and the bot checks the person's permissions in that server again.
 import asyncio
 import hmac
 import json
+import re
 import secrets
 import time
 from urllib.parse import quote, urlencode, urlsplit
@@ -54,6 +55,7 @@ class Dashboard:
         self.sessions = {}
         self.presence = {}
         self.prices = None
+        self.page_cache = None
         self.client_secret = env("DISCORD_CLIENT_SECRET")
         self.key = env("DASHBOARD_KEY")
         self.site_url = env("SITE_URL").rstrip("/")
@@ -338,7 +340,7 @@ class Dashboard:
         action = request.match_info["action"]
         if method == "GET" and action not in ("me", "overview", "owner", "control"):
             raise web.HTTPNotFound(reason="Unknown staff request.")
-        if method != "GET" and action not in ("prices", "vip", "ban", "unban", "roles", "control-commands", "control-blocked", "control-maintenance"):
+        if method != "GET" and action not in ("prices", "vip", "ban", "unban", "roles", "control-commands", "control-blocked", "control-maintenance", "control-buttons", "control-notice", "control-incident-add", "control-incident-resolve", "control-incident-remove"):
             raise web.HTTPNotFound(reason="Unknown staff request.")
         body = None
         if method != "GET":
@@ -371,6 +373,42 @@ class Dashboard:
                     "url": url if isinstance(url, str) and url.startswith("https://") and len(url) <= 500 else None,
                 }
         self.prices = (time.monotonic(), clean)
+        return clean
+
+    async def status_page(self, request):
+        """The status page's own data from the bot, cleaned, cached for 20 seconds and kept as the last known copy."""
+        cached = self.page_cache
+        if cached and time.monotonic() - cached[0] < 20:
+            return cached[1]
+        empty = {"buttons": None, "notice": {"on": False, "level": "info", "text": ""}, "incidents": [], "usage": None, "uptime": None, "sinceSeconds": None}
+        if not self.enabled:
+            return empty
+        status, payload = await self.ask_bot(request, "GET", "status-page", timeout=4)
+        if status != 200 or not isinstance(payload, dict):
+            return cached[1] if cached else empty
+        clean = dict(empty)
+        buttons = payload.get("buttons")
+        if isinstance(buttons, list):
+            clean["buttons"] = [
+                {"label": str(b.get("label", ""))[:30], "url": b["url"], "style": b.get("style") if b.get("style") in ("primary", "quiet") else "quiet"}
+                for b in buttons[:8]
+                if isinstance(b, dict) and isinstance(b.get("url"), str) and re.fullmatch(r"https://\S{1,490}|/(?!/)\S{0,490}|\{(invite|site|docs|dashboard|vip|status)\}(/\S*)?", b["url"]) and str(b.get("label", "")).strip()
+            ]
+        notice = payload.get("notice")
+        if isinstance(notice, dict) and notice.get("on") is True and isinstance(notice.get("text"), str):
+            clean["notice"] = {"on": True, "level": notice.get("level") if notice.get("level") in ("info", "good", "warn", "bad") else "info", "text": notice["text"][:300]}
+        incidents = payload.get("incidents")
+        if isinstance(incidents, list):
+            clean["incidents"] = [
+                {"id": str(i.get("id", ""))[:20], "title": str(i.get("title", ""))[:80], "text": str(i.get("text", ""))[:500], "level": i.get("level") if i.get("level") in ("info", "good", "warn", "bad") else "info", "at": i.get("at") if isinstance(i.get("at"), int) else None, "resolved_at": i.get("resolved_at") if isinstance(i.get("resolved_at"), int) else None}
+                for i in incidents[:10] if isinstance(i, dict)
+            ]
+        for key in ("usage", "uptime"):
+            if isinstance(payload.get(key), dict):
+                clean[key] = payload[key]
+        if isinstance(payload.get("sinceSeconds"), int):
+            clean["sinceSeconds"] = payload["sinceSeconds"]
+        self.page_cache = (time.monotonic(), clean)
         return clean
 
     async def logout(self, request):

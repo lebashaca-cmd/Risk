@@ -15,21 +15,28 @@ Two things live here:
 Without OWNER_PANEL_KEY (at least 32 characters) the API answers 503 and nothing here can be reached.
 """
 import asyncio
+import base64
 import hashlib
 import hmac
+import io
 import json
 import os
+import re
 import sys
 import time
+import threading
 import traceback
+import zipfile
+from pathlib import Path
 from collections import deque
 
 import discord
 from aiohttp import web
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from cogs.staff import env_ids
 from utils.helpers import ModError, Silent, ping
+from utils import store as store_module
 from utils.store import JsonStore
 
 WINDOW = 30
@@ -37,7 +44,12 @@ MIN_KEY = 32
 LOG_LINES = 300
 ACTIVITY = {"playing": discord.ActivityType.playing, "watching": discord.ActivityType.watching,
             "listening": discord.ActivityType.listening, "competing": discord.ActivityType.competing}
-STATUS = {"online": discord.Status.online, "idle": discord.Status.idle, "dnd": discord.Status.dnd}
+KINDS = (*ACTIVITY, "streaming", "custom")
+STATUS = {"online": discord.Status.online, "idle": discord.Status.idle, "dnd": discord.Status.dnd, "invisible": discord.Status.invisible}
+MAX_ROTATION = 10
+MIN_INTERVAL = 30
+PRESENCE_VARS = re.compile(r"\{(servers|members|commands|ping|prefix|uptime|vip)\}")
+EMPTY_PRESENCE = {"kind": "", "text": "", "status": "online", "url": "", "rotate": False, "interval": 120, "items": []}
 
 
 class ApiErr(Exception):
@@ -71,6 +83,18 @@ class Tee:
         return getattr(self.target, name)
 
 
+def memory_mb():
+    """The bot's memory use, read from the operating system when it offers it."""
+    try:
+        with open("/proc/self/status") as handle:
+            for line in handle:
+                if line.startswith("VmRSS:"):
+                    return round(int(line.split()[1]) / 1024)
+    except OSError:
+        pass
+    return None
+
+
 def sign(key, method, path, stamp, nonce, body):
     message = "\n".join((method.upper(), path, stamp, nonce, hashlib.sha256(body).hexdigest()))
     return hmac.new(key.encode(), message.encode(), hashlib.sha256).hexdigest()
@@ -89,8 +113,12 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
     def __init__(self, bot):
         self.bot = bot
         self.store = JsonStore("owner_control")
-        for key, empty in (("disabled", []), ("blacklist", {}), ("maintenance", {"on": False, "message": ""}), ("presence", {"kind": "", "text": "", "status": "online"})):
+        for key, empty in (("disabled", []), ("blacklist", {}), ("maintenance", {"on": False, "message": ""}), ("presence", dict(EMPTY_PRESENCE))):
             self.store.data.setdefault(key, empty)
+        for key, value in EMPTY_PRESENCE.items():
+            self.store.data["presence"].setdefault(key, value)
+        self.step = 0
+        self.last_rotation = time.time()
         self.started = time.time()
         self.nonces = {}
         self.lines = deque(maxlen=LOG_LINES)
@@ -105,8 +133,10 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
                 setattr(sys, name, tee)
                 self.tee.append((name, tee))
         await self.apply_presence()
+        self.rotator.start()
 
     async def cog_unload(self):
+        self.rotator.cancel()
         self.bot.remove_check(self.global_check)
         for name, tee in self.tee:
             if getattr(sys, name) is tee:
@@ -134,13 +164,53 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
             raise ModError(f"`{root.name}` is turned off right now.")
         return True
 
+    def fill(self, text):
+        """Swaps {servers}, {members}, {commands}, {ping}, {prefix}, {uptime} and {vip} for live numbers."""
+        guilds = list(self.bot.guilds)
+        vip = self.bot.get_cog("VIP")
+        values = {
+            "servers": len(guilds), "members": sum(g.member_count or 0 for g in guilds), "commands": len(self.bot.commands),
+            "ping": ping(self.bot) if ping(self.bot) is not None else "?", "prefix": "!", "uptime": f"{int((time.time() - self.started) // 3600)}h",
+            "vip": sum(1 for g in guilds if vip is not None and getattr(vip, "tier_key", lambda _: None)(g.id)),
+        }
+        return PRESENCE_VARS.sub(lambda m: str(values[m.group(1)]), text)[:128]
+
+    def make_activity(self, kind, text, url):
+        text = self.fill(text)
+        if not kind or not text:
+            return None
+        if kind == "custom":
+            return discord.CustomActivity(name=text)
+        if kind == "streaming":
+            return discord.Streaming(name=text, url=url)
+        return discord.Activity(type=ACTIVITY[kind], name=text)
+
     async def apply_presence(self):
         p = self.store.data["presence"]
         try:
-            activity = discord.Activity(type=ACTIVITY[p["kind"]], name=p["text"]) if p["kind"] in ACTIVITY and p["text"] else None
-            await self.bot.change_presence(activity=activity, status=STATUS.get(p["status"], discord.Status.online))
+            item = {"kind": p["kind"], "text": p["text"]}
+            if p["rotate"] and p["items"]:
+                item = p["items"][self.step % len(p["items"])]
+            await self.bot.change_presence(activity=self.make_activity(item["kind"], item["text"], p["url"]), status=STATUS.get(p["status"], discord.Status.online))
         except Exception:
             traceback.print_exc()
+
+    @tasks.loop(seconds=MIN_INTERVAL)
+    async def rotator(self):
+        p = self.store.data["presence"]
+        now = time.time()
+        # Rotating swaps the message every `interval` seconds. Plain statuses with variables are refreshed every few minutes.
+        if p["rotate"] and p["items"] and now - self.last_rotation >= p["interval"]:
+            self.step += 1
+            self.last_rotation = now
+            await self.apply_presence()
+        elif PRESENCE_VARS.search(p["text"]) and now - self.last_rotation >= 300:
+            self.last_rotation = now
+            await self.apply_presence()
+
+    @rotator.before_loop
+    async def before_rotator(self):
+        await self.bot.wait_until_ready()
 
     # ------------------------------------------------------------------ what the panels read
     async def owner_uid(self):
@@ -173,7 +243,13 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
             "python": sys.version.split()[0], "discord": discord.__version__,
             "maintenance": dict(self.store.data["maintenance"]), "disabled": len(self.store.data["disabled"]),
             "blocked": len(self.store.data["blacklist"]), "presence": dict(p),
+            "memoryMb": memory_mb(), "threads": threading.active_count(), "usage": self.page_usage(),
+            "voice": len(self.bot.voice_clients),
         }
+
+    def page_usage(self):
+        page = self.bot.get_cog("StatusPage")
+        return page.usage() if page else None
 
     def command_list(self):
         off = set(self.store.data["disabled"])
@@ -233,14 +309,73 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
 
     async def set_presence(self, actor, body):
         kind, status = body.get("kind", ""), body.get("status", "online")
-        text = str(body.get("text", "")).strip()[:100]
-        if kind not in ("", *ACTIVITY) or status not in STATUS:
-            raise ApiErr(400, "Kind must be playing, watching, listening, competing or empty. Status must be online, idle or dnd.")
-        self.store.data["presence"] = {"kind": kind, "text": text, "status": status}
+        text = str(body.get("text", "")).strip()[:128]
+        url = str(body.get("url", "") or "").strip()
+        if kind not in ("", *KINDS) or status not in STATUS:
+            raise ApiErr(400, "Kind must be playing, watching, listening, competing, streaming, custom or empty. Status must be online, idle, dnd or invisible.")
+        if kind == "streaming" and not re.fullmatch(r"https://(www\.)?(twitch\.tv|youtube\.com|youtu\.be)/\S+", url):
+            raise ApiErr(400, "Streaming needs a Twitch or YouTube link starting with https://.")
+        rotate = body.get("rotate") is True
+        items = []
+        for item in body.get("items", []) or []:
+            if not isinstance(item, dict) or item.get("kind") not in KINDS:
+                raise ApiErr(400, "Each rotating message needs a valid activity kind.")
+            t = str(item.get("text", "")).strip()[:128]
+            if t:
+                items.append({"kind": item["kind"], "text": t})
+        if len(items) > MAX_ROTATION:
+            raise ApiErr(400, f"Rotate between at most {MAX_ROTATION} messages.")
+        if rotate and not items:
+            raise ApiErr(400, "Add at least one message to rotate through, or turn rotation off.")
+        try:
+            interval = int(body.get("interval", 120))
+        except (TypeError, ValueError):
+            raise ApiErr(400, "The interval must be a number of seconds.")
+        if not MIN_INTERVAL <= interval <= 86400:
+            raise ApiErr(400, f"The interval must be between {MIN_INTERVAL} seconds and one day.")
+        if any(i["kind"] == "streaming" for i in items) and not url:
+            raise ApiErr(400, "A streaming message needs the stream link.")
+        self.store.data["presence"] = {"kind": kind, "text": text, "status": status, "url": url, "rotate": rotate, "interval": interval, "items": items}
+        self.step = 0
+        self.last_rotation = time.time()
         self.store.save()
         await self.apply_presence()
-        self.note(actor, "presence", f"{kind} {text}".strip())
+        self.note(actor, "presence", f"{kind} {text}".strip() or ("rotating" if rotate else "cleared"))
         return dict(self.store.data["presence"])
+
+    async def app_profile(self):
+        """What Discord shows on the bot's profile: the About Me text and the Add to server link."""
+        try:
+            data = await self.bot.http.request(discord.http.Route("GET", "/applications/@me"))
+        except Exception as error:
+            raise ApiErr(502, f"Discord wouldn't tell us: {str(error)[:150]}")
+        return {"description": data.get("description", ""), "installUrl": data.get("custom_install_url") or "", "tags": data.get("tags", []), "inviteLink": f"https://discord.com/oauth2/authorize?client_id={data.get('id', self.bot.user.id if self.bot.user else '')}&scope=bot+applications.commands&permissions=8"}
+
+    async def set_app_profile(self, actor, body):
+        change = {}
+        if "description" in body:
+            description = str(body["description"]).strip()
+            if len(description) > 400:
+                raise ApiErr(400, "The About Me text can be up to 400 characters.")
+            change["description"] = description
+        if "installUrl" in body:
+            url = str(body["installUrl"]).strip()
+            if url and (not url.startswith("https://") or len(url) > 500 or any(c.isspace() for c in url)):
+                raise ApiErr(400, "The install link must start with https:// and have no spaces.")
+            change["custom_install_url"] = url or None
+        if "tags" in body:
+            tags = [str(t).strip()[:20] for t in body["tags"] if str(t).strip()] if isinstance(body["tags"], list) else None
+            if tags is None or len(tags) > 5:
+                raise ApiErr(400, "Send up to 5 tags.")
+            change["tags"] = tags
+        if not change:
+            raise ApiErr(400, "Nothing to change.")
+        try:
+            await self.bot.http.request(discord.http.Route("PATCH", "/applications/@me"), json=change)
+        except Exception as error:
+            raise ApiErr(502, f"Discord refused the change: {str(error)[:150]}")
+        self.note(actor, "bot profile", ", ".join(change))
+        return await self.app_profile()
 
     async def say(self, actor, body):
         channel = self.bot.get_channel(snowflake(body.get("channel_id"), "Channel id"))
@@ -276,6 +411,75 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
             raise ApiErr(400, f"{name} failed to load: {str(error)[:200]}")
         self.note(actor, "reload", name)
         return {"cog": name, "commands": len(self.bot.commands)}
+
+    # ------------------------------------------------------------------ the status page
+    def page(self):
+        page = self.bot.get_cog("StatusPage")
+        if page is None:
+            raise ApiErr(503, "The status page isn't loaded. Upload cogs/status_page.py and restart the bot.")
+        return page
+
+    def page_call(self, actor, what, body):
+        """Runs a status page change and turns its errors into API errors."""
+        page = self.page()
+        try:
+            if what == "buttons":
+                out = {"buttons": page.set_buttons(body.get("buttons"))}
+            elif what == "notice":
+                out = page.set_notice(body)
+            elif what == "incident/add":
+                out = page.add_incident(body)
+            elif what == "incident/resolve":
+                out = page.resolve_incident(str(body.get("id", "")), body.get("text", ""))
+            elif what == "incident/remove":
+                out = page.remove_incident(str(body.get("id", "")))
+            else:
+                raise ApiErr(404, "No such action.")
+        except Exception as error:
+            if type(error).__name__ == "PageError":
+                raise ApiErr(error.status, error.message)
+            raise
+        self.note(actor, "status page " + what)
+        return out
+
+    async def broadcast(self, actor, body):
+        text = str(body.get("text", "")).strip()
+        if not 1 <= len(text) <= 1500:
+            raise ApiErr(400, "Write 1 to 1500 characters.")
+        vip = self.bot.get_cog("VIP")
+        banned = self.bot.get_cog("Staff").store.data["banned"] if self.bot.get_cog("Staff") else {}
+        targets = [g for g in self.bot.guilds if str(g.id) not in banned and (body.get("only_vip") is not True or (vip and vip.info(g.id)["vip"]))]
+        self.note(actor, "broadcast", f"{len(targets)} servers: {text[:60]}")
+
+        async def run():
+            sent = failed = 0
+            for guild in targets:
+                me = guild.me
+                channel = guild.system_channel if guild.system_channel and me and guild.system_channel.permissions_for(me).send_messages else next((c for c in guild.text_channels if me and c.permissions_for(me).send_messages), None)
+                try:
+                    if channel is None:
+                        raise discord.HTTPException(None, "no channel")
+                    await channel.send(text, allowed_mentions=discord.AllowedMentions.none())
+                    sent += 1
+                except discord.HTTPException:
+                    failed += 1
+                await asyncio.sleep(0.6)
+            print(f"[broadcast] sent to {sent} servers, {failed} failed")
+
+        asyncio.get_running_loop().create_task(run())
+        return {"queued": len(targets)}
+
+    async def backup(self, actor):
+        folder = store_module.DATA_DIR
+        buffer = io.BytesIO()
+        with zipfile.ZipFile(buffer, "w", zipfile.ZIP_DEFLATED) as archive:
+            for path in sorted(folder.glob("*.json")):
+                archive.write(path, path.name)
+        raw = buffer.getvalue()
+        if len(raw) > 25 * 1024 * 1024:
+            raise ApiErr(413, "The backup is too large to send. Download data/ from your host instead.")
+        self.note(actor, "backup", f"{len(raw)} bytes")
+        return {"name": time.strftime("risk-data-%Y%m%d-%H%M%S.zip"), "size": len(raw), "data": base64.b64encode(raw).decode()}
 
     def schedule_exit(self, restart):
         async def go():
@@ -344,6 +548,12 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
                 return {"blocked": self.blocked_list()}
             if parts == ["logs"]:
                 return {"lines": list(self.lines)}
+            if parts == ["appprofile"]:
+                return await self.app_profile()
+            if parts == ["statuspage"]:
+                return self.page().editable()
+            if parts == ["cogs"]:
+                return {"loaded": sorted(self.bot.extensions), "files": sorted(p.stem for p in Path(__file__).parent.glob("*.py") if not p.stem.startswith("_"))}
             if len(parts) == 2 and parts[0] == "guild":
                 return self.guild_detail(snowflake(parts[1], "Server id"))
             raise ApiErr(404, "No such page.")
@@ -353,6 +563,14 @@ class OwnerControl(commands.Cog, name="OwnerControl"):
         staff_actions = {"prices": "set_prices", "vip": "set_vip", "ban": "ban_server", "unban": "unban_server", "roles": "assign_role"}
         if action in staff_actions:
             return await getattr(self.staff(), staff_actions[action])(actor, body)
+        if action in ("statuspage/buttons", "statuspage/notice", "incident/add", "incident/resolve", "incident/remove"):
+            return self.page_call(actor, action.replace("statuspage/", ""), body)
+        if action == "broadcast":
+            return await self.broadcast(actor, body)
+        if action == "appprofile":
+            return await self.set_app_profile(actor, body)
+        if action == "backup":
+            return await self.backup(actor)
         if action == "commands":
             return await self.set_command(actor, body)
         if action == "blocked/add":
