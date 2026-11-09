@@ -1,5 +1,5 @@
 import { ApiFailure, dashApi, staffApi } from "./api.js";
-import type { PlanKey, StaffOverview, StaffOwnerPanel, StaffRole, StaffServer } from "./dash-types.js";
+import type { PlanKey, StaffControl, StaffOverview, StaffOwnerPanel, StaffRole, StaffServer, StaffTotals } from "./dash-types.js";
 import { h, mount } from "./dom.js";
 import { toast } from "./ui.js";
 
@@ -30,9 +30,23 @@ function select(choices: [string, string][], value: string): HTMLSelectElement {
   return el;
 }
 
-function tiles(totals: { servers: number; members: number; vip: number; banned: number }): HTMLElement {
-  const tile = (label: string, value: number): HTMLElement => h("div", { class: "dash-tile" }, h("strong", {}, nf.format(value)), h("span", {}, label));
-  return h("div", { class: "dash-tiles staff-tiles" }, tile("Servers", totals.servers), tile("Members", totals.members), tile("VIP servers", totals.vip), tile("Banned servers", totals.banned));
+function span(seconds: number): string {
+  const d = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  return `${d ? `${d}d ` : ""}${d || hours ? `${hours}h ` : ""}${minutes}m`;
+}
+
+function tiles(t: StaffTotals): HTMLElement {
+  const tile = (label: string, value: string | number): HTMLElement => h("div", { class: "dash-tile" }, h("strong", {}, typeof value === "number" ? nf.format(value) : value), h("span", {}, label));
+  const group = (title: string, ...items: HTMLElement[]): HTMLElement => h("section", { class: "staff-group", "aria-label": title }, h("h2", { class: "staff-sub" }, title), h("div", { class: "dash-tiles staff-tiles" }, ...items));
+  return h(
+    "div",
+    { class: "staff-overview" },
+    group("Reach", tile("Servers", t.servers), tile("Members", t.members), tile("Joined in 7 days", t.newServers), tile("Biggest server", t.biggest)),
+    group("VIP and bans", tile("VIP servers", t.vip), tile("Basic", t.planCounts.basic), tile("VIP White", t.planCounts.white), tile("VIP Supreme", t.planCounts.supreme), tile("Lifetime", t.planCounts.lifetime), tile("Banned servers", t.banned)),
+    group("The bot", tile("Ping", t.latencyMs == null ? "…" : `${t.latencyMs}ms`), tile("Online for", span(t.uptime)), tile("Commands", t.commands)),
+  );
 }
 
 function when(stamp: number): string {
@@ -208,6 +222,102 @@ function rolesSection(panel: StaffOwnerPanel, refresh: Refresh): HTMLElement {
   );
 }
 
+function commandsSection(control: StaffControl): HTMLElement {
+  const search = h("input", { class: "dash-input", type: "search", placeholder: "Search commands", "aria-label": "Search commands", autocomplete: "off" });
+  const body = h("div", { class: "staff-servers" });
+  const draw = (): void => {
+    const q = search.value.trim().toLowerCase();
+    const shown = control.commands.filter((c) => !q || c.name.includes(q) || c.category.toLowerCase().includes(q) || c.description.toLowerCase().includes(q));
+    mount(
+      body,
+      ...(shown.length
+        ? shown.slice(0, 150).map((c) => {
+            const box = h("input", { type: "checkbox", "aria-label": `Turn off ${c.name} in every server` });
+            box.checked = c.off;
+            box.addEventListener("change", async () => {
+              try {
+                await staffApi.setCommand(c.name, box.checked);
+                c.off = box.checked;
+                toast(box.checked ? `${c.name} is off in every server.` : `${c.name} is back on.`);
+              } catch (error) {
+                box.checked = !box.checked;
+                toast(messageOf(error));
+              }
+            });
+            return h("label", { class: "staff-row staff-switch" }, h("div", { class: "staff-row-text" }, h("strong", {}, `!${c.name}`), h("span", {}, `${c.category} · ${c.description}`)), h("span", { class: "staff-off" }, box, "Off everywhere"));
+          })
+        : [h("p", { class: "dash-hint" }, "No command matches.")]),
+      shown.length > 150 ? h("p", { class: "dash-hint" }, `Showing 150 of ${shown.length}. Search to narrow it down.`) : null,
+    );
+  };
+  search.addEventListener("input", draw);
+  draw();
+  return h("section", { class: "dash-card staff-card", "aria-labelledby": "staff-commands" }, h("h2", { id: "staff-commands" }, "Commands"), h("p", { class: "dash-hint" }, "Turn a command off in every server at once. Owners of the bot can still use it. Subcommands go with their parent."), search, body);
+}
+
+function blockedSection(control: StaffControl, refresh: Refresh): HTMLElement {
+  const id = input("", "Discord user ID", { inputmode: "numeric", "aria-label": "User ID to block" });
+  const reason = input("", "Reason (optional)", { maxlength: 200, "aria-label": "Reason" });
+  const add = h("button", { class: "btn btn-quiet staff-danger", type: "button" }, "Block user");
+  add.addEventListener("click", async () => {
+    if (!/^\d{15,21}$/.test(id.value.trim())) return toast("Enter the person's Discord user ID (15 to 21 digits).");
+    try {
+      await staffApi.block(id.value.trim(), reason.value);
+      toast("User blocked.");
+      await refresh();
+    } catch (error) {
+      toast(messageOf(error));
+    }
+  });
+  const list = control.blocked.map((b) => {
+    const undo = h("button", { class: "btn btn-quiet btn-small", type: "button" }, "Unblock");
+    undo.addEventListener("click", async () => {
+      try {
+        await staffApi.block(b.id, "", true);
+        toast("User unblocked.");
+        await refresh();
+      } catch (error) {
+        toast(messageOf(error));
+      }
+    });
+    return h("div", { class: "staff-row" }, h("div", { class: "staff-row-text" }, h("strong", {}, `ID ${b.id}`), h("span", {}, `${b.at ? `blocked ${when(b.at)}` : ""}${b.reason ? ` · ${b.reason}` : ""}`)), h("div", { class: "staff-row-actions" }, undo));
+  });
+  return h(
+    "section",
+    { class: "dash-card staff-card", "aria-labelledby": "staff-blocked" },
+    h("h2", { id: "staff-blocked" }, "Blocked users"),
+    h("p", { class: "dash-hint" }, "A blocked person can't use any Risk command in any server. Risk ignores them without a reply."),
+    h("div", { class: "staff-grant" }, field("User ID", id), field("Reason", reason)),
+    h("div", { class: "actions" }, add),
+    ...(list.length ? list : [h("p", { class: "dash-hint" }, "Nobody is blocked.")]),
+  );
+}
+
+function botSection(control: StaffControl, refresh: Refresh): HTMLElement {
+  const on = h("input", { type: "checkbox", "aria-label": "Maintenance mode" });
+  on.checked = control.maintenance.on;
+  const message = input(control.maintenance.message, "Shown to members, e.g. Back at 5pm", { maxlength: 300, "aria-label": "Maintenance message" });
+  const save = h("button", { class: "btn btn-primary", type: "button" }, "Save");
+  save.addEventListener("click", async () => {
+    try {
+      await staffApi.maintenance(on.checked, message.value);
+      toast(on.checked ? "Maintenance mode is on." : "Maintenance mode is off.");
+      await refresh();
+    } catch (error) {
+      toast(messageOf(error));
+    }
+  });
+  return h(
+    "section",
+    { class: "dash-card staff-card", "aria-labelledby": "staff-bot" },
+    h("h2", { id: "staff-bot" }, "Maintenance mode"),
+    h("p", { class: "dash-hint" }, "While it's on, every command from everyone except the bot's owners answers with your message. Shutting the bot down or restarting it is done from the owner's control panel app."),
+    h("label", { class: "staff-off staff-maint" }, on, "Maintenance mode on"),
+    field("Message", message),
+    h("div", { class: "actions" }, save),
+  );
+}
+
 function logSection(panel: StaffOwnerPanel): HTMLElement {
   return h(
     "section",
@@ -235,10 +345,17 @@ export function renderStaff(): View {
       enabled ? h("div", { class: "actions" }, h("a", { class: "btn btn-primary", href: "/api/auth/login?next=/staff" }, "Sign in with Discord")) : notice("info", "Sign-in isn't switched on for this site yet."),
     );
 
-  const draw = (overview: StaffOverview, panel: StaffOwnerPanel | null, refresh: Refresh): void => {
+  const draw = (overview: StaffOverview, panel: StaffOwnerPanel | null, control: StaffControl | null, refresh: Refresh): void => {
     const sections: [string, string, () => HTMLElement][] = panel
       ? [
           ["servers", "Servers", () => serversSection(panel, refresh)],
+          ...(control
+            ? ([
+                ["commands", "Commands", () => commandsSection(control)],
+                ["blocked", "Blocked users", () => blockedSection(control, refresh)],
+                ["bot", "Maintenance", () => botSection(control, refresh)],
+              ] as [string, string, () => HTMLElement][])
+            : []),
           ["prices", "Prices", () => pricesSection(panel, refresh)],
           ["bans", "Banned servers", () => bansSection(panel, refresh)],
           ["roles", "Roles", () => rolesSection(panel, refresh)],
@@ -274,8 +391,9 @@ export function renderStaff(): View {
 
   const load = async (): Promise<void> => {
     const overview = await staffApi.overview();
-    const panel = overview.owner ? await staffApi.owner() : null;
-    if (alive) draw(overview, panel, load);
+    // The global controls come from a separate part of the bot. If it isn't uploaded the rest still works.
+    const [panel, control] = overview.owner ? await Promise.all([staffApi.owner(), staffApi.control().catch(() => null)]) : [null, null];
+    if (alive) draw(overview, panel, control, load);
   };
 
   void (async () => {

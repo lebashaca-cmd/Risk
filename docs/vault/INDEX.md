@@ -20,6 +20,7 @@ Notes on the Risk Discord bot and its website and dashboard, written 2026-11-05 
 - [Dashboard](Dashboard.md): server picker, sections, bot profile, how saving and security work
 - [VIP](VIP.md): what VIP unlocks, how to grant it, the limits that were removed
 - [Stream alerts](Streams.md): Go Live, Discord status, Twitch and TikTok alerts
+- [Owner control panel](Owner-Control-Panel.md): The Windows app and the signed owner API
 - [Message templates](Message-Templates.md): `{embed}`, `{user}`, `{level}`, `New_user`
 - [Lookups](Lookups.md): the Nerve API commands and what is still to add
 - [Commands by category](commands/INDEX.md): all 437 commands, generated from the bot

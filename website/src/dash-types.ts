@@ -250,6 +250,18 @@ export interface StaffTotals {
   members: number;
   vip: number;
   banned: number;
+  planCounts: Record<PlanKey, number>;
+  newServers: number;
+  biggest: number;
+  uptime: number;
+  latencyMs: number | null;
+  commands: number;
+}
+
+export interface StaffControl {
+  commands: { name: string; category: string; description: string; off: boolean }[];
+  blocked: { id: string; reason: string; at: number | null }[];
+  maintenance: { on: boolean; message: string };
 }
 
 export interface StaffOverview extends StaffTotals {
