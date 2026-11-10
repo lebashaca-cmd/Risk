@@ -112,28 +112,44 @@ class UtilityExtra(commands.Cog):
             return
         await ctx.reply("I sent you a password in a direct message.", mention_author=False)
 
+    WIKI_API = "https://en.wikipedia.org/w/api.php"
+    WIKI_HEADERS = {"User-Agent": "RiskDiscordBot/2.0 (https://github.com/lebashaca-cmd/Risk; Discord bot) aiohttp", "Accept": "application/json"}
+
+    async def wiki_lookup(self, topic):
+        """Searches Wikipedia (so capitals, typos and redirects don't matter) and returns the best article, or None."""
+        params = {
+            "action": "query", "format": "json", "formatversion": "2", "generator": "search", "gsrsearch": topic, "gsrlimit": "1",
+            "prop": "extracts|pageimages|info|pageprops", "exintro": "1", "explaintext": "1", "exchars": "1200",
+            "inprop": "url", "piprop": "thumbnail", "pithumbsize": "300", "redirects": "1",
+        }
+        timeout = aiohttp.ClientTimeout(total=12)
+        async with aiohttp.ClientSession(timeout=timeout, headers=self.WIKI_HEADERS) as session:
+            async with session.get(self.WIKI_API, params=params) as response:
+                if response.status != 200:
+                    raise RuntimeError(f"Wikipedia answered HTTP {response.status}")
+                data = await response.json(content_type=None)
+        pages = (data.get("query") or {}).get("pages") or []
+        return pages[0] if pages else None
+
     @commands.command(name="wiki", aliases=["wikipedia"])
     async def wiki(self, ctx, *, topic: str):
         """Shows the summary of a Wikipedia article. Usage: !wiki Alan Turing"""
-        url = f"https://en.wikipedia.org/api/rest_v1/page/summary/{quote(topic.strip().replace(' ', '_'), safe='')}"
+        topic = topic.strip()[:200]
         try:
-            timeout = aiohttp.ClientTimeout(total=10)
-            async with aiohttp.ClientSession(timeout=timeout, headers={"User-Agent": "RiskBot/1.0 (discord bot)"}) as session:
-                async with session.get(url) as response:
-                    if response.status == 404:
-                        await ctx.reply("I couldn't find an article with that name.", mention_author=False)
-                        return
-                    if response.status != 200:
-                        raise RuntimeError(response.status)
-                    data = await response.json(content_type=None)
-        except Exception:
+            async with ctx.typing():
+                page = await self.wiki_lookup(topic)
+        except Exception as error:
+            print(f"[wiki] lookup failed: {type(error).__name__}: {error}")
             await ctx.reply("Wikipedia isn't answering right now. Try again soon.", mention_author=False)
             return
-        extract = data.get("extract") or "No summary is available for this article."
-        embed = discord.Embed(title=data.get("title", topic)[:250], description=extract[:1500], url=data.get("content_urls", {}).get("desktop", {}).get("page"), color=discord.Color.light_grey())
-        if data.get("type") == "disambiguation":
+        if not page:
+            await ctx.reply("I couldn't find an article for that. Try different words.", mention_author=False)
+            return
+        extract = (page.get("extract") or "").strip() or "No summary is available for this article."
+        embed = discord.Embed(title=str(page.get("title", topic))[:250], description=extract[:1500], url=page.get("fullurl"), color=discord.Color.light_grey())
+        if "disambiguation" in (page.get("pageprops") or {}):
             embed.set_footer(text="This name has several meanings. Try a more specific title.")
-        thumb = data.get("thumbnail", {}).get("source")
+        thumb = (page.get("thumbnail") or {}).get("source")
         if thumb:
             embed.set_thumbnail(url=thumb)
         await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)

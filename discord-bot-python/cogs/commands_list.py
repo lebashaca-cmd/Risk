@@ -188,6 +188,10 @@ class CommandsList(commands.Cog):
     @commands.command(name="commands")
     async def commands_list(self, ctx):
         """Shows all commands and what they do. Usage: !commands"""
+        await self.open_commands(ctx)
+
+
+    async def open_commands(self, ctx):
         categories = self.gather()
         prefix = ctx.prefix or "!"
         view = CommandsView(self, ctx.author.id, prefix, categories)
@@ -195,6 +199,35 @@ class CommandsList(commands.Cog):
         view.refresh()
         view.message = await ctx.send(embed=view.pages[0], view=view)
 
+    def command_embed(self, prefix, cmd):
+        """Details for one command: what it does, how to use it, its other names and subcommands."""
+        label = CATEGORY_BY_COG.get(cmd.cog_name or "", cmd.cog_name or "Info")
+        text = (cmd.help or "No description.").strip()
+        embed = discord.Embed(title=f"{prefix}{cmd.qualified_name}", description=text[:1500], color=discord.Color.light_grey())
+        usage = f"{prefix}{cmd.qualified_name} {cmd.signature}".strip()
+        embed.add_field(name="Usage", value=f"`{usage}`"[:1000], inline=False)
+        if cmd.aliases:
+            embed.add_field(name="Also works as", value=", ".join(f"`{prefix}{a}`" for a in cmd.aliases)[:1000], inline=False)
+        if isinstance(cmd, commands.Group):
+            subs = [c for c in sorted(cmd.commands, key=lambda c: c.name) if not c.hidden]
+            if subs:
+                lines = "\n".join(f"`{c.name}`: {c.short_doc or 'No description.'}" for c in subs[:15])
+                embed.add_field(name=f"Subcommands ({len(subs)})", value=lines[:1000], inline=False)
+        embed.set_footer(text=f"Category: {label}. Run {prefix}commands to browse everything.")
+        return embed
+
+    @commands.command(name="help")
+    async def help_command(self, ctx, *, name: str = None):
+        """Browse every command, or look up one. Usage: !help or !help balance"""
+        if not name:
+            await self.open_commands(ctx)
+            return
+        cmd = self.bot.get_command(name.strip().lstrip("!?,").lower())
+        if cmd is None or cmd.hidden:
+            await ctx.reply(f"I don't have a command called `{name.strip()[:40]}`. Run `{ctx.prefix or '!'}help` to browse them all.", mention_author=False, allowed_mentions=discord.AllowedMentions.none())
+            return
+        await ctx.reply(embed=self.command_embed(ctx.prefix or "!", cmd), mention_author=False)
 
 async def setup(bot):
+    bot.help_command = None  # discord.py's plain-text help gives way to the embed one in this cog
     await bot.add_cog(CommandsList(bot))
