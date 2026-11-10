@@ -30,7 +30,7 @@ async def get_prefix(bot, message):
     return dashboard.prefixes_for(message) if dashboard else list(DEFAULT_PREFIXES)
 
 
-bot = commands.Bot(command_prefix=get_prefix, intents=intents)
+bot = commands.Bot(command_prefix=get_prefix, intents=intents, help_command=None)
 
 
 def public_servers():

@@ -25,6 +25,9 @@ tags: [risk, changelog]
 | 19 (later) | `/status` page on the website with custom buttons, notice, incidents, usage and 30-day uptime (`cogs/status_page.py`) |
 | 19 (later) | Staff panel remade with a side menu and a Status page editor |
 | 19 (later) | Control panel app: Settings with 7 looks, richer Discord status (rotation, variables, streaming, About Me and install link), website status editor, broadcast, backup, cog list, usage, Windows install |
+| 19 (later) | `!help` is now the same embed browser as `!commands` (category menu and pages), and `!help <command>` shows one command's usage, aliases and subcommands |
+| 19 (later) | `!wiki` searches Wikipedia (any capitalisation, typos and redirects) and logs the real error when Wikipedia refuses |
+| 19 (later) | Staff panel on the website redone as an app layout with a side menu and an Overview page |
 
 Command count: 439 (the count now includes the subcommands of command groups, like `customcmd add`).
 

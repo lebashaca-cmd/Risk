@@ -1,6 +1,7 @@
 import { ApiFailure, dashApi, staffApi } from "./api.js";
 import type { PlanKey, StaffControl, StaffOverview, StaffOwnerPanel, StaffRole, StaffServer, StaffTotals } from "./dash-types.js";
 import { h, mount } from "./dom.js";
+import { overviewSection } from "./staff-overview.js";
 import { statusPageSection } from "./staff-status.js";
 import { toast } from "./ui.js";
 
@@ -36,18 +37,6 @@ function span(seconds: number): string {
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
   return `${d ? `${d}d ` : ""}${d || hours ? `${hours}h ` : ""}${minutes}m`;
-}
-
-function tiles(t: StaffTotals): HTMLElement {
-  const tile = (label: string, value: string | number): HTMLElement => h("div", { class: "dash-tile" }, h("strong", {}, typeof value === "number" ? nf.format(value) : value), h("span", {}, label));
-  const group = (title: string, ...items: HTMLElement[]): HTMLElement => h("section", { class: "staff-group", "aria-label": title }, h("h2", { class: "staff-sub" }, title), h("div", { class: "dash-tiles staff-tiles" }, ...items));
-  return h(
-    "div",
-    { class: "staff-overview" },
-    group("Reach", tile("Servers", t.servers), tile("Members", t.members), tile("Joined in 7 days", t.newServers), tile("Biggest server", t.biggest)),
-    group("VIP and bans", tile("VIP servers", t.vip), tile("Basic", t.planCounts.basic), tile("VIP White", t.planCounts.white), tile("VIP Supreme", t.planCounts.supreme), tile("Lifetime", t.planCounts.lifetime), tile("Banned servers", t.banned)),
-    group("The bot", tile("Ping", t.latencyMs == null ? "…" : `${t.latencyMs}ms`), tile("Online for", span(t.uptime)), tile("Commands", t.commands)),
-  );
 }
 
 function when(stamp: number): string {
@@ -347,44 +336,67 @@ export function renderStaff(): View {
     );
 
   const draw = (overview: StaffOverview, panel: StaffOwnerPanel | null, control: StaffControl | null, refresh: Refresh): void => {
-    type Section = [string, string, () => HTMLElement];
-    const groups: [string, Section[]][] = panel
-      ? [
-          ["People and servers", [["servers", "Servers", () => serversSection(panel, refresh)], ["bans", "Banned servers", () => bansSection(panel, refresh)], ["roles", "Roles", () => rolesSection(panel, refresh)]]],
-          ["Bot control", control ? [["commands", "Commands", () => commandsSection(control)], ["blocked", "Blocked users", () => blockedSection(control, refresh)], ["bot", "Maintenance", () => botSection(control, refresh)]] : []],
-          ["Public pages", [...(control ? ([["status", "Status page", () => statusPageSection(control.statusPage, refresh)]] as Section[]) : []), ["prices", "Prices", () => pricesSection(panel, refresh)]]],
-          ["History", [["log", "Recent changes", () => logSection(panel)]]],
-        ]
-      : [];
+    type Section = [string, string, string, () => HTMLElement];
+    let open: (id: string) => void = () => undefined;
+    const groups: [string, Section[]][] = [
+      ["Start", [["overview", "Overview", "How the bot is doing and what changed lately.", () => overviewSection(overview, panel, control, (id) => open(id))]]],
+      ...(panel
+        ? ([
+            ["People and servers", [
+              ["servers", "Servers", "Give or take VIP, or ban a server.", () => serversSection(panel, refresh)],
+              ["bans", "Banned servers", "Servers that can't use Risk.", () => bansSection(panel, refresh)],
+              ["roles", "Roles", "Who is on the staff team.", () => rolesSection(panel, refresh)],
+            ]],
+            ["Bot control", control ? [
+              ["commands", "Commands", "Switch a command off in every server.", () => commandsSection(control)],
+              ["blocked", "Blocked users", "People Risk ignores everywhere.", () => blockedSection(control, refresh)],
+              ["bot", "Maintenance", "Pause every command with a message.", () => botSection(control, refresh)],
+            ] : []],
+            ["Public pages", [
+              ...(control ? ([["status", "Status page", "Buttons, banner and incidents on /status.", () => statusPageSection(control.statusPage, refresh)]] as Section[]) : []),
+              ["prices", "Prices", "What the VIP page shows and links to.", () => pricesSection(panel, refresh)],
+            ]],
+            ["History", [["log", "Recent changes", "Everything staff changed, newest first.", () => logSection(panel)]]],
+          ] as [string, Section[]][])
+        : []),
+    ];
     const sections = groups.flatMap(([, items]) => items);
-    const holder = h("div", { class: "staff-body" });
-    const side = h("nav", { class: "staff-side", role: "tablist", "aria-label": "Owner panel", "aria-orientation": "vertical" });
-    const open = (id: string): void => {
-      const found = sections.find(([key]) => key === id);
+    const counts: Record<string, number> = panel ? { servers: panel.serverList.length, bans: panel.bannedList.length, blocked: control?.blocked.length ?? 0 } : {};
+    const title = h("h1", {});
+    const hint = h("p", { class: "sa-hint" });
+    const holder = h("div", { class: "sa-content" });
+    const side = h("nav", { class: "sa-side", role: "tablist", "aria-label": "Staff panel", "aria-orientation": "vertical" });
+    open = (id: string): void => {
+      const found = sections.find(([key]) => key === id) ?? sections[0];
       if (!found) return;
-      sessionStorageSet(id);
-      side.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === id)));
-      mount(holder, found[2]());
+      sessionStorageSet(found[0]);
+      side.querySelectorAll("button").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === found[0])));
+      title.textContent = found[1];
+      hint.textContent = found[2];
+      mount(holder, found[3]());
+      holder.scrollTop = 0;
     };
-    for (const [title, items] of groups) {
+    side.appendChild(h("div", { class: "sa-who" }, h("strong", {}, "Staff panel"), h("span", {}, overview.role)));
+    for (const [group, items] of groups) {
       if (!items.length) continue;
-      side.appendChild(h("p", { class: "staff-side-title" }, title));
+      if (groups.length > 1 && group !== "Start") side.appendChild(h("p", { class: "sa-group" }, group));
       for (const [id, label] of items) {
-        const tab = h("button", { class: "dash-tab", type: "button", role: "tab", "data-tab": id }, label);
+        const count = counts[id];
+        const tab = h("button", { class: "sa-tab", type: "button", role: "tab", "data-tab": id }, h("span", {}, label), count ? h("small", {}, nf.format(count)) : null);
         tab.addEventListener("click", () => open(id));
         side.appendChild(tab);
       }
     }
+    const reload = h("button", { class: "btn btn-quiet", type: "button" }, "Refresh");
+    reload.addEventListener("click", () => void refresh().then(() => toast("Up to date.")).catch(() => toast("Couldn't refresh. Try again.")));
+    root.className = "view container page dash staff-app";
     mount(
       root,
-      h("h1", {}, "Staff panel"),
-      h("p", { class: "lede" }, `You're signed in as ${overview.role}. ${panel ? "The owner panel is below the totals." : "You can see the totals."}`),
-      tiles(overview),
-      panel ? h("h2", { class: "staff-sub" }, "Owner panel") : null,
-      panel ? h("div", { class: "staff-shell" }, side, holder) : null,
-      h("p", { class: "dash-fine" }, "This page is only for the Risk staff team. Servers that have Risk installed don't get access."),
+      h("div", { class: "sa-shell" }, side, h("main", { class: "sa-main" }, h("header", { class: "sa-head" }, h("div", {}, title, hint), reload), holder)),
+      h("p", { class: "dash-fine" }, "Only the Risk staff team can see this page."),
     );
-    if (panel) open(sessionStorageGet() ?? "servers");
+    const remembered = sessionStorageGet();
+    open(remembered && sections.some(([key]) => key === remembered) ? remembered : "overview");
   };
 
   const load = async (): Promise<void> => {
