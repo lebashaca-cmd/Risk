@@ -1,0 +1,15 @@
+{
+  "5": {
+    "log_channel": null,
+    "tickets": {
+      "77": {
+        "creator_id": 3,
+        "staff_id": 99,
+        "staff_type": "member",
+        "opened_at": "2026-10-31T12:00:00+00:00",
+        "priority": "urgent"
+      }
+    },
+    "panels": {}
+  }
+}
