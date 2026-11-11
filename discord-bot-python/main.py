@@ -19,8 +19,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
 # Needed only for the Discord 'Streaming' status alerts. It's a privileged intent, so it stays off
-# unless you turn it on in the Developer Portal too and set STREAM_PRESENCE=1.
-intents.presences = os.getenv('STREAM_PRESENCE') == '1'
+# unless you turn it on in the Developer Portal too and set STREAM_PRESENCE=1 or PRESENCE_INTENT=1 (also used by !rep).
+intents.presences = os.getenv('STREAM_PRESENCE') == '1' or os.getenv('PRESENCE_INTENT') == '1'
 
 DEFAULT_PREFIXES = ('!', '?', ',')
 

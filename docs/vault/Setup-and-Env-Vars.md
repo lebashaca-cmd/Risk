@@ -23,6 +23,7 @@ tags: [risk, config]
 | `VIP_URL` | VIP | Optional https link shown as "Get VIP". Point it at the site's `/vip` page |
 | `VIP_BASIC_URL` (or old `VIP_MONTHLY_URL`), `VIP_LIFETIME_URL`, `VIP_WHITE_URL`, `VIP_SUPREME_URL` | Site | https checkout links for the four plans on `/vip` |
 | `VIP_BASIC_PRICE`, `VIP_LIFETIME_PRICE`, `VIP_WHITE_PRICE`, `VIP_SUPREME_PRICE` | Site | Price text on `/vip` (defaults `$4.99`, `$29.99`, `$9.99`, `$19.99`) |
+| `PRESENCE_INTENT` | `!rep` (invite in custom status) and the Streaming status alerts | Set to `1` after enabling the Presence intent in the Developer Portal; `STREAM_PRESENCE=1` does the same |
 | `STREAM_PRESENCE` | Discord "Streaming" status alerts | Set to `1` only after enabling the Presence intent in the Developer Portal |
 | `TWITCH_CLIENT_ID`, `TWITCH_CLIENT_SECRET` | Twitch alerts | Free app at dev.twitch.tv/console |
 | `SERVER_PORT` | Status server | Defaults to 25239 |

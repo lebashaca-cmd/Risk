@@ -28,7 +28,8 @@ tags: [risk, changelog]
 | 19 (later) | `!help` is now the same embed browser as `!commands` (category menu and pages), and `!help <command>` shows one command's usage, aliases and subcommands |
 | 19 (later) | `!wiki` searches Wikipedia (any capitalisation, typos and redirects) and logs the real error when Wikipedia refuses |
 | 19 (later) | Staff panel on the website redone as an app layout with a side menu and an Overview page |
+| 19 (later) | `!rep`: pink embed when a member's custom status contains the server invite (cog `rep.py`, needs `PRESENCE_INTENT=1`) |
 
-Command count: 439 (the count now includes the subcommands of command groups, like `customcmd add`).
+Command count: 445 (the count now includes the subcommands of command groups, like `customcmd add`).
 
 Related: [Testing](Testing.md), [Open items](Open-Items.md)

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-08T14:58:38+00:00",
+  "generatedAt": "2026-11-11T00:58:06+00:00",
   "prefixes": [
     "!",
     "?",
@@ -43,6 +43,17 @@
       "description": "Shows the link to the website dashboard where staff change Risk's settings.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "help",
+      "kind": "prefix",
+      "category": "Info",
+      "description": "Browse every command, or look up one.",
+      "examples": [
+        "",
+        "balance"
       ],
       "permission": null
     },
@@ -2622,7 +2633,7 @@
       "name": "levelmessage",
       "kind": "prefix",
       "category": "Levels",
-      "description": "Sets the level-up message using {user}, {name} and {level}, or reset. Put {embed} at the start and the end to send it as an embed.",
+      "description": "Sets the level-up message using {user}, {name}, {level}, {xp}, {nextlevel}, {messages} and any other {variable}, or reset. Put {embed} at the start and the end to send it as an embed.",
       "examples": [
         "{embed} Nice one {user}, level {level}! {embed}"
       ],
@@ -4102,6 +4113,56 @@
         ""
       ],
       "permission": "Administrator"
+    },
+    {
+      "name": "rep",
+      "kind": "prefix",
+      "category": "Rep",
+      "description": "Shows the rep setup.",
+      "examples": [
+        ", !rep text discord.gg/risk, !rep channel #rep, !rep off, !rep test"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep channel",
+      "kind": "prefix",
+      "category": "Rep",
+      "description": "Picks the channel the embeds go to.",
+      "examples": [
+        "#rep"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep off",
+      "kind": "prefix",
+      "category": "Rep",
+      "description": "Turns rep posts off and forgets the text and channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep test",
+      "kind": "prefix",
+      "category": "Rep",
+      "description": "Posts a sample embed in the rep channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep text",
+      "kind": "prefix",
+      "category": "Rep",
+      "description": "Sets the text to look for, usually your server invite.",
+      "examples": [
+        "discord.gg/risk"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "rolereport",
