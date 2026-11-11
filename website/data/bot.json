@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T00:58:06+00:00",
+  "generatedAt": "2026-11-11T05:56:35+00:00",
   "prefixes": [
     "!",
     "?",
@@ -197,6 +197,16 @@
       "permission": null
     },
     {
+      "name": "base",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts a number between bases 2 to 36.",
+      "examples": [
+        "ff 16 2"
+      ],
+      "permission": null
+    },
+    {
       "name": "base64",
       "kind": "prefix",
       "category": "Utility",
@@ -338,6 +348,16 @@
       "permission": null
     },
     {
+      "name": "dayofweek",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Tells you the weekday of a date.",
+      "examples": [
+        "2026-12-25"
+      ],
+      "permission": null
+    },
+    {
       "name": "daysuntil",
       "kind": "prefix",
       "category": "Utility",
@@ -354,6 +374,16 @@
       "description": "Looks up the definition of a word.",
       "examples": [
         "serendipity"
+      ],
+      "permission": null
+    },
+    {
+      "name": "discount",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows a price after a discount.",
+      "examples": [
+        "80 25"
       ],
       "permission": null
     },
@@ -419,12 +449,42 @@
       "permission": null
     },
     {
+      "name": "factors",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows the prime factors of a number.",
+      "examples": [
+        "360"
+      ],
+      "permission": null
+    },
+    {
+      "name": "fibonacci",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Lists the first Fibonacci numbers (up to 60).",
+      "examples": [
+        "12"
+      ],
+      "permission": null
+    },
+    {
       "name": "firstmessage",
       "kind": "prefix",
       "category": "Utility",
       "description": "Links to the first message in this channel.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "gcd",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows the greatest common divisor and least common multiple.",
+      "examples": [
+        "12 18"
       ],
       "permission": null
     },
@@ -469,12 +529,32 @@
       "permission": null
     },
     {
+      "name": "json",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Checks JSON and prints it neatly.",
+      "examples": [
+        "{\"a\":1,\"b\":[1,2]}"
+      ],
+      "permission": null
+    },
+    {
       "name": "leetspeak",
       "kind": "prefix",
       "category": "Utility",
       "description": "Writes text in leetspeak.",
       "examples": [
         "elite hacker"
+      ],
+      "permission": null
+    },
+    {
+      "name": "lorem",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Makes placeholder text (up to 150 words).",
+      "examples": [
+        "40"
       ],
       "permission": null
     },
@@ -576,6 +656,16 @@
       "examples": [
         "Pizza",
         "tacos? | Pizza | Tacos"
+      ],
+      "permission": null
+    },
+    {
+      "name": "prime",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Checks if a number is prime.",
+      "examples": [
+        "97"
       ],
       "permission": null
     },
@@ -728,6 +818,26 @@
       "permission": null
     },
     {
+      "name": "sortwords",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Sorts a list (separate with commas or spaces). Add `desc` at the end to reverse.",
+      "examples": [
+        "pear, apple, fig"
+      ],
+      "permission": null
+    },
+    {
+      "name": "spellout",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Writes a whole number in words.",
+      "examples": [
+        "1234567"
+      ],
+      "permission": null
+    },
+    {
       "name": "testvars",
       "kind": "prefix",
       "category": "Utility",
@@ -738,12 +848,32 @@
       "permission": null
     },
     {
+      "name": "timein",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Shows the time somewhere.",
+      "examples": [
+        "tokyo, !timein America/Chicago"
+      ],
+      "permission": null
+    },
+    {
       "name": "timestamp",
       "kind": "prefix",
       "category": "Utility",
       "description": "Makes a Discord timestamp from a UTC date.",
       "examples": [
         "2026-12-25 18:00"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tip",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Works out a tip and a split bill.",
+      "examples": [
+        "48.50 18 3"
       ],
       "permission": null
     },
@@ -1490,12 +1620,42 @@
       "permission": null
     },
     {
+      "name": "acronym",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Makes a silly acronym out of a word.",
+      "examples": [
+        "risk"
+      ],
+      "permission": null
+    },
+    {
       "name": "advice",
       "kind": "prefix",
       "category": "Fun",
       "description": "Gives a piece of advice.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "aesthetic",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Writes text in wide aesthetic letters.",
+      "examples": [
+        "good vibes"
+      ],
+      "permission": null
+    },
+    {
+      "name": "bigtext",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Writes text in big emoji letters.",
+      "examples": [
+        "hello"
       ],
       "permission": null
     },
@@ -1700,6 +1860,16 @@
       "permission": null
     },
     {
+      "name": "emojiquiz",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Guess the movie, thing or character from emoji.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "fact",
       "kind": "prefix",
       "category": "Fun",
@@ -1750,6 +1920,16 @@
       "permission": null
     },
     {
+      "name": "freespin",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Pulls a slot machine just for fun, no coins needed.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "guess",
       "kind": "prefix",
       "category": "Fun",
@@ -1786,6 +1966,16 @@
       "description": "High-fives someone.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "hilo",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Guess if the next number is higher or lower, with buttons.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1890,12 +2080,32 @@
       "permission": null
     },
     {
+      "name": "mood",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Reads someone's mood of the day (it stays the same all day).",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "neverhaveiever",
       "kind": "prefix",
       "category": "Fun",
       "description": "Posts a Never Have I Ever prompt.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "nickgen",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Suggests a silly nickname.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -1914,6 +2124,16 @@
       "kind": "prefix",
       "category": "Fun",
       "description": "Pats someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pet",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shows the pet that picked you (the same one all day).",
       "examples": [
         "@user"
       ],
@@ -2106,6 +2326,26 @@
       "description": "Hides each word of your message behind a spoiler.",
       "examples": [
         "the butler did it"
+      ],
+      "permission": null
+    },
+    {
+      "name": "superpower",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Gives someone a superpower and a weakness for the day.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "sus",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Says how suspicious someone is.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -2713,7 +2953,7 @@
       "name": "rank",
       "kind": "prefix",
       "category": "Levels",
-      "description": "Shows someone's level and XP.",
+      "description": "Shows someone's level card: level, XP earned, daily average, top members and top channels.",
       "examples": [
         "@user"
       ],
@@ -2930,6 +3170,16 @@
       "permission": "Manage Server"
     },
     {
+      "name": "checkin",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Check in once a day to build a streak.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "counting",
       "kind": "prefix",
       "category": "Community",
@@ -3070,6 +3320,57 @@
       "permission": "Manage Server"
     },
     {
+      "name": "intro",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows someone's intro.",
+      "examples": [
+        "@user, !intro set <text>, !intro clear"
+      ],
+      "permission": null
+    },
+    {
+      "name": "intro clear",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes your intro.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "intro set",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Writes your intro (up to 400 characters).",
+      "examples": [
+        "I love games and music"
+      ],
+      "permission": null
+    },
+    {
+      "name": "kudos",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Give someone kudos (5 a day), or see theirs.",
+      "examples": [
+        "@user great help today,",
+        "to see yours"
+      ],
+      "permission": null
+    },
+    {
+      "name": "kudos top",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows who has the most kudos.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "note",
       "kind": "prefix",
       "category": "Community",
@@ -3106,6 +3407,56 @@
       "description": "Removes one staff note by its number.",
       "examples": [
         "@user 2"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "qotd",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a conversation starter for the channel.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "quotebook",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows a random saved server quote.",
+      "examples": [
+        ", !quotebook add <text>, !quotebook list"
+      ],
+      "permission": null
+    },
+    {
+      "name": "quotebook add",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Saves a quote.",
+      "examples": [
+        "\"never skip leg day\" - Sam"
+      ],
+      "permission": null
+    },
+    {
+      "name": "quotebook list",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists saved quotes, 8 per page.",
+      "examples": [
+        "2"
+      ],
+      "permission": null
+    },
+    {
+      "name": "quotebook remove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes a quote by number (Manage Messages).",
+      "examples": [
+        "3"
       ],
       "permission": "Manage Messages"
     },
@@ -3148,6 +3499,56 @@
         "123456789012345678 🎮"
       ],
       "permission": "Manage Roles"
+    },
+    {
+      "name": "rep",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the rep setup.",
+      "examples": [
+        ", !rep text discord.gg/risk, !rep channel #rep, !rep off, !rep test"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep channel",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Picks the channel the embeds go to.",
+      "examples": [
+        "#rep"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep off",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Turns rep posts off and forgets the text and channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep test",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a sample embed in the rep channel.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "rep text",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Sets the text to look for, usually your server invite.",
+      "examples": [
+        "discord.gg/risk"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "report",
@@ -3238,6 +3639,24 @@
         "5"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "sticky",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Set an embedded sticky message.",
+      "examples": [],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "streaks",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the longest current check-in streaks.",
+      "examples": [
+        ""
+      ],
+      "permission": null
     },
     {
       "name": "streamalerts",
@@ -3400,6 +3819,16 @@
       "permission": null
     },
     {
+      "name": "teams",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Splits people into random teams. Mention them, or join a voice channel and leave it out.",
+      "examples": [
+        "2 @a @b @c @d"
+      ],
+      "permission": null
+    },
+    {
       "name": "tiktokadd",
       "kind": "prefix",
       "category": "Community",
@@ -3478,6 +3907,14 @@
         "shroud"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "unsticky",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Remove a sticky message.",
+      "examples": [],
+      "permission": "Manage Messages"
     },
     {
       "name": "verifysetup",
@@ -3840,12 +4277,136 @@
       "permission": "Manage Server"
     },
     {
+      "name": "aiquiz",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Makes a 5 question quiz on a topic with the answers hidden.",
+      "examples": [
+        "the solar system"
+      ],
+      "permission": null
+    },
+    {
       "name": "ask",
       "kind": "prefix",
       "category": "AI",
       "description": "Ask the AI a question. Code comes in code blocks, files get attached.",
       "examples": [
         "your question"
+      ],
+      "permission": null
+    },
+    {
+      "name": "catchup",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Summarizes the last messages in this channel so you can catch up.",
+      "examples": [
+        "40 (up to 80)"
+      ],
+      "permission": null
+    },
+    {
+      "name": "explain",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Explains something in plain language.",
+      "examples": [
+        "how does wifi work"
+      ],
+      "permission": null
+    },
+    {
+      "name": "explaincode",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Explains what some code does.",
+      "examples": [
+        "<code>,",
+        "reply to a message with code"
+      ],
+      "permission": null
+    },
+    {
+      "name": "grammar",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Fixes spelling and grammar.",
+      "examples": [
+        "i dont no what to rite"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ideas",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Brainstorms ideas for something.",
+      "examples": [
+        "events for a gaming server"
+      ],
+      "permission": null
+    },
+    {
+      "name": "proscons",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Lists pros and cons.",
+      "examples": [
+        "getting a dog"
+      ],
+      "permission": null
+    },
+    {
+      "name": "rewrite",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Rewrites text in a style.",
+      "examples": [
+        "formal hey can u send the file,",
+        "\"more friendly\" <text>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "story",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a short story from a prompt.",
+      "examples": [
+        "a robot who learns to bake"
+      ],
+      "permission": null
+    },
+    {
+      "name": "suggestreply",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Suggests three ways to reply to a message.",
+      "examples": [
+        "<message>,",
+        "reply to one"
+      ],
+      "permission": null
+    },
+    {
+      "name": "summarize",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Summarizes some text, or the message you reply to.",
+      "examples": [
+        "<text>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "translate",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Translates text into a language.",
+      "examples": [
+        "spanish good morning,",
+        "\"brazilian portuguese\" thanks"
       ],
       "permission": null
     },
@@ -4115,56 +4676,6 @@
       "permission": "Administrator"
     },
     {
-      "name": "rep",
-      "kind": "prefix",
-      "category": "Rep",
-      "description": "Shows the rep setup.",
-      "examples": [
-        ", !rep text discord.gg/risk, !rep channel #rep, !rep off, !rep test"
-      ],
-      "permission": "Manage Server"
-    },
-    {
-      "name": "rep channel",
-      "kind": "prefix",
-      "category": "Rep",
-      "description": "Picks the channel the embeds go to.",
-      "examples": [
-        "#rep"
-      ],
-      "permission": "Manage Server"
-    },
-    {
-      "name": "rep off",
-      "kind": "prefix",
-      "category": "Rep",
-      "description": "Turns rep posts off and forgets the text and channel.",
-      "examples": [
-        ""
-      ],
-      "permission": "Manage Server"
-    },
-    {
-      "name": "rep test",
-      "kind": "prefix",
-      "category": "Rep",
-      "description": "Posts a sample embed in the rep channel.",
-      "examples": [
-        ""
-      ],
-      "permission": "Manage Server"
-    },
-    {
-      "name": "rep text",
-      "kind": "prefix",
-      "category": "Rep",
-      "description": "Sets the text to look for, usually your server invite.",
-      "examples": [
-        "discord.gg/risk"
-      ],
-      "permission": "Manage Server"
-    },
-    {
       "name": "rolereport",
       "kind": "prefix",
       "category": "VIP",
@@ -4245,14 +4756,6 @@
       "permission": null
     },
     {
-      "name": "sticky",
-      "kind": "prefix",
-      "category": "Sticky",
-      "description": "Set an embedded sticky message.",
-      "examples": [],
-      "permission": "Manage Messages"
-    },
-    {
       "name": "topmessages",
       "kind": "prefix",
       "category": "VIP",
@@ -4281,14 +4784,6 @@
         "<number>"
       ],
       "permission": "Manage Server"
-    },
-    {
-      "name": "unsticky",
-      "kind": "prefix",
-      "category": "Sticky",
-      "description": "Remove a sticky message.",
-      "examples": [],
-      "permission": "Manage Messages"
     },
     {
       "name": "userreport",

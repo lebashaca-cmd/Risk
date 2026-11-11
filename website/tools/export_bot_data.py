@@ -52,6 +52,12 @@ CATEGORY_BY_FILE = {
     "welcome": "Welcome",
     "ai_chat": "AI",
     "nerve": "Lookups",
+    "sticky": "Community",
+    "rep": "Community",
+    "fun_plus": "Fun",
+    "community_plus": "Community",
+    "utility_plus": "Utility",
+    "ai_tools": "AI",
 }
 CATEGORY_ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
 DEFAULT_HIDDEN = {"dusklogs", "duskreset"}

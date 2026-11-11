@@ -11,7 +11,8 @@ Members earn XP by chatting. XP adds up to a level, and levels can hand out role
 
 ## Commands for members
 
-- `!rank` shows your level and XP, and `!profile` shows every stat Risk keeps for you with your rank in each.
+- `!rank` (or `!level`) shows a level card picture: your level with a progress bar, XP earned over 1, 7 and 30 days, your daily average, the top members and the busiest channels of the last 30 days. If the host can't draw pictures it shows the same facts as an embed. `!rank @user` shows someone else. The card needs the Pillow library on the bot host (`pip install -r requirements.txt`). Channel and XP history starts counting from when this version is installed.
+- `!profile` shows every stat Risk keeps for you with your rank in each, and `!profile` shows every stat Risk keeps for you with your rank in each.
 - `!leaderboard` shows the top members.
 - `!nextlevel` shows how much XP is left for the next level, `!xpneeded 20` the total XP for a level, and `!levelinfo` how levels are set up in this server.
 - `!levelstats` shows server-wide numbers.
