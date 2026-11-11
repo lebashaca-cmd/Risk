@@ -1,5 +1,10 @@
+import asyncio
+import io
+
 import discord
 from discord.ext import commands
+
+from utils.levelcard import HAVE_PIL, open_image, render_board
 
 from cogs.levels import level_for, xp_for
 from utils.helpers import NO_MENTIONS, explain_error
@@ -67,6 +72,27 @@ class Stats(commands.Cog):
             f"🎉 {stats['won']} won / {stats['entered']} entered"
         )
 
+    async def board_picture(self, ctx, title, subtitle, entries, footer):
+        """entries: [(rank, member, value_text, small_text)]. Returns a discord.File, or None if the picture can't be drawn."""
+        if not HAVE_PIL:
+            return None
+
+        async def avatar(member):
+            try:
+                return open_image(await member.display_avatar.replace(size=64, format="png").read())
+            except Exception:
+                return None
+        try:
+            pictures = await asyncio.gather(*(avatar(member) for _, member, _, _ in entries))
+            icon = open_image(await ctx.guild.icon.replace(size=128, format="png").read()) if ctx.guild.icon else None
+            rows = [(rank, member.display_name, pic, value, small, member.id == ctx.author.id)
+                    for (rank, member, value, small), pic in zip(entries, pictures)]
+            data = await asyncio.to_thread(render_board, title, subtitle, rows, footer, icon, ctx.guild.name)
+            return discord.File(io.BytesIO(data), filename="leaderboard.png")
+        except Exception as error:
+            print(f"[stats] leaderboard picture failed, using the embed: {type(error).__name__}: {error}")
+            return None
+
     @commands.command(name="leaderboard", aliases=["lb", "top", "rich"])
     async def leaderboard(self, ctx, sort: str = "coins", page: int = 1):
         """Shows the top members with all of their stats. Sort by coins, wallet, bank, level, messages, streak, items or giveaways. Usage: !leaderboard level 2"""
@@ -86,6 +112,17 @@ class Stats(commands.Cog):
         pages = -(-len(ranked) // PER_PAGE)
         page = max(1, min(page, pages))
         start = (page - 1) * PER_PAGE
+        mine = next((i for i, (uid, _) in enumerate(ranked, start=1) if uid == ctx.author.id), None)
+        async with ctx.typing():
+            entries = []
+            for index, (uid, stats) in enumerate(ranked[start:start + PER_PAGE], start=start + 1):
+                value = f"{stats[field]:,}" + (" XP" if field == "xp" else "")
+                entries.append((index, ctx.guild.get_member(uid), value, f"Level {stats['level']}  -  {stats['msgs']:,} msgs" if field in ("xp", "msgs") else f"{stats['net']:,} net  -  Level {stats['level']}"))
+            picture = await self.board_picture(ctx, "Leaderboard", f"{label}  -  {ctx.guild.name}", entries,
+                                               f"Page {page} of {pages}  -  You are {'#' + str(mine) if mine else 'unranked'}  -  !leaderboard <sort> [page]")
+        if picture:
+            await ctx.reply(file=picture, mention_author=False)
+            return
         embed = discord.Embed(title=f"🏆 Leaderboard: {label}", color=discord.Color.gold())
         for index, (uid, stats) in enumerate(ranked[start:start + PER_PAGE], start=start + 1):
             member = ctx.guild.get_member(uid)

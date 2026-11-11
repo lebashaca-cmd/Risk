@@ -247,6 +247,17 @@ class Levels(commands.Cog):
         if not chunk:
             await ctx.reply("Nobody has any XP yet. Start chatting.", mention_author=False)
             return
+        stats_cog = self.bot.get_cog("Stats")
+        if stats_cog:
+            entries = [(index, ctx.guild.get_member(int(uid)), f"{entry['xp']:,} XP", f"Level {level_for(entry['xp'])}  -  {entry.get('msgs', 0):,} msgs")
+                       for index, (uid, entry) in enumerate(chunk, start=(page - 1) * 10 + 1) if ctx.guild.get_member(int(uid))]
+            mine = next((i for i, (uid, _) in enumerate(ranked, start=1) if uid == str(ctx.author.id)), None)
+            async with ctx.typing():
+                picture = await stats_cog.board_picture(ctx, "Top Chatters", f"XP  -  {ctx.guild.name}", entries,
+                                                        f"Page {page} of {pages}  -  You are {'#' + str(mine) if mine else 'unranked'}")
+            if picture:
+                await ctx.reply(file=picture, mention_author=False)
+                return
         lines = []
         for index, (uid, entry) in enumerate(chunk, start=(page - 1) * 10 + 1):
             member = ctx.guild.get_member(int(uid))

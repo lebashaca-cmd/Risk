@@ -29,6 +29,7 @@ tags: [risk, changelog]
 | 19 (later) | `!wiki` searches Wikipedia (any capitalisation, typos and redirects) and logs the real error when Wikipedia refuses |
 | 19 (later) | Staff panel on the website redone as an app layout with a side menu and an Overview page |
 | 19 (later) | `!rep`: pink embed when a member's custom status contains the server invite (cog `rep.py`, needs `PRESENCE_INTENT=1`) |
+| 19 (later) | `!leaderboard` and `!levels` are drawn as pictures too (`render_board` in `utils/levelcard.py`) |
 | 19 (later) | `!rank` draws a level card image (needs Pillow); Sticky and Rep moved into the Community section; 12 AI commands (`ai_tools.py`); new fun (`fun_plus.py`), community (`community_plus.py`: kudos, intro, quote book, check-in streaks, teams, qotd) and utility (`utility_plus.py`) commands |
 
 Command count: 494 (the count now includes the subcommands of command groups, like `customcmd add`).
