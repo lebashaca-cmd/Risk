@@ -63,3 +63,13 @@ These use the same free Groq key as `!ask` (`GROQ_API_KEY` on the bot host). The
 | `!explaincode <code>` | What a piece of code does, and any obvious bug |
 
 Each person can use these once every 8 to 20 seconds. Where a command takes text, you can reply to a message instead of typing it.
+
+More AI commands use the same key: `!haiku`, `!poem`, `!rap`, `!limerick`, `!rhyme`, `!synonyms`, `!etymology`, `!analogy`, `!titles`, `!hashtags`, `!caption`, `!slogan`, `!namebrand`, `!outline`, `!studyplan`, `!flashcards`, `!mnemonic`, `!recipe`, `!debatecase`, `!fallacy`, `!commitmsg`, `!regex`, `!sql`, `!shellhelp`, `!codereview`, `!shorten`, `!expand`, `!dialogue`, `!whatif`, `!dndhook`, `!characterbio`, `!dream`, `!lifehack`, `!tonecheck`, `!keywords` and `!emaildraft`. AI answers can be wrong, so check code and recipes before you rely on them.
+
+## Maths, money and dates
+
+`!sqrt`, `!exponent 2 10`, `!factorial`, `!ncr 52 5`, `!npr`, `!median`, `!mode`, `!stdev`, `!simplify 18 24`, `!quadratic 1 -3 2`, `!hypot`, `!circle`, `!ordinal`, `!scientific`, `!interest 1000 5 10`, `!loan 20000 6.5 5`, `!splitbill 84.5 4 18`, `!salary 22.5 40`, `!pace 5 27:30`, `!datediff`, `!adddays`, `!leapyear`, `!weeknumber`, `!moonphase`.
+
+## Text tools and generators
+
+`!readtime`, `!palindrome`, `!anagram`, `!camelcase`, `!snakecase`, `!kebabcase`, `!dedupe`, `!shuffle`, `!nato`, `!piglatin`, `!atbash`, `!texthex`, `!unhex`, `!urldecode`, `!randcolor`. `!passphrase`, `!pin` and `!randomhex` send the result to your DMs so nobody else sees it. Server lookups: `!joinposition`, `!createdat`, `!randommember`, `!countrole`.

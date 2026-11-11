@@ -31,7 +31,8 @@ tags: [risk, changelog]
 | 19 (later) | `!rep`: pink embed when a member's custom status contains the server invite (cog `rep.py`, needs `PRESENCE_INTENT=1`) |
 | 19 (later) | `!leaderboard` and `!levels` are drawn as pictures too (`render_board` in `utils/levelcard.py`) |
 | 19 (later) | `!rank` draws a level card image (needs Pillow); Sticky and Rep moved into the Community section; 12 AI commands (`ai_tools.py`); new fun (`fun_plus.py`), community (`community_plus.py`: kudos, intro, quote book, check-in streaks, teams, qotd) and utility (`utility_plus.py`) commands |
+| 19 (later) | Leaderboard picture shows every stat the text one did. About 140 more commands: `fun_more.py` (reactions, text styles, tarot, Wordle, minesweeper, quick draw, flag/capital quizzes), `utility_more.py` (maths, money, dates, text tools, DM generators), `community_more.py` (events with RSVP, LFG buttons, game lists, pronouns, spotlight, pulse), `ai_more.py` (36 AI helpers) |
 
-Command count: 494 (the count now includes the subcommands of command groups, like `customcmd add`).
+Command count: 571 (the count now includes the subcommands of command groups, like `customcmd add`).
 
 Related: [Testing](Testing.md), [Open items](Open-Items.md)

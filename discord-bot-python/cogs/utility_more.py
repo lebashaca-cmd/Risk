@@ -1,609 +1,421 @@
-import colorsys
-import ipaddress
+"""A second batch of utility commands: maths and statistics, money calculators, date tools, text tools,
+random generators and small server lookups."""
 import math
+import random
 import re
+import secrets
 import statistics
-import unicodedata
-import uuid as uuidlib
-from datetime import datetime, timezone
-from typing import Union
-from urllib.parse import quote, unquote, urlparse
+from datetime import date, datetime, timedelta, timezone
+from fractions import Fraction
+from urllib.parse import unquote
 
-import aiohttp
 import discord
 from discord.ext import commands
 
-from utils.helpers import NO_MENTIONS, explain_error
+from cogs.fun_more import WORDS
+from utils.helpers import ModError, NO_MENTIONS, explain_error
 
-UA = {"User-Agent": "RiskBot/1.0 (discord bot)"}
-PER_PAGE = 15
-
-# Unit tables: value is how many base units one of the unit is.
-LENGTH = {"mm": 0.001, "cm": 0.01, "m": 1, "km": 1000, "in": 0.0254, "ft": 0.3048, "yd": 0.9144, "mi": 1609.344}
-MASS = {"mg": 1e-6, "g": 0.001, "kg": 1, "t": 1000, "oz": 0.028349523125, "lb": 0.45359237, "st": 6.35029318}
-VOLUME = {"ml": 0.001, "l": 1, "tsp": 0.00492892159375, "tbsp": 0.01478676478125, "floz": 0.0295735295625, "cup": 0.2365882365, "pt": 0.473176473, "qt": 0.946352946, "gal": 3.785411784}
-SPEED = {"mps": 1, "kph": 1000 / 3600, "mph": 0.44704, "knot": 0.514444444, "fps": 0.3048}
-TABLES = {"length": LENGTH, "mass": MASS, "volume": VOLUME, "speed": SPEED}
-ALIASES = {
-    "millimeter": "mm", "millimeters": "mm", "centimeter": "cm", "centimeters": "cm", "meter": "m", "meters": "m", "metre": "m", "metres": "m",
-    "kilometer": "km", "kilometers": "km", "kilometre": "km", "kilometres": "km", "inch": "in", "inches": "in", "foot": "ft", "feet": "ft",
-    "yard": "yd", "yards": "yd", "mile": "mi", "miles": "mi",
-    "milligram": "mg", "milligrams": "mg", "gram": "g", "grams": "g", "kilogram": "kg", "kilograms": "kg", "kgs": "kg", "tonne": "t", "tonnes": "t",
-    "ounce": "oz", "ounces": "oz", "pound": "lb", "pounds": "lb", "lbs": "lb", "stone": "st", "stones": "st",
-    "milliliter": "ml", "milliliters": "ml", "millilitre": "ml", "liter": "l", "liters": "l", "litre": "l", "litres": "l",
-    "teaspoon": "tsp", "teaspoons": "tsp", "tablespoon": "tbsp", "tablespoons": "tbsp", "fl.oz": "floz", "cups": "cup",
-    "pint": "pt", "pints": "pt", "quart": "qt", "quarts": "qt", "gallon": "gal", "gallons": "gal",
-    "m/s": "mps", "km/h": "kph", "kmh": "kph", "kmph": "kph", "mi/h": "mph", "knots": "knot", "kt": "knot", "ft/s": "fps",
-    "celsius": "c", "°c": "c", "fahrenheit": "f", "°f": "f", "kelvin": "k",
-}
-TEMPS = {"c", "f", "k"}
-COINS = {
-    "btc": "bitcoin", "eth": "ethereum", "sol": "solana", "doge": "dogecoin", "ltc": "litecoin", "xrp": "ripple", "ada": "cardano",
-    "bnb": "binancecoin", "dot": "polkadot", "matic": "matic-network", "usdt": "tether", "avax": "avalanche-2", "trx": "tron",
-    "link": "chainlink", "shib": "shiba-inu",
-}
-LEET = str.maketrans({"a": "4", "e": "3", "i": "1", "o": "0", "s": "5", "t": "7", "A": "4", "E": "3", "I": "1", "O": "0", "S": "5", "T": "7"})
-ROMAN = [(1000, "M"), (900, "CM"), (500, "D"), (400, "CD"), (100, "C"), (90, "XC"), (50, "L"), (40, "XL"), (10, "X"), (9, "IX"), (5, "V"), (4, "IV"), (1, "I")]
+NATO = dict(zip("abcdefghijklmnopqrstuvwxyz", "Alfa Bravo Charlie Delta Echo Foxtrot Golf Hotel India Juliett Kilo Lima Mike November Oscar Papa Quebec Romeo Sierra Tango Uniform Victor Whiskey Xray Yankee Zulu".split()))
+SYNODIC = 29.530588853
+NEW_MOON = datetime(2000, 1, 6, 18, 14, tzinfo=timezone.utc)
+PHASES = [("New moon", "🌑"), ("Waxing crescent", "🌒"), ("First quarter", "🌓"), ("Waxing gibbous", "🌔"), ("Full moon", "🌕"), ("Waning gibbous", "🌖"), ("Last quarter", "🌗"), ("Waning crescent", "🌘")]
 
 
-def fmt(value):
-    if value == 0:
-        return "0"
-    if abs(value) >= 1e9 or abs(value) < 1e-4:
-        return f"{value:.6g}"
-    text = f"{value:,.4f}".rstrip("0").rstrip(".")
-    return text or "0"
+def fmt(x):
+    if isinstance(x, complex):
+        return f"{fmt(x.real)} {'+' if x.imag >= 0 else '-'} {fmt(abs(x.imag))}i"
+    if x == int(x) and abs(x) < 1e15:
+        return f"{int(x):,}"
+    return f"{x:,.6g}" if abs(x) >= 1e6 or abs(x) < 1e-4 else f"{x:,.4f}".rstrip("0").rstrip(".")
 
 
-def parse_when(text):
-    text = text.strip()
-    for pattern in ("%Y-%m-%d %H:%M", "%Y-%m-%d"):
-        try:
-            return datetime.strptime(text, pattern).replace(tzinfo=timezone.utc)
-        except ValueError:
-            continue
-    return None
-
-
-def page_slice(items, page, per=PER_PAGE):
-    pages = max(1, -(-len(items) // per))
-    page = max(1, min(page, pages))
-    return items[(page - 1) * per: page * per], page, pages
-
-
-def to_roman(number):
-    out = ""
-    for value, symbol in ROMAN:
-        while number >= value:
-            out += symbol
-            number -= value
-    return out
-
-
-def from_roman(text):
-    values = {"I": 1, "V": 5, "X": 10, "L": 50, "C": 100, "D": 500, "M": 1000}
-    total = 0
-    for index, ch in enumerate(text):
-        value = values[ch]
-        if index + 1 < len(text) and values[text[index + 1]] > value:
-            total -= value
-        else:
-            total += value
-    return total if to_roman(total) == text else None
-
-
-def unsafe_host(host):
-    host = (host or "").lower()
-    if not host or host == "localhost" or host.endswith(".local") or host.endswith(".internal"):
-        return True
+def numbers(text, minimum=1, maximum=200):
     try:
-        address = ipaddress.ip_address(host)
+        values = [float(p) for p in re.split(r"[,\s]+", (text or "").strip()) if p]
     except ValueError:
-        return False
-    return address.is_private or address.is_loopback or address.is_link_local or address.is_reserved or address.is_multicast
+        raise ModError("Give me numbers separated by spaces or commas.")
+    if not minimum <= len(values) <= maximum:
+        raise ModError(f"Give me {minimum} to {maximum} numbers.")
+    return values
 
 
-class UtilityMore(commands.Cog):
-    def __init__(self, bot):
-        self.bot = bot
+def parse_date(text):
+    try:
+        return datetime.strptime(text.strip(), "%Y-%m-%d").date()
+    except ValueError:
+        raise ModError("Dates look like `2026-12-25` (year-month-day).")
+
+
+def ordinal(n):
+    n = int(n)
+    return f"{n:,}" + ("th" if 10 <= abs(n) % 100 <= 20 else {1: "st", 2: "nd", 3: "rd"}.get(abs(n) % 10, "th"))
+
+
+class UtilityMore(commands.Cog, name="UtilityMore"):
+    """Maths, money, dates, text tools, generators and server lookups."""
 
     async def cog_command_error(self, ctx, error):
         if not await explain_error(ctx, error):
             raise error
 
-    async def fetch_json(self, url):
-        timeout = aiohttp.ClientTimeout(total=10)
-        async with aiohttp.ClientSession(timeout=timeout, headers=UA) as session:
-            async with session.get(url) as response:
-                if response.status == 404:
-                    return None
-                if response.status != 200:
-                    raise RuntimeError(response.status)
-                return await response.json(content_type=None)
+    async def say(self, ctx, text):
+        await ctx.reply(text, mention_author=False, allowed_mentions=NO_MENTIONS)
 
-    async def member_list(self, ctx, title, members, page=1, empty="Nobody to show."):
-        if not members:
-            await ctx.reply(empty, mention_author=False)
+    # ---------------------------------------------------------------- maths
+    @commands.command(name="sqrt")
+    async def sqrt(self, ctx, number: float):
+        """Square root of a number. Usage: !sqrt 144"""
+        if number < 0:
+            await self.say(ctx, f"√{fmt(number)} = **{fmt(complex(0, math.sqrt(-number)))}** (imaginary)")
             return
-        chunk, page, pages = page_slice(members, page)
-        start = (page - 1) * PER_PAGE
-        lines = [f"**{start + i}.** {m.mention} ({discord.utils.escape_markdown(m.display_name)})" for i, m in enumerate(chunk, start=1)]
-        embed = discord.Embed(title=f"{title} ({len(members)})", description="\n".join(lines), color=discord.Color.light_grey())
-        embed.set_footer(text=f"Page {page} of {pages}")
-        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
+        await self.say(ctx, f"√{fmt(number)} = **{fmt(math.sqrt(number))}**")
 
-    async def send_text(self, ctx, title, text):
-        embed = discord.Embed(title=title, description=f"```\n{text[:1900]}\n```", color=discord.Color.light_grey())
-        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
+    @commands.command(name="exponent", aliases=["pow", "raise"])
+    async def exponent(self, ctx, base: float, exponent: float):
+        """Raises a number to a power. Usage: !exponent 2 10"""
+        try:
+            result = base ** exponent
+        except (OverflowError, ZeroDivisionError):
+            raise ModError("That number is too big (or divides by zero).")
+        if isinstance(result, complex) or abs(result) > 1e300:
+            raise ModError("That result isn't a normal number.")
+        await self.say(ctx, f"{fmt(base)} ^ {fmt(exponent)} = **{fmt(result)}**")
 
-    # Members and servers
-    @commands.command(name="joined")
+    @commands.command(name="factorial", aliases=["fac"])
+    async def factorial(self, ctx, number: int):
+        """Factorial of a whole number up to 500. Usage: !factorial 10"""
+        if not 0 <= number <= 500:
+            raise ModError("Pick a whole number from 0 to 500.")
+        value = math.factorial(number)
+        text = f"{value:,}" if len(str(value)) <= 60 else f"{str(value)[0]}.{str(value)[1:8]}e{len(str(value)) - 1} ({len(str(value))} digits)"
+        await self.say(ctx, f"{number}! = **{text}**")
+
+    @commands.command(name="ncr", aliases=["choosecount", "combinations"])
+    async def ncr(self, ctx, n: int, r: int):
+        """Ways to choose r things from n (order doesn't matter). Usage: !ncr 52 5"""
+        if not 0 <= r <= n <= 5000:
+            raise ModError("Use 0 <= r <= n <= 5000.")
+        await self.say(ctx, f"C({n}, {r}) = **{math.comb(n, r):,}**")
+
+    @commands.command(name="npr", aliases=["permutations"])
+    async def npr(self, ctx, n: int, r: int):
+        """Ways to arrange r things from n (order matters). Usage: !npr 10 3"""
+        if not 0 <= r <= n <= 5000:
+            raise ModError("Use 0 <= r <= n <= 5000.")
+        await self.say(ctx, f"P({n}, {r}) = **{math.perm(n, r):,}**")
+
+    @commands.command(name="median")
+    async def median(self, ctx, *, values: str):
+        """Median of some numbers. Usage: !median 3 9 1 7"""
+        await self.say(ctx, f"Median of {len(numbers(values))} numbers: **{fmt(statistics.median(numbers(values)))}**")
+
+    @commands.command(name="mode")
+    async def mode(self, ctx, *, values: str):
+        """Most common number(s). Usage: !mode 1 2 2 3 3 3"""
+        found = statistics.multimode(numbers(values))
+        await self.say(ctx, "Mode: **" + ", ".join(fmt(v) for v in found[:10]) + "**" + (" (everything appears equally often)" if len(found) == len(set(numbers(values))) and len(found) > 1 else ""))
+
+    @commands.command(name="stdev", aliases=["deviation"])
+    async def stdev(self, ctx, *, values: str):
+        """Standard deviation and mean of some numbers. Usage: !stdev 2 4 4 4 5 5 7 9"""
+        data = numbers(values, minimum=2)
+        await self.say(ctx, f"Mean **{fmt(statistics.fmean(data))}**, population std dev **{fmt(statistics.pstdev(data))}**, sample std dev **{fmt(statistics.stdev(data))}** ({len(data)} numbers)")
+
+    @commands.command(name="simplify", aliases=["fraction"])
+    async def simplify(self, ctx, top: int, bottom: int):
+        """Simplifies a fraction. Usage: !simplify 18 24"""
+        if bottom == 0:
+            raise ModError("The bottom number can't be 0.")
+        f = Fraction(top, bottom)
+        await self.say(ctx, f"{top}/{bottom} = **{f.numerator}/{f.denominator}** (decimal {fmt(top / bottom)})")
+
+    @commands.command(name="quadratic")
+    async def quadratic(self, ctx, a: float, b: float, c: float):
+        """Solves ax^2 + bx + c = 0. Usage: !quadratic 1 -3 2"""
+        if a == 0:
+            raise ModError("`a` can't be 0 (that isn't a quadratic).")
+        disc = b * b - 4 * a * c
+        root = math.sqrt(disc) if disc >= 0 else complex(0, math.sqrt(-disc))
+        x1, x2 = (-b + root) / (2 * a), (-b - root) / (2 * a)
+        await self.say(ctx, f"Discriminant {fmt(disc)}. " + (f"x = **{fmt(x1)}**" if x1 == x2 else f"x = **{fmt(x1)}** and **{fmt(x2)}**"))
+
+    @commands.command(name="hypot", aliases=["pythagoras"])
+    async def hypot(self, ctx, a: float, b: float):
+        """Length of the long side of a right triangle. Usage: !hypot 3 4"""
+        await self.say(ctx, f"Hypotenuse = **{fmt(math.hypot(a, b))}**")
+
+    @commands.command(name="circle")
+    async def circle(self, ctx, radius: float):
+        """Circle circumference and area from a radius. Usage: !circle 5"""
+        if radius < 0:
+            raise ModError("The radius can't be negative.")
+        await self.say(ctx, f"Radius {fmt(radius)}: circumference **{fmt(2 * math.pi * radius)}**, area **{fmt(math.pi * radius ** 2)}**, diameter **{fmt(radius * 2)}**")
+
+    @commands.command(name="ordinal")
+    async def ordinal_cmd(self, ctx, number: int):
+        """Writes a number as 1st, 2nd, 3rd. Usage: !ordinal 22"""
+        await self.say(ctx, ordinal(number))
+
+    @commands.command(name="scientific", aliases=["sci"])
+    async def scientific(self, ctx, number: float):
+        """Writes a number in scientific notation. Usage: !scientific 123456"""
+        await self.say(ctx, f"{number:g} = **{number:.6e}**")
+
+    # ---------------------------------------------------------------- money and fitness
+    @commands.command(name="interest")
+    async def interest(self, ctx, principal: float, rate: float, years: float, per_year: int = 12):
+        """Compound interest. Usage: !interest 1000 5 10 (amount, yearly %, years, compounds per year)"""
+        if principal < 0 or not 0 <= rate <= 1000 or not 0 < years <= 200 or not 1 <= per_year <= 365:
+            raise ModError("Try something like `!interest 1000 5 10`.")
+        total = principal * (1 + rate / 100 / per_year) ** (per_year * years)
+        await self.say(ctx, f"{fmt(principal)} at {fmt(rate)}% for {fmt(years)} years (compounded {per_year}x a year) becomes **{fmt(total)}**, which is **{fmt(total - principal)}** of interest.")
+
+    @commands.command(name="loan")
+    async def loan(self, ctx, amount: float, rate: float, years: float):
+        """Monthly payment on a loan. Usage: !loan 20000 6.5 5 (amount, yearly %, years)"""
+        if amount <= 0 or not 0 <= rate <= 100 or not 0 < years <= 50:
+            raise ModError("Try something like `!loan 20000 6.5 5`.")
+        months, monthly = int(round(years * 12)), rate / 1200
+        payment = amount / months if monthly == 0 else amount * monthly / (1 - (1 + monthly) ** -months)
+        await self.say(ctx, f"Loan of {fmt(amount)} at {fmt(rate)}% over {months} months: **{fmt(payment)}** a month, {fmt(payment * months)} total, {fmt(payment * months - amount)} interest.")
+
+    @commands.command(name="splitbill")
+    async def splitbill(self, ctx, total: float, people: int, tip: float = 0):
+        """Splits a bill between people with an optional tip %. Usage: !splitbill 84.50 4 18"""
+        if total < 0 or not 1 <= people <= 100 or not 0 <= tip <= 100:
+            raise ModError("Try something like `!splitbill 84.50 4 18`.")
+        grand = total * (1 + tip / 100)
+        await self.say(ctx, f"Total with {fmt(tip)}% tip: **{fmt(grand)}**, so **{fmt(grand / people)}** each for {people} people.")
+
+    @commands.command(name="salary", aliases=["wage"])
+    async def salary(self, ctx, hourly: float, hours_per_week: float = 40):
+        """Turns an hourly wage into weekly, monthly and yearly pay. Usage: !salary 22.50 40"""
+        if hourly < 0 or not 0 < hours_per_week <= 168:
+            raise ModError("Try something like `!salary 22.50 40`.")
+        weekly = hourly * hours_per_week
+        await self.say(ctx, f"At {fmt(hourly)}/hour for {fmt(hours_per_week)} hours a week: **{fmt(weekly)}** a week, **{fmt(weekly * 52 / 12)}** a month, **{fmt(weekly * 52)}** a year (before tax).")
+
+    @commands.command(name="pace")
+    async def pace(self, ctx, distance: float, time: str):
+        """Running pace and speed. Usage: !pace 5 27:30 (distance, time as minutes or mm:ss or h:mm:ss)"""
+        parts = time.split(":")
+        try:
+            seconds = sum(float(p) * 60 ** i for i, p in enumerate(reversed(parts))) if len(parts) > 1 else float(time) * 60
+        except ValueError:
+            raise ModError("Time looks like `27:30` or `27.5`.")
+        if distance <= 0 or seconds <= 0:
+            raise ModError("Distance and time must be above 0.")
+        per = seconds / distance
+        await self.say(ctx, f"Pace: **{int(per // 60)}:{int(per % 60):02d}** per unit of distance, speed **{fmt(distance / (seconds / 3600))}** per hour.")
+
+    # ---------------------------------------------------------------- dates
+    @commands.command(name="datediff")
+    async def datediff(self, ctx, start: str, end: str):
+        """Days between two dates. Usage: !datediff 2026-01-01 2026-12-25"""
+        a, b = parse_date(start), parse_date(end)
+        days = (b - a).days
+        await self.say(ctx, f"**{abs(days):,}** days between them ({abs(days) // 7} weeks and {abs(days) % 7} days). {'The second date is earlier.' if days < 0 else ''}".strip())
+
+    @commands.command(name="adddays", aliases=["addtime"])
+    async def adddays(self, ctx, start: str, days: int):
+        """Adds (or subtracts) days from a date. Usage: !adddays 2026-11-11 100, or `today` as the date"""
+        a = datetime.now(timezone.utc).date() if start.lower() == "today" else parse_date(start)
+        if abs(days) > 100000:
+            raise ModError("That's too far away.")
+        result = a + timedelta(days=days)
+        await self.say(ctx, f"{a:%Y-%m-%d} {'+' if days >= 0 else '-'} {abs(days):,} days = **{result:%A, %B} {result.day}, {result.year}**")
+
+    @commands.command(name="leapyear")
+    async def leapyear(self, ctx, year: int):
+        """Tells you whether a year is a leap year. Usage: !leapyear 2028"""
+        leap = year % 4 == 0 and (year % 100 != 0 or year % 400 == 0)
+        await self.say(ctx, f"{year} {'**is** a leap year (366 days).' if leap else 'is **not** a leap year (365 days).'}")
+
+    @commands.command(name="weeknumber", aliases=["weekno"])
+    async def weeknumber(self, ctx, when: str = "today"):
+        """ISO week number of a date. Usage: !weeknumber 2026-12-25"""
+        d = datetime.now(timezone.utc).date() if when.lower() == "today" else parse_date(when)
+        iso = d.isocalendar()
+        await self.say(ctx, f"{d:%A %Y-%m-%d} is in week **{iso[1]}** of {iso[0]} (day {d.timetuple().tm_yday} of the year).")
+
+    @commands.command(name="moonphase", aliases=["moon"])
+    async def moonphase(self, ctx, when: str = "today"):
+        """The moon phase for a date. Usage: !moonphase 2026-12-25"""
+        d = datetime.now(timezone.utc) if when.lower() == "today" else datetime.combine(parse_date(when), datetime.min.time(), tzinfo=timezone.utc) + timedelta(hours=12)
+        age = ((d - NEW_MOON).total_seconds() / 86400) % SYNODIC
+        name, icon = PHASES[int((age / SYNODIC * 8) + 0.5) % 8]
+        lit = (1 - math.cos(2 * math.pi * age / SYNODIC)) / 2
+        await self.say(ctx, f"{icon} **{name}**, about {lit * 100:.0f}% lit (moon age {age:.1f} days).")
+
+    # ---------------------------------------------------------------- text tools
+    @staticmethod
+    def need(text, limit=1500):
+        if not text or not text.strip():
+            raise ModError("Give me some text.")
+        return text.strip()[:limit]
+
+    @commands.command(name="readtime")
+    async def readtime(self, ctx, *, text: str = None):
+        """How long some text takes to read aloud and silently. Usage: !readtime <text>"""
+        words = len(self.need(text, 20000).split())
+        await self.say(ctx, f"{words:,} words: about **{max(1, round(words / 238))} min** to read silently, **{max(1, round(words / 150))} min** aloud.")
+
+    @commands.command(name="palindrome")
+    async def palindrome(self, ctx, *, text: str = None):
+        """Checks whether text reads the same backwards. Usage: !palindrome A man a plan a canal Panama"""
+        cleaned = re.sub(r"[^a-z0-9]", "", self.need(text).lower())
+        if not cleaned:
+            raise ModError("Use some letters or numbers.")
+        await self.say(ctx, "✅ That's a palindrome." if cleaned == cleaned[::-1] else "❌ Not a palindrome.")
+
+    @commands.command(name="anagram")
+    async def anagram(self, ctx, first: str, second: str):
+        """Checks whether two words are anagrams. Usage: !anagram listen silent"""
+        a, b = sorted(re.sub(r"[^a-z]", "", first.lower())), sorted(re.sub(r"[^a-z]", "", second.lower()))
+        await self.say(ctx, "✅ Anagrams!" if a and a == b else "❌ Not anagrams.")
+
+    @staticmethod
+    def words_of(text):
+        return re.findall(r"[A-Za-z0-9]+", text)
+
+    @commands.command(name="camelcase")
+    async def camelcase(self, ctx, *, text: str = None):
+        """Converts text to camelCase. Usage: !camelcase hello big world"""
+        w = self.words_of(self.need(text))
+        await self.say(ctx, f"`{(w[0].lower() + ''.join(x.capitalize() for x in w[1:])) if w else ''}`")
+
+    @commands.command(name="snakecase")
+    async def snakecase(self, ctx, *, text: str = None):
+        """Converts text to snake_case. Usage: !snakecase Hello Big World"""
+        await self.say(ctx, f"`{'_'.join(x.lower() for x in self.words_of(self.need(text)))}`")
+
+    @commands.command(name="kebabcase")
+    async def kebabcase(self, ctx, *, text: str = None):
+        """Converts text to kebab-case. Usage: !kebabcase Hello Big World"""
+        await self.say(ctx, f"`{'-'.join(x.lower() for x in self.words_of(self.need(text)))}`")
+
+    @commands.command(name="dedupe")
+    async def dedupe(self, ctx, *, text: str = None):
+        """Removes repeated words (keeping the first of each). Usage: !dedupe a b a c b"""
+        seen, out = set(), []
+        for word in self.need(text).split():
+            if word.lower() not in seen:
+                seen.add(word.lower())
+                out.append(word)
+        await self.say(ctx, " ".join(out))
+
+    @commands.command(name="shuffle")
+    async def shuffle(self, ctx, *, text: str = None):
+        """Shuffles the words you give. Usage: !shuffle one two three four"""
+        words = self.need(text).split()
+        random.shuffle(words)
+        await self.say(ctx, " ".join(words))
+
+    @commands.command(name="nato")
+    async def nato(self, ctx, *, text: str = None):
+        """Spells text with the NATO phonetic alphabet. Usage: !nato risk"""
+        out = [NATO.get(c, c) for c in self.need(text, 60).lower() if c != " "]
+        await self.say(ctx, " ".join(out))
+
+    @commands.command(name="piglatin")
+    async def piglatin(self, ctx, *, text: str = None):
+        """Translates to pig latin. Usage: !piglatin hello world"""
+        def one(word):
+            m = re.match(r"([^aeiou]*)(.*)", word, re.I)
+            head, rest = m.group(1), m.group(2)
+            return (word + "way") if not head else (rest + head + "ay")
+        await self.say(ctx, " ".join(one(w) for w in self.need(text).lower().split()))
+
+    @commands.command(name="atbash")
+    async def atbash(self, ctx, *, text: str = None):
+        """Atbash cipher (a becomes z, b becomes y). Usage: !atbash hello"""
+        flip = lambda c: chr(ord("a") + 25 - (ord(c) - ord("a"))) if "a" <= c <= "z" else chr(ord("A") + 25 - (ord(c) - ord("A"))) if "A" <= c <= "Z" else c
+        await self.say(ctx, "".join(flip(c) for c in self.need(text)))
+
+    @commands.command(name="texthex")
+    async def texthex(self, ctx, *, text: str = None):
+        """Turns text into hex bytes. Usage: !texthex hello"""
+        await self.say(ctx, f"`{self.need(text, 300).encode().hex(' ')}`")
+
+    @commands.command(name="unhex")
+    async def unhex(self, ctx, *, text: str = None):
+        """Turns hex bytes back into text. Usage: !unhex 68 65 6c 6c 6f"""
+        try:
+            out = bytes.fromhex(self.need(text, 900)).decode("utf-8")
+        except (ValueError, UnicodeDecodeError):
+            raise ModError("That isn't valid hex text.")
+        await self.say(ctx, out or "(empty)")
+
+    @commands.command(name="urldecode")
+    async def urldecode(self, ctx, *, text: str = None):
+        """Decodes %20 style text from a link. Usage: !urldecode hello%20world"""
+        await self.say(ctx, unquote(self.need(text)))
+
+    # ---------------------------------------------------------------- generators (secrets are sent privately)
+    async def private(self, ctx, text):
+        try:
+            await ctx.author.send(text)
+            await ctx.reply("📬 I sent it to your DMs.", mention_author=False)
+        except discord.HTTPException:
+            await ctx.reply("I couldn't DM you. Open your DMs for this server and try again.", mention_author=False)
+
+    @commands.command(name="passphrase")
+    async def passphrase(self, ctx, words: int = 5):
+        """DMs you a random passphrase of 3 to 8 words. Usage: !passphrase 5"""
+        words = max(3, min(words, 8))
+        await self.private(ctx, "Your passphrase: `" + "-".join(secrets.choice(WORDS) for _ in range(words)) + "`\nDon't reuse it anywhere else, and don't share it.")
+
+    @commands.command(name="pin")
+    async def pin(self, ctx, digits: int = 4):
+        """DMs you a random PIN of 4 to 10 digits. Usage: !pin 6"""
+        digits = max(4, min(digits, 10))
+        await self.private(ctx, "Your PIN: `" + "".join(secrets.choice("0123456789") for _ in range(digits)) + "`")
+
+    @commands.command(name="randomhex", aliases=["hextoken"])
+    async def randomhex(self, ctx, length: int = 32):
+        """DMs you a random hex string (8 to 64 characters). Usage: !randomhex 32"""
+        await self.private(ctx, "`" + secrets.token_hex(32)[:max(8, min(length, 64))] + "`")
+
+    @commands.command(name="randcolor", aliases=["randomcolor"])
+    async def randcolor(self, ctx):
+        """Picks a random colour. Usage: !randcolor"""
+        value = random.randint(0, 0xFFFFFF)
+        embed = discord.Embed(title=f"#{value:06X}", description=f"RGB {value >> 16}, {(value >> 8) & 255}, {value & 255}", color=discord.Color(value))
+        await ctx.reply(embed=embed, mention_author=False)
+
+    # ---------------------------------------------------------------- server lookups
+    @commands.command(name="joinposition", aliases=["joinpos"])
     @commands.guild_only()
-    async def joined(self, ctx, member: discord.Member = None):
-        """Shows when someone joined and their join position. Usage: !joined @user"""
+    async def joinposition(self, ctx, member: discord.Member = None):
+        """Shows which number member someone was to join. Usage: !joinposition @user"""
         member = member or ctx.author
         ordered = sorted((m for m in ctx.guild.members if m.joined_at), key=lambda m: m.joined_at)
-        position = next((i for i, m in enumerate(ordered, start=1) if m.id == member.id), None)
-        stamp = int(member.joined_at.timestamp()) if member.joined_at else None
-        embed = discord.Embed(title=member.display_name, color=discord.Color.light_grey())
-        embed.add_field(name="Joined", value=f"<t:{stamp}:F> (<t:{stamp}:R>)" if stamp else "Unknown")
-        embed.add_field(name="Join position", value=f"#{position:,} of {len(ordered):,}" if position else "Unknown")
-        created = int(member.created_at.timestamp())
-        embed.add_field(name="Account created", value=f"<t:{created}:R>")
-        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
+        if member not in ordered:
+            raise ModError("I couldn't find when they joined.")
+        await self.say(ctx, f"**{member.display_name}** was the **{ordinal(ordered.index(member) + 1)}** member to join (of {len(ordered):,} I can see).")
 
-    @commands.command(name="oldest")
+    @commands.command(name="createdat", aliases=["accountcreated"])
+    async def createdat(self, ctx, member: discord.User = None):
+        """Shows when an account was created. Usage: !createdat @user"""
+        member = member or ctx.author
+        stamp = int(member.created_at.timestamp())
+        await self.say(ctx, f"**{member.display_name}**'s account was created <t:{stamp}:F> (<t:{stamp}:R>).")
+
+    @commands.command(name="randommember", aliases=["randmember"])
     @commands.guild_only()
-    async def oldest(self, ctx, page: int = 1):
-        """Lists the members who joined first. Usage: !oldest 2"""
-        members = sorted((m for m in ctx.guild.members if m.joined_at), key=lambda m: m.joined_at)
-        await self.member_list(ctx, "Oldest members", members, page)
+    async def randommember(self, ctx, role: discord.Role = None):
+        """Picks a random member, optionally from a role. Usage: !randommember @role"""
+        pool = [m for m in (role.members if role else ctx.guild.members) if not m.bot]
+        if not pool:
+            raise ModError("There's nobody to pick from.")
+        await self.say(ctx, f"🎲 Random member: **{random.choice(pool).display_name}**")
 
-    @commands.command(name="newest")
+    @commands.command(name="countrole")
     @commands.guild_only()
-    async def newest(self, ctx, page: int = 1):
-        """Lists the members who joined most recently. Usage: !newest"""
-        members = sorted((m for m in ctx.guild.members if m.joined_at), key=lambda m: m.joined_at, reverse=True)
-        await self.member_list(ctx, "Newest members", members, page)
-
-    @commands.command(name="boosters")
-    @commands.guild_only()
-    async def boosters(self, ctx, page: int = 1):
-        """Lists the members boosting the server. Usage: !boosters"""
-        members = sorted(ctx.guild.premium_subscribers, key=lambda m: m.premium_since or datetime.now(timezone.utc))
-        await self.member_list(ctx, "Boosters", members, page, empty="Nobody is boosting this server yet.")
-
-    @commands.command(name="admins")
-    @commands.guild_only()
-    async def admins(self, ctx, page: int = 1):
-        """Lists the members with Administrator permission. Usage: !admins"""
-        members = [m for m in ctx.guild.members if not m.bot and m.guild_permissions.administrator]
-        await self.member_list(ctx, "Administrators", members, page, empty="No human member has Administrator.")
-
-    @commands.command(name="bots")
-    @commands.guild_only()
-    async def bots(self, ctx, page: int = 1):
-        """Lists the bots in this server. Usage: !bots"""
-        members = [m for m in ctx.guild.members if m.bot]
-        await self.member_list(ctx, "Bots", members, page, empty="There are no bots here.")
-
-    @commands.command(name="whohas")
-    @commands.guild_only()
-    async def whohas(self, ctx, role: discord.Role, page: int = 1):
-        """Lists the members that have a role. Usage: !whohas @Moderators"""
-        members = sorted(role.members, key=lambda m: m.display_name.lower())
-        await self.member_list(ctx, f"Members with {role.name}", members, page, empty=f"Nobody has {discord.utils.escape_markdown(role.name)}.")
-
-    # Emojis
-    @commands.command(name="emojiinfo")
-    async def emojiinfo(self, ctx, emoji: Union[discord.Emoji, discord.PartialEmoji]):
-        """Shows details about a custom emoji. Usage: !emojiinfo :name:"""
-        if emoji.id is None:
-            await ctx.reply("That's a standard emoji. Try `!charinfo` for it.", mention_author=False)
-            return
-        embed = discord.Embed(title=emoji.name, color=discord.Color.light_grey())
-        embed.set_thumbnail(url=emoji.url)
-        embed.add_field(name="ID", value=str(emoji.id))
-        embed.add_field(name="Animated", value="Yes" if emoji.animated else "No")
-        embed.add_field(name="Created", value=f"<t:{int(emoji.created_at.timestamp())}:R>")
-        embed.add_field(name="Image", value=f"[Open]({emoji.url})")
-        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
-
-    @commands.command(name="addemoji")
-    @commands.guild_only()
-    @commands.has_permissions(manage_expressions=True)
-    @commands.bot_has_permissions(manage_expressions=True)
-    async def addemoji(self, ctx, name: str, url: str = None):
-        """Adds a custom emoji from an image link or attachment. Usage: !addemoji party https://example.com/party.png"""
-        if not re.fullmatch(r"\w{2,32}", name):
-            await ctx.reply("Emoji names use 2 to 32 letters, numbers or underscores.", mention_author=False)
-            return
-        if ctx.message.attachments:
-            url = ctx.message.attachments[0].url
-        if not url:
-            await ctx.reply("Attach an image or give a link, like `!addemoji party https://example.com/party.png`.", mention_author=False)
-            return
-        parsed = urlparse(url)
-        if parsed.scheme not in ("http", "https") or unsafe_host(parsed.hostname):
-            await ctx.reply("That link isn't allowed. Use a public http or https image link.", mention_author=False)
-            return
-        try:
-            timeout = aiohttp.ClientTimeout(total=10)
-            async with aiohttp.ClientSession(timeout=timeout, headers=UA) as session:
-                async with session.get(url) as response:
-                    if response.status != 200:
-                        raise RuntimeError(response.status)
-                    data = await response.content.read(262145)
-        except Exception:
-            await ctx.reply("I couldn't download that image.", mention_author=False)
-            return
-        if len(data) > 262144:
-            await ctx.reply("Emoji images must be 256 KB or smaller.", mention_author=False)
-            return
-        if not (data.startswith(b"\x89PNG") or data.startswith(b"\xff\xd8") or data.startswith(b"GIF8") or (data[:4] == b"RIFF" and data[8:12] == b"WEBP")):
-            await ctx.reply("That file isn't a PNG, JPG, GIF or WebP image.", mention_author=False)
-            return
-        try:
-            emoji = await ctx.guild.create_custom_emoji(name=name, image=data, reason=f"Added by {ctx.author}")
-        except discord.HTTPException as error:
-            await ctx.reply(f"Discord refused it: {str(error.text or error)[:150]}", mention_author=False)
-            return
-        await ctx.reply(f"Added {emoji} as `:{emoji.name}:`.", mention_author=False)
-
-    @commands.command(name="removeemoji")
-    @commands.guild_only()
-    @commands.has_permissions(manage_expressions=True)
-    @commands.bot_has_permissions(manage_expressions=True)
-    async def removeemoji(self, ctx, emoji: discord.Emoji):
-        """Deletes a custom emoji from this server. Usage: !removeemoji :party:"""
-        if emoji.guild_id != ctx.guild.id:
-            await ctx.reply("That emoji isn't from this server.", mention_author=False)
-            return
-        name = emoji.name
-        await emoji.delete(reason=f"Removed by {ctx.author}")
-        await ctx.reply(f"Deleted `:{name}:`.", mention_author=False)
-
-    # Maths and conversions
-    @commands.command(name="convert")
-    async def convert(self, ctx, amount: float, source: str, *, target: str):
-        """Converts length, mass, volume, speed and temperature units. Usage: !convert 10 km to mi"""
-        target = target.strip()
-        if target.lower().startswith("to "):
-            target = target[3:].strip()
-        a = ALIASES.get(source.lower(), source.lower())
-        b = ALIASES.get(target.lower(), target.lower())
-        if not math.isfinite(amount):
-            await ctx.reply("Give a normal number.", mention_author=False)
-            return
-        if a in TEMPS and b in TEMPS:
-            kelvin = {"c": amount + 273.15, "f": (amount - 32) * 5 / 9 + 273.15, "k": amount}[a]
-            result = {"c": kelvin - 273.15, "f": (kelvin - 273.15) * 9 / 5 + 32, "k": kelvin}[b]
-            if kelvin < 0:
-                await ctx.reply("That's below absolute zero.", mention_author=False)
-                return
-            kind = "temperature"
-        else:
-            kind = next((name for name, table in TABLES.items() if a in table and b in table), None)
-            if kind is None:
-                units = ", ".join(sorted({u for table in TABLES.values() for u in table} | TEMPS))
-                await ctx.reply(f"I can't convert `{source[:20]}` to `{target[:20]}`. Units must match and be one of: {units}.", mention_author=False)
-                return
-            result = amount * TABLES[kind][a] / TABLES[kind][b]
-        embed = discord.Embed(title=kind.title(), description=f"**{fmt(amount)} {a}** = **{fmt(result)} {b}**", color=discord.Color.light_grey())
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="percent")
-    async def percent(self, ctx, first: float, second: float):
-        """Works out percentages between two numbers. Usage: !percent 20 150"""
-        embed = discord.Embed(title="Percent", color=discord.Color.light_grey())
-        embed.add_field(name=f"{fmt(first)}% of {fmt(second)}", value=fmt(first * second / 100), inline=False)
-        if second != 0:
-            embed.add_field(name=f"{fmt(first)} is what % of {fmt(second)}", value=f"{fmt(first / second * 100)}%", inline=False)
-        if first != 0:
-            embed.add_field(name=f"Change from {fmt(first)} to {fmt(second)}", value=f"{fmt((second - first) / abs(first) * 100)}%", inline=False)
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="average", aliases=["mean"])
-    async def average(self, ctx, *numbers: float):
-        """Gives the mean, median, mode, range and sum of some numbers. Usage: !average 4 8 15 16 23 42"""
-        if not numbers:
-            await ctx.reply("Give some numbers, like `!average 4 8 15 16 23 42`.", mention_author=False)
-            return
-        if len(numbers) > 200 or not all(math.isfinite(n) for n in numbers):
-            await ctx.reply("Use up to 200 normal numbers.", mention_author=False)
-            return
-        values = list(numbers)
-        modes = statistics.multimode(values)
-        embed = discord.Embed(title=f"{len(values)} number(s)", color=discord.Color.light_grey())
-        embed.add_field(name="Mean", value=fmt(statistics.fmean(values)))
-        embed.add_field(name="Median", value=fmt(statistics.median(values)))
-        embed.add_field(name="Mode", value=("None" if len(modes) == len(set(values)) and len(values) > 1 else ", ".join(fmt(m) for m in modes[:5])))
-        embed.add_field(name="Smallest", value=fmt(min(values)))
-        embed.add_field(name="Largest", value=fmt(max(values)))
-        embed.add_field(name="Sum", value=fmt(sum(values)))
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="bmi")
-    async def bmi(self, ctx, weight: float, height: float, system: str = "metric"):
-        """Works out body mass index from kg and cm, or lb and inches. Usage: !bmi 70 175 or !bmi 154 69 imperial"""
-        system = system.lower()
-        if system not in ("metric", "imperial"):
-            await ctx.reply("Use `metric` (kg, cm) or `imperial` (lb, in).", mention_author=False)
-            return
-        if system == "metric":
-            ok = 20 <= weight <= 500 and 50 <= height <= 260
-            value = weight / (height / 100) ** 2 if ok else 0
-        else:
-            ok = 40 <= weight <= 1100 and 20 <= height <= 105
-            value = weight / height ** 2 * 703 if ok else 0
-        if not ok:
-            await ctx.reply("Those numbers don't look right for that system.", mention_author=False)
-            return
-        band = "Underweight" if value < 18.5 else "Healthy range" if value < 25 else "Overweight" if value < 30 else "Obese range"
-        embed = discord.Embed(title=f"BMI {value:.1f}", description=band, color=discord.Color.light_grey())
-        embed.set_footer(text="BMI is a rough screening number, not medical advice.")
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="age")
-    async def age(self, ctx, birthday: str):
-        """Works out an age and the next birthday from a date. Usage: !age 2000-05-17"""
-        born = parse_when(birthday)
-        now = datetime.now(timezone.utc)
-        if born is None or born > now or born.year < 1900:
-            await ctx.reply("Use a past date like `2000-05-17`.", mention_author=False)
-            return
-        years = now.year - born.year - ((now.month, now.day) < (born.month, born.day))
-        months = (now.month - born.month - (now.day < born.day)) % 12
-        try:
-            upcoming = born.replace(year=now.year)
-        except ValueError:
-            upcoming = born.replace(year=now.year, day=28)
-        if upcoming.date() < now.date():
-            try:
-                upcoming = born.replace(year=now.year + 1)
-            except ValueError:
-                upcoming = born.replace(year=now.year + 1, day=28)
-        days_left = (upcoming.date() - now.date()).days
-        embed = discord.Embed(title=f"{years} years, {months} months old", color=discord.Color.light_grey())
-        embed.add_field(name="Days lived", value=f"{(now.date() - born.date()).days:,}")
-        embed.add_field(name="Next birthday", value="Today! 🎂" if days_left == 0 else f"in {days_left} day(s)")
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="roman")
-    async def roman(self, ctx, value: str):
-        """Converts a number to a Roman numeral, or back. Usage: !roman 2026"""
-        if value.isdigit():
-            number = int(value)
-            if not 1 <= number <= 3999:
-                await ctx.reply("Pick a number from 1 to 3999.", mention_author=False)
-                return
-            await ctx.reply(embed=discord.Embed(title=to_roman(number), description=f"{number}", color=discord.Color.light_grey()), mention_author=False)
-            return
-        upper = value.upper()
-        if not re.fullmatch(r"[IVXLCDM]{1,15}", upper) or from_roman(upper) is None:
-            await ctx.reply("Give a number, or a valid Roman numeral like `MMXXVI`.", mention_author=False)
-            return
-        await ctx.reply(embed=discord.Embed(title=str(from_roman(upper)), description=upper, color=discord.Color.light_grey()), mention_author=False)
-
-    # Text tools
-    @commands.command(name="charinfo")
-    async def charinfo(self, ctx, *, text: str):
-        """Shows the Unicode name and code of each character. Usage: !charinfo é"""
-        lines = []
-        for ch in text[:15]:
-            if ch.isspace() and ch != " ":
-                continue
-            name = unicodedata.name(ch, "Unknown")
-            shown = ch if ch.isprintable() else " "
-            lines.append(f"`U+{ord(ch):04X}` {shown} {name}")
-        if not lines:
-            await ctx.reply("There's nothing to look up.", mention_author=False)
-            return
-        embed = discord.Embed(description="\n".join(lines), color=discord.Color.light_grey())
-        if len(text) > 15:
-            embed.set_footer(text="Showing the first 15 characters.")
-        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
-
-    @commands.command(name="leetspeak", aliases=["leet"])
-    async def leetspeak(self, ctx, *, text: str):
-        """Writes text in leetspeak. Usage: !leetspeak elite hacker"""
-        await self.send_text(ctx, "1337", text.translate(LEET))
-
-    @commands.command(name="caesar")
-    async def caesar(self, ctx, shift: int, *, text: str):
-        """Shifts the letters of some text, a Caesar cipher. Usage: !caesar 3 hello"""
-        if not -25 <= shift <= 25:
-            await ctx.reply("Use a shift from -25 to 25. Shift back by the same amount to decode.", mention_author=False)
-            return
-
-        def move(ch):
-            if "a" <= ch <= "z":
-                return chr((ord(ch) - 97 + shift) % 26 + 97)
-            if "A" <= ch <= "Z":
-                return chr((ord(ch) - 65 + shift) % 26 + 65)
-            return ch
-
-        await self.send_text(ctx, f"Caesar shift {shift}", "".join(move(ch) for ch in text))
-
-    @commands.command(name="wordcount", aliases=["wc"])
-    async def wordcount(self, ctx, *, text: str):
-        """Counts the words, characters and sentences in some text. Usage: !wordcount some text here"""
-        words = len(text.split())
-        sentences = len([s for s in re.split(r"[.!?]+", text) if s.strip()])
-        minutes = words / 200
-        embed = discord.Embed(title="Word count", color=discord.Color.light_grey())
-        embed.add_field(name="Words", value=f"{words:,}")
-        embed.add_field(name="Characters", value=f"{len(text):,}")
-        embed.add_field(name="Without spaces", value=f"{len(re.sub(r'\\s', '', text)):,}")
-        embed.add_field(name="Sentences", value=f"{sentences:,}")
-        embed.add_field(name="Reading time", value="under a minute" if minutes < 1 else f"about {round(minutes)} min")
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="uppercase", aliases=["upper"])
-    async def uppercase(self, ctx, *, text: str):
-        """Turns text into UPPERCASE. Usage: !uppercase hello"""
-        await self.send_text(ctx, "Uppercase", text.upper())
-
-    @commands.command(name="lowercase", aliases=["lower"])
-    async def lowercase(self, ctx, *, text: str):
-        """Turns text into lowercase. Usage: !lowercase HELLO"""
-        await self.send_text(ctx, "Lowercase", text.lower())
-
-    @commands.command(name="titlecase")
-    async def titlecase(self, ctx, *, text: str):
-        """Turns text Into Title Case. Usage: !titlecase the quick brown fox"""
-        await self.send_text(ctx, "Title case", text.title())
-
-    @commands.command(name="slugify", aliases=["slug"])
-    async def slugify(self, ctx, *, text: str):
-        """Turns text into a url-friendly slug. Usage: !slugify My Great Post!"""
-        plain = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode()
-        slug = re.sub(r"[^a-z0-9]+", "-", plain.lower()).strip("-")
-        await self.send_text(ctx, "Slug", slug or "Nothing left after cleaning that text.")
-
-    @commands.command(name="urlencode")
-    async def urlencode(self, ctx, mode: str, *, text: str):
-        """Encodes or decodes text for use in a link. Usage: !urlencode encode hello world"""
-        mode = mode.lower()
-        if mode == "encode":
-            await self.send_text(ctx, "URL encoded", quote(text, safe=""))
-        elif mode == "decode":
-            await self.send_text(ctx, "URL decoded", unquote(text))
-        else:
-            await ctx.reply("Use `encode` or `decode`, like `!urlencode encode hello world`.", mention_author=False)
-
-    @commands.command(name="uuid")
-    async def uuid(self, ctx, count: int = 1):
-        """Generates random UUIDs. Usage: !uuid 3"""
-        if not 1 <= count <= 5:
-            await ctx.reply("Pick from 1 to 5.", mention_author=False)
-            return
-        await self.send_text(ctx, "UUID", "\n".join(str(uuidlib.uuid4()) for _ in range(count)))
-
-    # Dates
-    @commands.command(name="countdown")
-    async def countdown(self, ctx, *, when: str):
-        """Counts down to a UTC date and time. Usage: !countdown 2026-12-25 18:00"""
-        moment = parse_when(when)
-        if moment is None:
-            await ctx.reply("Use `YYYY-MM-DD` or `YYYY-MM-DD HH:MM` (UTC).", mention_author=False)
-            return
-        seconds = int((moment - datetime.now(timezone.utc)).total_seconds())
-        stamp = int(moment.timestamp())
-        if seconds <= 0:
-            await ctx.reply(f"That moment passed <t:{stamp}:R>.", mention_author=False)
-            return
-        days, rest = divmod(seconds, 86400)
-        hours, rest = divmod(rest, 3600)
-        minutes = rest // 60
-        embed = discord.Embed(title=f"{days}d {hours}h {minutes}m", description=f"Until <t:{stamp}:F> (<t:{stamp}:R>)", color=discord.Color.light_grey())
-        await ctx.reply(embed=embed, mention_author=False)
-
-    @commands.command(name="daysuntil")
-    async def daysuntil(self, ctx, date: str):
-        """Tells you how many days are left until a date. Usage: !daysuntil 2026-12-25"""
-        moment = parse_when(date)
-        if moment is None:
-            await ctx.reply("Use a date like `2026-12-25`.", mention_author=False)
-            return
-        days = (moment.date() - datetime.now(timezone.utc).date()).days
-        if days == 0:
-            text = "That's today."
-        elif days > 0:
-            text = f"**{days:,}** day(s) to go."
-        else:
-            text = f"That was **{-days:,}** day(s) ago."
-        await ctx.reply(embed=discord.Embed(description=text, color=discord.Color.light_grey()), mention_author=False)
-
-    @commands.command(name="epoch", aliases=["unix"])
-    async def epoch(self, ctx, *, value: str = "now"):
-        """Converts between Unix time and a UTC date. Usage: !epoch 1798221600 or !epoch 2026-12-25 18:00"""
-        value = value.strip()
-        if value.lower() == "now":
-            moment = datetime.now(timezone.utc)
-        elif re.fullmatch(r"\d{1,11}", value):
-            try:
-                moment = datetime.fromtimestamp(int(value), timezone.utc)
-            except (OverflowError, OSError, ValueError):
-                await ctx.reply("That number is out of range.", mention_author=False)
-                return
-        else:
-            moment = parse_when(value)
-            if moment is None:
-                await ctx.reply("Give `now`, a Unix number, or a UTC date like `2026-12-25 18:00`.", mention_author=False)
-                return
-        embed = discord.Embed(title=str(int(moment.timestamp())), description=f"{moment:%Y-%m-%d %H:%M:%S} UTC\n<t:{int(moment.timestamp())}:F>", color=discord.Color.light_grey())
-        await ctx.reply(embed=embed, mention_author=False)
-
-    # Colours
-    @commands.command(name="palette")
-    async def palette(self, ctx, hex_code: str):
-        """Builds a five-colour palette from one hex colour. Usage: !palette #5865F2"""
-        text = hex_code.lstrip("#")
-        if not re.fullmatch(r"[0-9a-fA-F]{6}", text):
-            await ctx.reply("Give a six-digit hex colour like `#5865F2`.", mention_author=False)
-            return
-        red, green, blue = (int(text[i:i + 2], 16) / 255 for i in (0, 2, 4))
-        hue, light, sat = colorsys.rgb_to_hls(red, green, blue)
-
-        def make(shift, lightness=None):
-            r, g, b = colorsys.hls_to_rgb((hue + shift) % 1.0, light if lightness is None else lightness, sat)
-            return f"#{round(r * 255):02X}{round(g * 255):02X}{round(b * 255):02X}"
-
-        swatches = [("Base", f"#{text.upper()}"), ("Complement", make(0.5)), ("Analogous", make(1 / 12)), ("Analogous", make(-1 / 12)), ("Lighter", make(0, min(0.9, light + 0.25)))]
-        embed = discord.Embed(title="Palette", color=int(text, 16))
-        for name, code in swatches:
-            embed.add_field(name=name, value=f"`{code}`")
-        await ctx.reply(embed=embed, mention_author=False)
-
-    # Web lookups
-    @commands.command(name="pypi")
-    async def pypi(self, ctx, package: str):
-        """Looks up a Python package on PyPI. Usage: !pypi requests"""
-        if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]{0,99}", package):
-            await ctx.reply("That isn't a valid package name.", mention_author=False)
-            return
-        try:
-            data = await self.fetch_json(f"https://pypi.org/pypi/{quote(package)}/json")
-        except Exception:
-            await ctx.reply("PyPI isn't answering right now. Try again soon.", mention_author=False)
-            return
-        if data is None:
-            await ctx.reply("I couldn't find that package.", mention_author=False)
-            return
-        info = data.get("info", {})
-        embed = discord.Embed(title=f"{info.get('name', package)} {info.get('version', '')}".strip(), description=(info.get("summary") or "No summary.")[:500], url=info.get("package_url"), color=discord.Color.light_grey())
-        if info.get("author"):
-            embed.add_field(name="Author", value=str(info["author"])[:200])
-        if info.get("license"):
-            embed.add_field(name="License", value=str(info["license"]).splitlines()[0][:100])
-        if info.get("requires_python"):
-            embed.add_field(name="Python", value=str(info["requires_python"])[:100])
-        embed.add_field(name="Install", value=f"`pip install {info.get('name', package)}`", inline=False)
-        await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
-
-    @commands.command(name="crypto")
-    async def crypto(self, ctx, coin: str = "bitcoin"):
-        """Shows a cryptocurrency price in US dollars. Usage: !crypto eth"""
-        key = COINS.get(coin.lower(), coin.lower())
-        if not re.fullmatch(r"[a-z0-9-]{1,50}", key):
-            await ctx.reply("Use a coin name like `bitcoin` or a symbol like `btc`.", mention_author=False)
-            return
-        try:
-            data = await self.fetch_json(f"https://api.coingecko.com/api/v3/simple/price?ids={key}&vs_currencies=usd&include_24hr_change=true")
-        except Exception:
-            await ctx.reply("The price service isn't answering right now. Try again soon.", mention_author=False)
-            return
-        if not data or key not in data:
-            await ctx.reply("I couldn't find that coin. Try its full name, like `ethereum`.", mention_author=False)
-            return
-        price = data[key].get("usd")
-        change = data[key].get("usd_24h_change")
-        embed = discord.Embed(title=key.replace("-", " ").title(), description=f"**${price:,.6g}**" if price is not None else "No price available.", color=discord.Color.gold())
-        if change is not None:
-            embed.add_field(name="24 hour change", value=f"{'📈' if change >= 0 else '📉'} {change:+.2f}%")
-        embed.set_footer(text="Prices are for information only.")
-        await ctx.reply(embed=embed, mention_author=False)
+    async def countrole(self, ctx, *, role: discord.Role):
+        """Counts the members who have a role. Usage: !countrole @Moderator"""
+        humans = sum(1 for m in role.members if not m.bot)
+        await self.say(ctx, f"**{role.name}** has **{len(role.members):,}** member(s), {humans:,} human and {len(role.members) - humans:,} bot.")
 
 
 async def setup(bot):

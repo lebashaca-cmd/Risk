@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-11T22:59:40+00:00",
+  "generatedAt": "2026-11-11T23:11:46+00:00",
   "prefixes": [
     "!",
     "?",
@@ -117,22 +117,13 @@
       "permission": null
     },
     {
-      "name": "addemoji",
+      "name": "adddays",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Adds a custom emoji from an image link or attachment.",
+      "description": "Adds (or subtracts) days from a date.",
       "examples": [
-        "party https://example.com/party.png"
-      ],
-      "permission": "Manage Expressions"
-    },
-    {
-      "name": "admins",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Lists the members with Administrator permission.",
-      "examples": [
-        ""
+        "2026-11-11 100,",
+        "`today` as the date"
       ],
       "permission": null
     },
@@ -147,12 +138,12 @@
       "permission": null
     },
     {
-      "name": "age",
+      "name": "anagram",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Works out an age and the next birthday from a date.",
+      "description": "Checks whether two words are anagrams.",
       "examples": [
-        "2000-05-17"
+        "listen silent"
       ],
       "permission": null
     },
@@ -167,22 +158,22 @@
       "permission": "Manage Server"
     },
     {
+      "name": "atbash",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Atbash cipher (a becomes z, b becomes y).",
+      "examples": [
+        "hello"
+      ],
+      "permission": null
+    },
+    {
       "name": "avatar",
       "kind": "prefix",
       "category": "Utility",
       "description": "Shows someone's avatar in full size.",
       "examples": [
         "@user"
-      ],
-      "permission": null
-    },
-    {
-      "name": "average",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Gives the mean, median, mode, range and sum of some numbers.",
-      "examples": [
-        "4 8 15 16 23 42"
       ],
       "permission": null
     },
@@ -227,53 +218,12 @@
       "permission": null
     },
     {
-      "name": "bmi",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Works out body mass index from kg and cm, or lb and inches.",
-      "examples": [
-        "70 175",
-        "154 69 imperial"
-      ],
-      "permission": null
-    },
-    {
-      "name": "boosters",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Lists the members boosting the server.",
-      "examples": [
-        ""
-      ],
-      "permission": null
-    },
-    {
       "name": "botinfo",
       "kind": "prefix",
       "category": "Utility",
       "description": "Shows stats about the bot.",
       "examples": [
         ""
-      ],
-      "permission": null
-    },
-    {
-      "name": "bots",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Lists the bots in this server.",
-      "examples": [
-        ""
-      ],
-      "permission": null
-    },
-    {
-      "name": "caesar",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Shifts the letters of some text, a Caesar cipher.",
-      "examples": [
-        "3 hello"
       ],
       "permission": null
     },
@@ -288,6 +238,16 @@
       "permission": null
     },
     {
+      "name": "camelcase",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts text to camelCase.",
+      "examples": [
+        "hello big world"
+      ],
+      "permission": null
+    },
+    {
       "name": "channelinfo",
       "kind": "prefix",
       "category": "Utility",
@@ -298,12 +258,12 @@
       "permission": null
     },
     {
-      "name": "charinfo",
+      "name": "circle",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Shows the Unicode name and code of each character.",
+      "description": "Circle circumference and area from a radius.",
       "examples": [
-        "é"
+        "5"
       ],
       "permission": null
     },
@@ -318,32 +278,32 @@
       "permission": null
     },
     {
-      "name": "convert",
+      "name": "countrole",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Converts length, mass, volume, speed and temperature units.",
+      "description": "Counts the members who have a role.",
       "examples": [
-        "10 km to mi"
+        "@Moderator"
       ],
       "permission": null
     },
     {
-      "name": "countdown",
+      "name": "createdat",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Counts down to a UTC date and time.",
+      "description": "Shows when an account was created.",
       "examples": [
-        "2026-12-25 18:00"
+        "@user"
       ],
       "permission": null
     },
     {
-      "name": "crypto",
+      "name": "datediff",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Shows a cryptocurrency price in US dollars.",
+      "description": "Days between two dates.",
       "examples": [
-        "eth"
+        "2026-01-01 2026-12-25"
       ],
       "permission": null
     },
@@ -358,12 +318,12 @@
       "permission": null
     },
     {
-      "name": "daysuntil",
+      "name": "dedupe",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Tells you how many days are left until a date.",
+      "description": "Removes repeated words (keeping the first of each).",
       "examples": [
-        "2026-12-25"
+        "a b a c b"
       ],
       "permission": null
     },
@@ -408,16 +368,6 @@
       "permission": "Manage Messages"
     },
     {
-      "name": "emojiinfo",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Shows details about a custom emoji.",
-      "examples": [
-        ":name:"
-      ],
-      "permission": null
-    },
-    {
       "name": "emojis",
       "kind": "prefix",
       "category": "Utility",
@@ -438,13 +388,22 @@
       "permission": null
     },
     {
-      "name": "epoch",
+      "name": "exponent",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Converts between Unix time and a UTC date.",
+      "description": "Raises a number to a power.",
       "examples": [
-        "1798221600",
-        "2026-12-25 18:00"
+        "2 10"
+      ],
+      "permission": null
+    },
+    {
+      "name": "factorial",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Factorial of a whole number up to 500.",
+      "examples": [
+        "10"
       ],
       "permission": null
     },
@@ -499,12 +458,32 @@
       "permission": null
     },
     {
+      "name": "hypot",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Length of the long side of a right triangle.",
+      "examples": [
+        "3 4"
+      ],
+      "permission": null
+    },
+    {
       "name": "inrole",
       "kind": "prefix",
       "category": "Utility",
       "description": "Lists members who have a role.",
       "examples": [
         "Moderator"
+      ],
+      "permission": null
+    },
+    {
+      "name": "interest",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Compound interest.",
+      "examples": [
+        "1000 5 10 (amount, yearly %, years, compounds per year)"
       ],
       "permission": null
     },
@@ -519,10 +498,10 @@
       "permission": null
     },
     {
-      "name": "joined",
+      "name": "joinposition",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Shows when someone joined and their join position.",
+      "description": "Shows which number member someone was to join.",
       "examples": [
         "@user"
       ],
@@ -539,12 +518,32 @@
       "permission": null
     },
     {
-      "name": "leetspeak",
+      "name": "kebabcase",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Writes text in leetspeak.",
+      "description": "Converts text to kebab-case.",
       "examples": [
-        "elite hacker"
+        "Hello Big World"
+      ],
+      "permission": null
+    },
+    {
+      "name": "leapyear",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Tells you whether a year is a leap year.",
+      "examples": [
+        "2028"
+      ],
+      "permission": null
+    },
+    {
+      "name": "loan",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Monthly payment on a loan.",
+      "examples": [
+        "20000 6.5 5 (amount, yearly %, years)"
       ],
       "permission": null
     },
@@ -559,12 +558,12 @@
       "permission": null
     },
     {
-      "name": "lowercase",
+      "name": "median",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Turns text into lowercase.",
+      "description": "Median of some numbers.",
       "examples": [
-        "HELLO"
+        "3 9 1 7"
       ],
       "permission": null
     },
@@ -579,6 +578,26 @@
       "permission": null
     },
     {
+      "name": "mode",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Most common number(s).",
+      "examples": [
+        "1 2 2 3 3 3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "moonphase",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "The moon phase for a date.",
+      "examples": [
+        "2026-12-25"
+      ],
+      "permission": null
+    },
+    {
       "name": "morse",
       "kind": "prefix",
       "category": "Utility",
@@ -589,32 +608,74 @@
       "permission": null
     },
     {
-      "name": "newest",
+      "name": "nato",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Lists the members who joined most recently.",
+      "description": "Spells text with the NATO phonetic alphabet.",
       "examples": [
-        ""
+        "risk"
       ],
       "permission": null
     },
     {
-      "name": "oldest",
+      "name": "ncr",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Lists the members who joined first.",
+      "description": "Ways to choose r things from n (order doesn't matter).",
       "examples": [
-        "2"
+        "52 5"
       ],
       "permission": null
     },
     {
-      "name": "palette",
+      "name": "npr",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Builds a five-colour palette from one hex colour.",
+      "description": "Ways to arrange r things from n (order matters).",
       "examples": [
-        "#5865F2"
+        "10 3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "ordinal",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Writes a number as 1st, 2nd, 3rd.",
+      "examples": [
+        "22"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pace",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Running pace and speed.",
+      "examples": [
+        "5 27:30 (distance, time as minutes",
+        "mm:ss",
+        "h:mm:ss)"
+      ],
+      "permission": null
+    },
+    {
+      "name": "palindrome",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Checks whether text reads the same backwards.",
+      "examples": [
+        "A man a plan a canal Panama"
+      ],
+      "permission": null
+    },
+    {
+      "name": "passphrase",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "DMs you a random passphrase of 3 to 8 words.",
+      "examples": [
+        "5"
       ],
       "permission": null
     },
@@ -629,22 +690,32 @@
       "permission": null
     },
     {
-      "name": "percent",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Works out percentages between two numbers.",
-      "examples": [
-        "20 150"
-      ],
-      "permission": null
-    },
-    {
       "name": "permissions",
       "kind": "prefix",
       "category": "Utility",
       "description": "Lists the permissions a member has here.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "piglatin",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Translates to pig latin.",
+      "examples": [
+        "hello world"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pin",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "DMs you a random PIN of 4 to 10 digits.",
+      "examples": [
+        "6"
       ],
       "permission": null
     },
@@ -670,22 +741,62 @@
       "permission": null
     },
     {
-      "name": "pypi",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Looks up a Python package on PyPI.",
-      "examples": [
-        "requests"
-      ],
-      "permission": null
-    },
-    {
       "name": "qr",
       "kind": "prefix",
       "category": "Utility",
       "description": "Makes a QR code from text or a link.",
       "examples": [
         "https://example.com"
+      ],
+      "permission": null
+    },
+    {
+      "name": "quadratic",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Solves ax^2 + bx + c = 0.",
+      "examples": [
+        "1 -3 2"
+      ],
+      "permission": null
+    },
+    {
+      "name": "randcolor",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Picks a random colour.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "randomhex",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "DMs you a random hex string (8 to 64 characters).",
+      "examples": [
+        "32"
+      ],
+      "permission": null
+    },
+    {
+      "name": "randommember",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Picks a random member, optionally from a role.",
+      "examples": [
+        "@role"
+      ],
+      "permission": null
+    },
+    {
+      "name": "readtime",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "How long some text takes to read aloud and silently.",
+      "examples": [
+        "<text>"
       ],
       "permission": null
     },
@@ -710,16 +821,6 @@
       "permission": null
     },
     {
-      "name": "removeemoji",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Deletes a custom emoji from this server.",
-      "examples": [
-        ":party:"
-      ],
-      "permission": "Manage Expressions"
-    },
-    {
       "name": "roleinfo",
       "kind": "prefix",
       "category": "Utility",
@@ -740,22 +841,32 @@
       "permission": null
     },
     {
-      "name": "roman",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Converts a number to a Roman numeral, or back.",
-      "examples": [
-        "2026"
-      ],
-      "permission": null
-    },
-    {
       "name": "rot13",
       "kind": "prefix",
       "category": "Utility",
       "description": "Applies the ROT13 letter swap.",
       "examples": [
         "hello"
+      ],
+      "permission": null
+    },
+    {
+      "name": "salary",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Turns an hourly wage into weekly, monthly and yearly pay.",
+      "examples": [
+        "22.50 40"
+      ],
+      "permission": null
+    },
+    {
+      "name": "scientific",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Writes a number in scientific notation.",
+      "examples": [
+        "123456"
       ],
       "permission": null
     },
@@ -788,12 +899,32 @@
       "permission": null
     },
     {
-      "name": "slugify",
+      "name": "shuffle",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Turns text into a url-friendly slug.",
+      "description": "Shuffles the words you give.",
       "examples": [
-        "My Great Post!"
+        "one two three four"
+      ],
+      "permission": null
+    },
+    {
+      "name": "simplify",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Simplifies a fraction.",
+      "examples": [
+        "18 24"
+      ],
+      "permission": null
+    },
+    {
+      "name": "snakecase",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Converts text to snake_case.",
+      "examples": [
+        "Hello Big World"
       ],
       "permission": null
     },
@@ -838,12 +969,52 @@
       "permission": null
     },
     {
+      "name": "splitbill",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Splits a bill between people with an optional tip %.",
+      "examples": [
+        "84.50 4 18"
+      ],
+      "permission": null
+    },
+    {
+      "name": "sqrt",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Square root of a number.",
+      "examples": [
+        "144"
+      ],
+      "permission": null
+    },
+    {
+      "name": "stdev",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Standard deviation and mean of some numbers.",
+      "examples": [
+        "2 4 4 4 5 5 7 9"
+      ],
+      "permission": null
+    },
+    {
       "name": "testvars",
       "kind": "prefix",
       "category": "Utility",
       "description": "Shows what a message looks like with its {variables} filled in, using you as the member.",
       "examples": [
         "Welcome {user.mention}, you are the {ordinal} member!"
+      ],
+      "permission": null
+    },
+    {
+      "name": "texthex",
+      "kind": "prefix",
+      "category": "Utility",
+      "description": "Turns text into hex bytes.",
+      "examples": [
+        "hello"
       ],
       "permission": null
     },
@@ -878,16 +1049,6 @@
       "permission": null
     },
     {
-      "name": "titlecase",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Turns text Into Title Case.",
-      "examples": [
-        "the quick brown fox"
-      ],
-      "permission": null
-    },
-    {
       "name": "todo",
       "kind": "prefix",
       "category": "Utility",
@@ -898,22 +1059,22 @@
       "permission": null
     },
     {
-      "name": "uppercase",
+      "name": "unhex",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Turns text into UPPERCASE.",
+      "description": "Turns hex bytes back into text.",
       "examples": [
-        "hello"
+        "68 65 6c 6c 6f"
       ],
       "permission": null
     },
     {
-      "name": "urlencode",
+      "name": "urldecode",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Encodes or decodes text for use in a link.",
+      "description": "Decodes %20 style text from a link.",
       "examples": [
-        "encode hello world"
+        "hello%20world"
       ],
       "permission": null
     },
@@ -924,16 +1085,6 @@
       "description": "Shows information about a user.",
       "examples": [
         "@user"
-      ],
-      "permission": null
-    },
-    {
-      "name": "uuid",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Generates random UUIDs.",
-      "examples": [
-        "3"
       ],
       "permission": null
     },
@@ -958,12 +1109,12 @@
       "permission": null
     },
     {
-      "name": "whohas",
+      "name": "weeknumber",
       "kind": "prefix",
       "category": "Utility",
-      "description": "Lists the members that have a role.",
+      "description": "ISO week number of a date.",
       "examples": [
-        "@Moderators"
+        "2026-12-25"
       ],
       "permission": null
     },
@@ -974,16 +1125,6 @@
       "description": "Shows the summary of a Wikipedia article.",
       "examples": [
         "Alan Turing"
-      ],
-      "permission": null
-    },
-    {
-      "name": "wordcount",
-      "kind": "prefix",
-      "category": "Utility",
-      "description": "Counts the words, characters and sentences in some text.",
-      "examples": [
-        "some text here"
       ],
       "permission": null
     },
@@ -1650,6 +1791,16 @@
       "permission": null
     },
     {
+      "name": "bandname",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Makes up a band name.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "bigtext",
       "kind": "prefix",
       "category": "Fun",
@@ -1690,6 +1841,16 @@
       "permission": null
     },
     {
+      "name": "boop",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Boops someone on the nose.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "boot",
       "kind": "prefix",
       "category": "Fun",
@@ -1700,12 +1861,12 @@
       "permission": null
     },
     {
-      "name": "bubble",
+      "name": "capitalquiz",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Turns your message into bubble wrap, one pop per letter.",
+      "description": "Names a country; the first person to give its capital wins.",
       "examples": [
-        "pop me"
+        ""
       ],
       "permission": null
     },
@@ -1720,12 +1881,12 @@
       "permission": null
     },
     {
-      "name": "catfact",
+      "name": "cheer",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Tells a random cat fact.",
+      "description": "Cheers someone on.",
       "examples": [
-        ""
+        "@user"
       ],
       "permission": null
     },
@@ -1750,6 +1911,16 @@
       "permission": null
     },
     {
+      "name": "coffee",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Hands someone a coffee.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "coinflip",
       "kind": "prefix",
       "category": "Fun",
@@ -1770,10 +1941,10 @@
       "permission": null
     },
     {
-      "name": "connect4",
+      "name": "cookie",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Plays Connect 4 against another member with buttons.",
+      "description": "Gives someone a cookie.",
       "examples": [
         "@user"
       ],
@@ -1840,16 +2011,6 @@
       "permission": null
     },
     {
-      "name": "duel",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Fights another member in a turn-based button duel.",
-      "examples": [
-        "@user"
-      ],
-      "permission": null
-    },
-    {
       "name": "emojify",
       "kind": "prefix",
       "category": "Fun",
@@ -1870,6 +2031,16 @@
       "permission": null
     },
     {
+      "name": "facepalm",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Facepalms at someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "fact",
       "kind": "prefix",
       "category": "Fun",
@@ -1880,12 +2051,22 @@
       "permission": null
     },
     {
-      "name": "fakeban",
+      "name": "fancy",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Pretends to ban someone (nobody is banned).",
+      "description": "Writes text in fancy script letters.",
       "examples": [
-        "@user"
+        "hello there"
+      ],
+      "permission": null
+    },
+    {
+      "name": "fantasyname",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Makes up a fantasy character name.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1896,6 +2077,26 @@
       "description": "Starts a silly fight with someone.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "fistbump",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Fist bumps someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "flagquiz",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shows a flag; the first person to name the country wins.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -1940,26 +2141,6 @@
       "permission": null
     },
     {
-      "name": "hack",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Runs a pretend hacking animation (all fake, nothing happens).",
-      "examples": [
-        "@user"
-      ],
-      "permission": null
-    },
-    {
-      "name": "hangman",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Plays hangman: type single letters or the whole word in chat.",
-      "examples": [
-        ""
-      ],
-      "permission": null
-    },
-    {
       "name": "highfive",
       "kind": "prefix",
       "category": "Fun",
@@ -1980,40 +2161,10 @@
       "permission": null
     },
     {
-      "name": "horoscope",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Reads today's horoscope for a zodiac sign.",
-      "examples": [
-        "leo"
-      ],
-      "permission": null
-    },
-    {
-      "name": "howcute",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Rates how cute someone is.",
-      "examples": [
-        "@user"
-      ],
-      "permission": null
-    },
-    {
       "name": "hug",
       "kind": "prefix",
       "category": "Fun",
       "description": "Hugs someone.",
-      "examples": [
-        "@user"
-      ],
-      "permission": null
-    },
-    {
-      "name": "iq",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Reveals someone's completely made-up IQ.",
       "examples": [
         "@user"
       ],
@@ -2040,32 +2191,22 @@
       "permission": null
     },
     {
-      "name": "lenny",
+      "name": "laugh",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Adds a lenny face to your message.",
-      "examples": [
-        "nice"
-      ],
-      "permission": null
-    },
-    {
-      "name": "luck",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Shows how lucky someone is today.",
+      "description": "Laughs (with someone, not at them).",
       "examples": [
         "@user"
       ],
       "permission": null
     },
     {
-      "name": "mathrace",
+      "name": "minesweeper",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Race to solve a math problem. First correct answer wins.",
+      "description": "Plays minesweeper with spoiler tiles: click a tile to reveal it.",
       "examples": [
-        ""
+        "8 10"
       ],
       "permission": null
     },
@@ -2090,20 +2231,20 @@
       "permission": null
     },
     {
-      "name": "neverhaveiever",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Posts a Never Have I Ever prompt.",
-      "examples": [
-        ""
-      ],
-      "permission": null
-    },
-    {
       "name": "nickgen",
       "kind": "prefix",
       "category": "Fun",
       "description": "Suggests a silly nickname.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "nom",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Nibbles on someone (gently).",
       "examples": [
         "@user"
       ],
@@ -2140,12 +2281,22 @@
       "permission": null
     },
     {
-      "name": "pickup",
+      "name": "pirate",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Sends a cheesy pickup line.",
+      "description": "Gives you a pirate name.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "pizza",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shares a slice of pizza.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -2170,12 +2321,12 @@
       "permission": null
     },
     {
-      "name": "quote",
+      "name": "quickdraw",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Shares a short inspirational line.",
+      "description": "Western duel: when I say DRAW, type bang first. Typing it early loses.",
       "examples": [
-        ""
+        "@user"
       ],
       "permission": null
     },
@@ -2186,16 +2337,6 @@
       "description": "Rates anything out of 10.",
       "examples": [
         "pineapple pizza"
-      ],
-      "permission": null
-    },
-    {
-      "name": "reactiontest",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Tests your reaction time with a button.",
-      "examples": [
-        ""
       ],
       "permission": null
     },
@@ -2220,16 +2361,6 @@
       "permission": null
     },
     {
-      "name": "roast",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Roasts someone, all in good fun.",
-      "examples": [
-        "@user"
-      ],
-      "permission": null
-    },
-    {
       "name": "roll",
       "kind": "prefix",
       "category": "Fun",
@@ -2250,12 +2381,22 @@
       "permission": null
     },
     {
-      "name": "russianroulette",
+      "name": "rpsls",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Pulls the trigger in a harmless game of chance.",
+      "description": "Rock paper scissors lizard spock against the bot.",
       "examples": [
-        ""
+        "spock"
+      ],
+      "permission": null
+    },
+    {
+      "name": "salute",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Salutes someone.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -2290,26 +2431,6 @@
       "permission": null
     },
     {
-      "name": "shout",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Shouts your message in capital letters.",
-      "examples": [
-        "hello everyone"
-      ],
-      "permission": null
-    },
-    {
-      "name": "shrug",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Adds a shrug to your message.",
-      "examples": [
-        "no idea"
-      ],
-      "permission": null
-    },
-    {
       "name": "slap",
       "kind": "prefix",
       "category": "Fun",
@@ -2320,12 +2441,42 @@
       "permission": null
     },
     {
-      "name": "spoiler",
+      "name": "smallcaps",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Hides each word of your message behind a spoiler.",
+      "description": "Writes text in small capitals.",
       "examples": [
-        "the butler did it"
+        "hello there"
+      ],
+      "permission": null
+    },
+    {
+      "name": "snuggle",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Snuggles up to someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "spiritanimal",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Finds someone's spirit animal (it never changes).",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "stare",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Stares at someone.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -2350,20 +2501,10 @@
       "permission": null
     },
     {
-      "name": "tableflip",
+      "name": "tarot",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Flips a table.",
-      "examples": [
-        "so annoying"
-      ],
-      "permission": null
-    },
-    {
-      "name": "thisorthat",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Asks a this-or-that question with reactions.",
+      "description": "Draws three tarot cards for past, present and future (just for fun).",
       "examples": [
         ""
       ],
@@ -2386,6 +2527,16 @@
       "description": "Starts a game of tic-tac-toe with someone.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tiny",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Writes text in tiny raised letters.",
+      "examples": [
+        "hello there"
       ],
       "permission": null
     },
@@ -2420,42 +2571,12 @@
       "permission": null
     },
     {
-      "name": "typing",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Race to type a sentence exactly. First to finish wins.",
-      "examples": [
-        ""
-      ],
-      "permission": null
-    },
-    {
-      "name": "unflip",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Puts the table back.",
-      "examples": [
-        "sorry"
-      ],
-      "permission": null
-    },
-    {
       "name": "uwu",
       "kind": "prefix",
       "category": "Fun",
       "description": "Turns text into uwu speak.",
       "examples": [
         "hello there"
-      ],
-      "permission": null
-    },
-    {
-      "name": "vibe",
-      "kind": "prefix",
-      "category": "Fun",
-      "description": "Checks someone's vibe for today.",
-      "examples": [
-        "@user"
       ],
       "permission": null
     },
@@ -2470,12 +2591,32 @@
       "permission": null
     },
     {
-      "name": "wheel",
+      "name": "whisper",
       "kind": "prefix",
       "category": "Fun",
-      "description": "Spins a wheel with your comma-separated options.",
+      "description": "Says something quietly.",
       "examples": [
-        "pizza, sushi, tacos"
+        "i have a secret"
+      ],
+      "permission": null
+    },
+    {
+      "name": "wink",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Winks at someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "wordle",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Plays Wordle: guess the 5-letter word in 6 tries by sending guesses in chat.",
+      "examples": [
+        "(type stop to quit)"
       ],
       "permission": null
     },
@@ -2486,6 +2627,26 @@
       "description": "Asks a would-you-rather question.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "yeet",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Yeets someone into the distance.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "zalgo",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Makes text look cursed and glitchy.",
+      "examples": [
+        "hello"
       ],
       "permission": null
     },
@@ -3060,6 +3221,16 @@
       "permission": null
     },
     {
+      "name": "anniversaries",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists members whose join anniversary is this month.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "approve",
       "kind": "prefix",
       "category": "Community",
@@ -3104,6 +3275,16 @@
       "kind": "prefix",
       "category": "Community",
       "description": "Shows the role new members get automatically.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "bingo",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Makes a chat bingo card to play along with.",
       "examples": [
         ""
       ],
@@ -3170,6 +3351,16 @@
       "permission": "Manage Server"
     },
     {
+      "name": "bracket",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Makes a random tournament bracket.",
+      "examples": [
+        "Ann, Bob, Cy, Dee"
+      ],
+      "permission": null
+    },
+    {
       "name": "checkin",
       "kind": "prefix",
       "category": "Community",
@@ -3220,6 +3411,16 @@
       "permission": "Manage Server"
     },
     {
+      "name": "debate",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a fun debate topic.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "deny",
       "kind": "prefix",
       "category": "Community",
@@ -3228,6 +3429,77 @@
         "12 not right now"
       ],
       "permission": "Manage Messages"
+    },
+    {
+      "name": "draftorder",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shuffles names into a random order.",
+      "examples": [
+        "Ann, Bob, Cy"
+      ],
+      "permission": null
+    },
+    {
+      "name": "event",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Lists upcoming events.",
+      "examples": [
+        ", !event add in 2h Movie night, !event join 3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "event add",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Creates an event.",
+      "examples": [
+        "in 2h30m Movie night,",
+        "2026-12-01 18:00 Game night (UTC)"
+      ],
+      "permission": null
+    },
+    {
+      "name": "event cancel",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Cancels an event (the host or someone who can manage messages).",
+      "examples": [
+        "3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "event info",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows an event and who is going.",
+      "examples": [
+        "3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "event join",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "RSVPs to an event.",
+      "examples": [
+        "3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "event leave",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes your RSVP.",
+      "examples": [
+        "3"
+      ],
+      "permission": null
     },
     {
       "name": "giveaway",
@@ -3320,6 +3592,26 @@
       "permission": "Manage Server"
     },
     {
+      "name": "hottake",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a harmless hot take to argue about.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "icebreaker",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a random icebreaker question.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "intro",
       "kind": "prefix",
       "category": "Community",
@@ -3371,6 +3663,47 @@
       "permission": null
     },
     {
+      "name": "lfg",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Posts a looking-for-group message with a join button.",
+      "examples": [
+        "4 Minecraft survival night,",
+        "5 \"Rocket League\" ranked"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mygames",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows the games someone plays.",
+      "examples": [
+        "@user, !mygames add Valorant, !mygames remove Valorant"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mygames add",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Adds a game to your list (up to 15).",
+      "examples": [
+        "Valorant"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mygames remove",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes a game from your list.",
+      "examples": [
+        "Valorant"
+      ],
+      "permission": null
+    },
+    {
       "name": "note",
       "kind": "prefix",
       "category": "Community",
@@ -3409,6 +3742,56 @@
         "@user 2"
       ],
       "permission": "Manage Messages"
+    },
+    {
+      "name": "pairup",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Pairs up random members from a role (or your voice channel).",
+      "examples": [
+        "@role"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pronouns",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows someone's pronouns.",
+      "examples": [
+        "@user, !pronouns set she/her, !pronouns clear"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pronouns clear",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Removes your pronouns.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "pronouns set",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Sets your pronouns.",
+      "examples": [
+        "she/her"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pulse",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows how active the server has been (messages over 1, 7 and 30 days and the busiest channels).",
+      "examples": [
+        ""
+      ],
+      "permission": null
     },
     {
       "name": "qotd",
@@ -3589,6 +3972,26 @@
         "1. Be kind. 2. No spam."
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "shoutout",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Gives someone a public shoutout.",
+      "examples": [
+        "@user thanks for the help today"
+      ],
+      "permission": null
+    },
+    {
+      "name": "spotlight",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Shows today's member spotlight (the same person all day).",
+      "examples": [
+        ""
+      ],
+      "permission": null
     },
     {
       "name": "starboard",
@@ -3925,6 +4328,16 @@
         "#verify @Member"
       ],
       "permission": "Manage Roles"
+    },
+    {
+      "name": "whoplays",
+      "kind": "prefix",
+      "category": "Community",
+      "description": "Finds members who listed a game.",
+      "examples": [
+        "Minecraft"
+      ],
+      "permission": null
     },
     {
       "name": "delpanel",
@@ -4287,6 +4700,16 @@
       "permission": null
     },
     {
+      "name": "analogy",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Explains something with an analogy.",
+      "examples": [
+        "how the internet works"
+      ],
+      "permission": null
+    },
+    {
       "name": "ask",
       "kind": "prefix",
       "category": "AI",
@@ -4297,12 +4720,122 @@
       "permission": null
     },
     {
+      "name": "caption",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes caption ideas for a photo or post.",
+      "examples": [
+        "my dog at the park"
+      ],
+      "permission": null
+    },
+    {
       "name": "catchup",
       "kind": "prefix",
       "category": "AI",
       "description": "Summarizes the last messages in this channel so you can catch up.",
       "examples": [
         "40 (up to 80)"
+      ],
+      "permission": null
+    },
+    {
+      "name": "characterbio",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a character backstory from an idea.",
+      "examples": [
+        "a retired space pirate who bakes"
+      ],
+      "permission": null
+    },
+    {
+      "name": "codereview",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Reviews a piece of code and suggests improvements.",
+      "examples": [
+        "<paste code>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "commitmsg",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a git commit message for your changes.",
+      "examples": [
+        "fixed login bug where empty passwords passed"
+      ],
+      "permission": null
+    },
+    {
+      "name": "debatecase",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Argues both sides of a question.",
+      "examples": [
+        "should schools start later"
+      ],
+      "permission": null
+    },
+    {
+      "name": "dialogue",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a short dialogue for a scene.",
+      "examples": [
+        "two robots arguing about pizza"
+      ],
+      "permission": null
+    },
+    {
+      "name": "dndhook",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Creates a tabletop adventure hook.",
+      "examples": [
+        "haunted lighthouse"
+      ],
+      "permission": null
+    },
+    {
+      "name": "dream",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Gives a playful reading of a dream (just for fun).",
+      "examples": [
+        "I was flying over my school"
+      ],
+      "permission": null
+    },
+    {
+      "name": "emaildraft",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Drafts an email from a short description.",
+      "examples": [
+        "ask my teacher for a deadline extension, polite"
+      ],
+      "permission": null
+    },
+    {
+      "name": "etymology",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Explains where a word comes from.",
+      "examples": [
+        "salary"
+      ],
+      "permission": null
+    },
+    {
+      "name": "expand",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Expands a short note into fuller text.",
+      "examples": [
+        "meeting moved to friday"
       ],
       "permission": null
     },
@@ -4328,12 +4861,52 @@
       "permission": null
     },
     {
+      "name": "fallacy",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Spots logical fallacies in an argument.",
+      "examples": [
+        "Everyone I know likes it so it must be good"
+      ],
+      "permission": null
+    },
+    {
+      "name": "flashcards",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Makes flashcards for a topic.",
+      "examples": [
+        "photosynthesis"
+      ],
+      "permission": null
+    },
+    {
       "name": "grammar",
       "kind": "prefix",
       "category": "AI",
       "description": "Fixes spelling and grammar.",
       "examples": [
         "i dont no what to rite"
+      ],
+      "permission": null
+    },
+    {
+      "name": "haiku",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a haiku about a topic.",
+      "examples": [
+        "autumn rain"
+      ],
+      "permission": null
+    },
+    {
+      "name": "hashtags",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Suggests hashtags for a post.",
+      "examples": [
+        "sunset at the beach"
       ],
       "permission": null
     },
@@ -4348,12 +4921,112 @@
       "permission": null
     },
     {
+      "name": "keywords",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Pulls the key words and topics out of text.",
+      "examples": [
+        "<text>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "lifehack",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Suggests practical tips for an area of life.",
+      "examples": [
+        "staying focused while studying"
+      ],
+      "permission": null
+    },
+    {
+      "name": "limerick",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a limerick about a topic.",
+      "examples": [
+        "a cat who loved Mondays"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mnemonic",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Makes a memory trick for something you need to remember.",
+      "examples": [
+        "the order of the planets"
+      ],
+      "permission": null
+    },
+    {
+      "name": "namebrand",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Suggests names for a project, brand or server.",
+      "examples": [
+        "a cozy gaming server"
+      ],
+      "permission": null
+    },
+    {
+      "name": "outline",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Makes an outline for an essay, talk or video.",
+      "examples": [
+        "why sleep matters"
+      ],
+      "permission": null
+    },
+    {
+      "name": "poem",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a short poem about a topic.",
+      "examples": [
+        "friendship"
+      ],
+      "permission": null
+    },
+    {
       "name": "proscons",
       "kind": "prefix",
       "category": "AI",
       "description": "Lists pros and cons.",
       "examples": [
         "getting a dog"
+      ],
+      "permission": null
+    },
+    {
+      "name": "rap",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a short original rap verse about a topic.",
+      "examples": [
+        "pizza night"
+      ],
+      "permission": null
+    },
+    {
+      "name": "recipe",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Suggests a quick recipe from a dish or ingredients.",
+      "examples": [
+        "chicken, rice, spinach"
+      ],
+      "permission": null
+    },
+    {
+      "name": "regex",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes a regular expression from a description.",
+      "examples": [
+        "match a US phone number"
       ],
       "permission": null
     },
@@ -4369,12 +5042,72 @@
       "permission": null
     },
     {
+      "name": "rhyme",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Lists words that rhyme with a word.",
+      "examples": [
+        "orange"
+      ],
+      "permission": null
+    },
+    {
+      "name": "shellhelp",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Suggests a terminal command for a task.",
+      "examples": [
+        "find files bigger than 100MB"
+      ],
+      "permission": null
+    },
+    {
+      "name": "shorten",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Makes text shorter without losing the point.",
+      "examples": [
+        "<text>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "slogan",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Makes slogans for an idea or brand.",
+      "examples": [
+        "a bakery called Rise"
+      ],
+      "permission": null
+    },
+    {
+      "name": "sql",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Writes an SQL query from a description.",
+      "examples": [
+        "top 5 customers by total orders"
+      ],
+      "permission": null
+    },
+    {
       "name": "story",
       "kind": "prefix",
       "category": "AI",
       "description": "Writes a short story from a prompt.",
       "examples": [
         "a robot who learns to bake"
+      ],
+      "permission": null
+    },
+    {
+      "name": "studyplan",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Builds a short study plan for a subject.",
+      "examples": [
+        "7 days to learn basic Spanish"
       ],
       "permission": null
     },
@@ -4400,6 +5133,36 @@
       "permission": null
     },
     {
+      "name": "synonyms",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Lists synonyms and antonyms of a word.",
+      "examples": [
+        "happy"
+      ],
+      "permission": null
+    },
+    {
+      "name": "titles",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Suggests titles or headlines for a topic.",
+      "examples": [
+        "a video about budget travel"
+      ],
+      "permission": null
+    },
+    {
+      "name": "tonecheck",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Tells you how a message might come across.",
+      "examples": [
+        "Fine. Whatever you want."
+      ],
+      "permission": null
+    },
+    {
       "name": "translate",
       "kind": "prefix",
       "category": "AI",
@@ -4407,6 +5170,16 @@
       "examples": [
         "spanish good morning,",
         "\"brazilian portuguese\" thanks"
+      ],
+      "permission": null
+    },
+    {
+      "name": "whatif",
+      "kind": "prefix",
+      "category": "AI",
+      "description": "Explores a what-if scenario for fun.",
+      "examples": [
+        "the moon disappeared"
       ],
       "permission": null
     },

@@ -198,7 +198,7 @@ def render(data, member_avatar=None, guild_icon=None):
 
 def render_board(title, subtitle, rows, footer, guild_icon=None, guild_name=""):
     """Leaderboard picture. rows: [(rank, name, avatar_image_or_None, value_text, small_text, is_me)]. Returns PNG bytes."""
-    width, top, step = 1000, 96, 64
+    width, top, step = 1000, 96, 96
     height = top + max(1, len(rows)) * step + 70
     image = Image.new("RGB", (width, height), BG)
     d = ImageDraw.Draw(image)
@@ -213,21 +213,23 @@ def render_board(title, subtitle, rows, footer, guild_icon=None, guild_name=""):
     d.rounded_rectangle((24, top - 8, width - 24, top + max(1, len(rows)) * step), radius=16, fill=PANEL, outline=EDGE, width=1)
     if not rows:
         d.text((width // 2, top + 30), "No data yet", font=font(18), fill=MUTED, anchor="mm")
-    for i, (rank, name, avatar, value, small, me) in enumerate(rows):
+    for i, (rank, name, avatar, value, lines, me) in enumerate(rows):
         y = top + i * step
+        if isinstance(lines, str):
+            lines = [lines] if lines else []
         if me:
-            d.rounded_rectangle((34, y - 2, width - 34, y + step - 8), radius=10, fill=CHIP)
-        mid = y + (step - 8) // 2
-        d.text((72, mid), f"#{rank}", font=font(22 if rank <= 3 else 18), fill=PINK if rank <= 3 else MUTED, anchor="mm")
+            d.rounded_rectangle((34, y - 2, width - 34, y + step - 4), radius=10, fill=CHIP)
+        mid = y + (step - 12) // 2
+        d.text((72, mid), f"#{rank}", font=font(24 if rank <= 3 else 19), fill=PINK if rank <= 3 else MUTED, anchor="mm")
         if avatar:
-            av = round_image(avatar, 44)
-            image.paste(av, (116, mid - 22), av)
+            av = round_image(avatar, 56)
+            image.paste(av, (116, mid - 28), av)
         else:
-            d.ellipse((116, mid - 22, 160, mid + 22), fill=EDGE)
-        d.text((176, mid), fit(d, name, font(19), 470), font=font(19), fill=WHITE, anchor="lm")
-        d.text((width - 52, mid - 9 if small else mid), clean(value), font=font(20), fill=PINK if rank <= 3 else WHITE, anchor="rm")
-        if small:
-            d.text((width - 52, mid + 15), clean(small), font=font(13), fill=MUTED, anchor="rm")
+            d.ellipse((116, mid - 28, 172, mid + 28), fill=EDGE)
+        d.text((192, y + 6), fit(d, name, font(20), 520), font=font(20), fill=WHITE)
+        for n, line in enumerate(lines[:3]):
+            d.text((192, y + 36 + n * 18), fit(d, line, font(13), 560), font=font(13), fill=MUTED)
+        d.text((width - 52, mid), clean(value), font=font(24), fill=PINK if rank <= 3 else WHITE, anchor="rm")
     d.text((24, height - 24), clean(footer), font=font(14), fill=MUTED, anchor="lm")
     d.text((width - 24, height - 24), "Powered by Risk", font=font(14), fill=MUTED, anchor="rm")
     out = io.BytesIO()
