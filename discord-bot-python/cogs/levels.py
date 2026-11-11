@@ -208,6 +208,7 @@ class Levels(commands.Cog):
     async def rank(self, ctx, member: discord.Member = None):
         """Shows someone's level card: level, XP earned, daily average, top members and top channels. Usage: !rank @user"""
         member = member or ctx.author
+        why = "Pillow is not installed on the bot host (run: pip install Pillow, then restart)"
         if HAVE_PIL:
             try:
                 async with ctx.typing():
@@ -217,7 +218,8 @@ class Levels(commands.Cog):
                 await ctx.reply(file=discord.File(io.BytesIO(picture), filename="level.png"), mention_author=False)
                 return
             except Exception as error:
-                print(f"[levels] card failed, using the plain embed: {type(error).__name__}: {error}")
+                why = f"card failed: {type(error).__name__}: {error}"[:200]
+                print(f"[levels] {why}")
         entry = self.store.data.get(str(ctx.guild.id), {}).get(str(member.id), {"xp": 0, "msgs": 0})
         xp = entry["xp"]
         level = level_for(xp)
@@ -232,6 +234,7 @@ class Levels(commands.Cog):
         embed.add_field(name="XP", value=f"{xp:,} / {goal:,}")
         embed.add_field(name="Messages", value=f"{entry.get('msgs', 0):,}")
         embed.add_field(name="Progress", value=f"`{bar}` {int(progress * 100)}%", inline=False)
+        embed.set_footer(text=f"Showing the plain version: {why}")
         await ctx.reply(embed=embed, mention_author=False, allowed_mentions=NO_MENTIONS)
 
     @commands.command(name="levels", aliases=["xpboard"])
