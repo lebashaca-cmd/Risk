@@ -57,7 +57,7 @@ CATEGORY_BY_FILE = {
     "fun_plus": "Fun",
     "community_plus": "Community",
     "utility_plus": "Utility",
-    "ai_tools": "AI",
+    "ai_tools": "AI", "ai_more": "AI", "fun_more": "Fun", "utility_more": "Utility", "community_more": "Community",
 }
 CATEGORY_ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
 DEFAULT_HIDDEN = {"dusklogs", "duskreset"}

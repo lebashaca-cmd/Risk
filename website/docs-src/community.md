@@ -59,6 +59,15 @@ Rep thanks members who put your server invite in their Discord custom status. Wh
 
 Each member is posted once while Risk is running. If they remove the text and add it back later, they are posted again. Rep needs the **Presence intent**: turn it on in the Developer Portal (Bot, Privileged Gateway Intents), set `PRESENCE_INTENT=1` on the bot host and restart Risk. You need Manage Server to set it up.
 
+## Events, groups and member extras
+
+- **Events:** `!event add in 2h30m Movie night` or `!event add 2026-12-01 18:00 Game night` (UTC). `!event` lists them, `!event join 3` / `!event leave 3` RSVP, `!event info 3` shows who is going, `!event cancel 3` removes one (the host or a moderator).
+- **Looking for group:** `!lfg 4 Minecraft survival night` posts a card with a Join / leave button; the host closes it.
+- **Games and pronouns:** `!mygames add Valorant`, `!whoplays Valorant`, `!pronouns set she/her`.
+- **Conversation starters:** `!icebreaker`, `!debate`, `!hottake`, `!shoutout @user thanks`, `!spotlight` (today's member), `!anniversaries` (join anniversaries this month).
+- **Groups and games:** `!pairup @role`, `!bracket a, b, c, d`, `!draftorder a, b, c`, `!bingo`.
+- **Server pulse:** `!pulse` shows messages over 1, 7 and 30 days and the busiest channels.
+
 ## Good to know
 
 - Most of these settings can also be changed in the dashboard under **Community**.

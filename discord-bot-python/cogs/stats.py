@@ -72,6 +72,15 @@ class Stats(commands.Cog):
             f"🎉 {stats['won']} won / {stats['entered']} entered"
         )
 
+    @staticmethod
+    def stat_lines(stats):
+        """The same three lines of stats the text leaderboard showed, as plain text for the picture."""
+        return [
+            f"{stats['net']:,} net ({stats['wallet']:,} wallet / {stats['bank']:,} bank)",
+            f"Level {stats['level']}  -  {stats['xp']:,} XP  -  {stats['msgs']:,} messages",
+            f"{stats['streak']} day streak  -  {stats['items']} item{'s' if stats['items'] != 1 else ''}  -  {stats['won']} won / {stats['entered']} entered",
+        ]
+
     async def board_picture(self, ctx, title, subtitle, entries, footer):
         """entries: [(rank, member, value_text, small_text)]. Returns a discord.File, or None if the picture can't be drawn."""
         if not HAVE_PIL:
@@ -117,7 +126,7 @@ class Stats(commands.Cog):
             entries = []
             for index, (uid, stats) in enumerate(ranked[start:start + PER_PAGE], start=start + 1):
                 value = f"{stats[field]:,}" + (" XP" if field == "xp" else "")
-                entries.append((index, ctx.guild.get_member(uid), value, f"Level {stats['level']}  -  {stats['msgs']:,} msgs" if field in ("xp", "msgs") else f"{stats['net']:,} net  -  Level {stats['level']}"))
+                entries.append((index, ctx.guild.get_member(uid), value, self.stat_lines(stats)))
             picture = await self.board_picture(ctx, "Leaderboard", f"{label}  -  {ctx.guild.name}", entries,
                                                f"Page {page} of {pages}  -  You are {'#' + str(mine) if mine else 'unranked'}  -  !leaderboard <sort> [page]")
         if picture:
