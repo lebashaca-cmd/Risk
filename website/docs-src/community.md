@@ -49,6 +49,16 @@ Tags are short saved answers. `!tag add rules Be kind to each other` saves one, 
 
 `!sticky` keeps a message pinned at the bottom of a channel, reposting it as people talk. `!unsticky` removes it.
 
+## Rep
+
+Rep thanks members who put your server invite in their Discord custom status. When someone's custom status contains the rep text, Risk posts a pink embed with their username, profile picture, status text and the time in Central time.
+
+- `!rep text discord.gg/yourinvite` sets the text to look for. Capitals don't matter and it can sit anywhere in the status.
+- `!rep channel #rep` picks where the embeds go.
+- `!rep test` posts a sample. `!rep` shows the setup and `!rep off` turns it off.
+
+Each member is posted once while Risk is running. If they remove the text and add it back later, they are posted again. Rep needs the **Presence intent**: turn it on in the Developer Portal (Bot, Privileged Gateway Intents), set `PRESENCE_INTENT=1` on the bot host and restart Risk. You need Manage Server to set it up.
+
 ## Good to know
 
 - Most of these settings can also be changed in the dashboard under **Community**.
