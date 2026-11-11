@@ -1,11 +1,15 @@
+import asyncio
+import io
 import random
 import time
+from datetime import datetime, timedelta, timezone
 from typing import Union
 
 import discord
 from discord.ext import commands, tasks
 
 from utils.helpers import NO_MENTIONS, explain_error, message_payload
+from utils.levelcard import HAVE_PIL, open_image, render
 from utils.store import JsonStore
 
 DEFAULT_MESSAGE = "🎉 {user} reached level **{level}**!"
@@ -25,6 +29,7 @@ class Levels(commands.Cog):
         self.bot = bot
         self.store = JsonStore("levels")
         self.settings = JsonStore("level_settings")
+        self.activity = JsonStore("level_activity")  # last 30 days: per-member XP and per-channel messages, for the level card
         self.dirty = False
 
     async def cog_load(self):
@@ -34,12 +39,14 @@ class Levels(commands.Cog):
         self.flush.cancel()
         if self.dirty:
             self.store.save()
+            self.activity.save()
 
     @tasks.loop(seconds=30)
     async def flush(self):
         if self.dirty:
             self.dirty = False
             self.store.save()
+            self.activity.save()
 
     async def cog_check(self, ctx):
         if ctx.guild is None:
@@ -55,6 +62,54 @@ class Levels(commands.Cog):
         entry = self.store.data.setdefault(str(guild_id), {}).setdefault(str(user_id), {"xp": 0, "last": 0, "msgs": 0})
         entry.setdefault("msgs", 0)
         return entry
+
+    def note(self, guild_id, user_id, channel_id, xp):
+        """Counts a message in its channel and any XP it earned, keeping only the last 30 days."""
+        day = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+        guild = self.activity.data.setdefault(str(guild_id), {"xp": {}, "msgs": {}})
+        guild["msgs"].setdefault(day, {})
+        guild["msgs"][day][str(channel_id)] = guild["msgs"][day].get(str(channel_id), 0) + 1
+        if xp:
+            guild["xp"].setdefault(day, {})
+            guild["xp"][day][str(user_id)] = guild["xp"][day].get(str(user_id), 0) + xp
+        if len(guild["msgs"]) > 31 or len(guild["xp"]) > 31:
+            cutoff = (datetime.now(timezone.utc) - timedelta(days=30)).strftime("%Y-%m-%d")
+            for table in (guild["msgs"], guild["xp"]):
+                for old in [d for d in table if d < cutoff]:
+                    del table[old]
+
+    def card_data(self, guild, member):
+        entry = self.store.data.get(str(guild.id), {}).get(str(member.id), {"xp": 0, "msgs": 0})
+        xp = entry["xp"]
+        level = level_for(xp)
+        today = datetime.now(timezone.utc)
+        days = {(today - timedelta(days=i)).strftime("%Y-%m-%d"): i for i in range(30)}
+        activity = self.activity.data.get(str(guild.id), {"xp": {}, "msgs": {}})
+        mine = {1: 0, 7: 0, 30: 0}
+        channels = {}
+        for day, age in days.items():
+            gained = activity["xp"].get(day, {}).get(str(member.id), 0)
+            for span in mine:
+                if age < span:
+                    mine[span] += gained
+            for channel, count in activity["msgs"].get(day, {}).items():
+                channels[channel] = channels.get(channel, 0) + count
+        ranked = self.ranked(guild.id)
+        position = next((i for i, (uid, _) in enumerate(ranked, start=1) if uid == str(member.id)), None)
+        top = []
+        for uid, e in ranked[:5]:
+            who = guild.get_member(int(uid))
+            top.append((who.display_name if who else f"User {uid}", level_for(e["xp"]), e["xp"], uid == str(member.id)))
+        top_channels = []
+        for channel_id, count in sorted(channels.items(), key=lambda kv: kv[1], reverse=True)[:5]:
+            channel = guild.get_channel(int(channel_id))
+            if channel is not None:
+                top_channels.append((channel.name, count))
+        return {
+            "name": member.display_name, "guild_name": guild.name, "level": level, "xp": xp, "start": xp_for(level), "goal": xp_for(level + 1),
+            "rank": position, "xp_days": (mine[1], mine[7], mine[30]), "avg_days": (mine[1], round(mine[7] / 7), round(mine[30] / 30)),
+            "top_members": top, "top_channels": top_channels,
+        }
 
     def cfg(self, guild_id):
         data = self.settings.data.setdefault(str(guild_id), {})
@@ -129,14 +184,19 @@ class Levels(commands.Cog):
         entry["msgs"] += 1
         self.dirty = True
         if message.channel.id in config["noxp_channels"]:
+            self.note(message.guild.id, message.author.id, message.channel.id, 0)
             return
         if any(role.id in config["noxp_roles"] for role in getattr(message.author, "roles", [])):
+            self.note(message.guild.id, message.author.id, message.channel.id, 0)
             return
         now = int(time.time())
         if now - entry["last"] < config["cooldown"]:
+            self.note(message.guild.id, message.author.id, message.channel.id, 0)
             return
         before = level_for(entry["xp"])
-        entry["xp"] = min(MAX_XP, entry["xp"] + max(1, round(random.randint(15, 25) * config["multiplier"])))
+        gained = max(1, round(random.randint(15, 25) * config["multiplier"]))
+        entry["xp"] = min(MAX_XP, entry["xp"] + gained)
+        self.note(message.guild.id, message.author.id, message.channel.id, gained)
         entry["last"] = now
         after = level_for(entry["xp"])
         if after > before:
@@ -146,8 +206,18 @@ class Levels(commands.Cog):
     # Viewing
     @commands.command(name="rank", aliases=["level"])
     async def rank(self, ctx, member: discord.Member = None):
-        """Shows someone's level and XP. Usage: !rank @user"""
+        """Shows someone's level card: level, XP earned, daily average, top members and top channels. Usage: !rank @user"""
         member = member or ctx.author
+        if HAVE_PIL:
+            try:
+                async with ctx.typing():
+                    avatar = open_image(await member.display_avatar.replace(size=256, format="png").read())
+                    icon = open_image(await ctx.guild.icon.replace(size=128, format="png").read()) if ctx.guild.icon else None
+                    picture = await asyncio.to_thread(render, self.card_data(ctx.guild, member), avatar, icon)
+                await ctx.reply(file=discord.File(io.BytesIO(picture), filename="level.png"), mention_author=False)
+                return
+            except Exception as error:
+                print(f"[levels] card failed, using the plain embed: {type(error).__name__}: {error}")
         entry = self.store.data.get(str(ctx.guild.id), {}).get(str(member.id), {"xp": 0, "msgs": 0})
         xp = entry["xp"]
         level = level_for(xp)
