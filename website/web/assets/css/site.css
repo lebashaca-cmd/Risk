@@ -857,3 +857,4 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 .gate .lede { margin: 0; }
 .gate form { display: grid; gap: 1rem; justify-items: center; }
 .gate .fine { margin: 0; max-width: 26rem; }
+.gate [hidden] { display: none !important; }
