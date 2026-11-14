@@ -11,6 +11,7 @@ All pages sit in one flat folder and link to each other with relative links, so 
 docs.example.com/ and at example.com/docs/.
 """
 import html
+import time
 import importlib.util
 import json
 import re
@@ -386,10 +387,17 @@ def main(bot_dir):
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{html.escape(page['title'])} · Risk docs</title>
 <meta name="description" content="{desc}">
-<link rel="icon" href="/favicon.png">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<meta property="og:site_name" content="Risk docs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="{html.escape(page['title'])} · Risk docs">
+<meta property="og:description" content="{desc}">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#131314">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/favicon.png">
 <link rel="stylesheet" href="docs.css">
 <script src="docs.js" defer></script>
+<script type="module" src="/assets/js/consent.js"></script>
 </head>
 <body>
 <a class="skip" href="#content">Skip to the page</a>
@@ -414,7 +422,10 @@ def main(bot_dir):
   </main>
   {toc}
 </div>
-<footer class="foot">Risk documentation. Spotted something wrong or missing? Tell us in the support server.</footer>
+<footer class="foot">
+  <p>Risk documentation. Spotted something wrong or missing? Tell us in the support server.</p>
+  <p>&copy; {time.gmtime().tm_year} Risk. <a href="/privacy" data-main>Privacy</a> &middot; <a href="/terms" data-main>Terms</a> &middot; <a href="/accessibility" data-main>Accessibility</a> &middot; <a href="/data-deletion" data-main>Delete my data</a> &middot; <button type="button" data-consent-open>Cookie settings</button></p>
+</footer>
 </body>
 </html>
 """

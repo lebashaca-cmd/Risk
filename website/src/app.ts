@@ -92,12 +92,26 @@ function dashboardRoute(path: string): { id: string | null; base: string } | nul
   return nested ? { id: nested[1] ?? null, base: "/dashboard" } : null;
 }
 
+const SERVER_PAGES = new Set(["/accessibility", "/data-deletion"]);
+
 function render(): void {
   if (!outlet) return;
   cleanup?.();
   cleanup = null;
 
   const path = normalize(window.location.pathname);
+  if (firstRender && outlet.hasAttribute("data-prerendered")) {
+    // The server already sent this page as real HTML (privacy, terms, accessibility, data deletion), so leave it alone.
+    firstRender = false;
+    outlet.removeAttribute("data-prerendered");
+    applyStatus();
+    return;
+  }
+  if (SERVER_PAGES.has(path)) {
+    window.location.reload();
+    return;
+  }
+  outlet.removeAttribute("data-prerendered");
   const dash = dashboardRoute(path);
   let node: HTMLElement;
   switch (dash ? "dashboard" : path) {

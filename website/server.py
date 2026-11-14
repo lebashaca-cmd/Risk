@@ -1,20 +1,36 @@
 import asyncio
+import html
 import json
 import os
 import re
 import time
 from collections import defaultdict, deque
 from pathlib import Path
+from urllib.parse import urlsplit
 
 import aiohttp
 from aiohttp import web
 
+import legal
 from dashboard import Dashboard
 
 ROOT = Path(__file__).resolve().parent
 WEB_DIR = ROOT / "web"
 DATA_FILE = ROOT / "data" / "bot.json"
-PAGES = {"/", "/commands", "/terms", "/privacy", "/vip", "/staff", "/status"}
+PAGES = {"/", "/commands", "/terms", "/privacy", "/accessibility", "/data-deletion", "/vip", "/staff", "/status"}
+SITEMAP_PAGES = ["/", "/commands", "/vip", "/status", "/terms", "/privacy", "/accessibility", "/data-deletion"]
+META = {
+    "/": ("Risk: tickets, logs and moderation for Discord", "Risk is a Discord bot for ticket channels, server logs, welcome messages, AI answers and TikTok, YouTube, GitHub and Spotify lookups."),
+    "/commands": ("Commands · Risk", "Every Risk command with what it does and how to use it, grouped by what it's for."),
+    "/terms": ("Terms of Service · Risk", "The rules for using the Risk Discord bot and its website."),
+    "/privacy": ("Privacy Policy · Risk", "What Risk saves, why, how cookies and tracking work on this site, and your choices."),
+    "/accessibility": ("Accessibility statement · Risk", "How the Risk website supports keyboard, screen reader and low-vision use, and how to report a problem."),
+    "/data-deletion": ("Delete my data · Risk", "Ask Risk to delete what it has saved about you, or to send you a copy."),
+    "/vip": ("VIP · Risk", "Risk VIP plans, what each one includes and how to get one."),
+    "/staff": ("Staff · Risk", "Risk staff panel."),
+    "/status": ("Status · Risk", "Live status of the Risk Discord bot."),
+}
+DEFAULT_IMAGE = "/assets/og.png"
 STATUS_TTL = 10
 API_LIMIT = (90, 60)
 
@@ -61,6 +77,9 @@ class Settings:
         self.client_id = env("CLIENT_ID")
         self.invite_url = env("INVITE_URL")
         self.support_url = env("SUPPORT_URL")
+        self.contact_email = env("CONTACT_EMAIL")
+        self.security_contact = env("SECURITY_CONTACT")
+        self.deletion_webhook = env("DELETION_WEBHOOK_URL")
         # Basic used to be called Monthly, so the old variable names still work.
         self.vip_plans = {
             "basic": (env("VIP_BASIC_URL") or env("VIP_MONTHLY_URL"), (env("VIP_BASIC_PRICE") or env("VIP_MONTHLY_PRICE") or "$4.99")[:20]),
@@ -202,15 +221,30 @@ async def guard(request, handler):
         if request.path.startswith("/api/"):
             response = web.json_response({"error": exc.reason}, status=exc.status)
         else:
-            raise
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Content-Security-Policy"] = (
-        "default-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'; "
+            response = exc
+    return secure(response)
+
+
+SECURITY_HEADERS = {
+    "Strict-Transport-Security": "max-age=63072000; includeSubDomains",
+    "X-Frame-Options": "SAMEORIGIN",
+    "X-Content-Type-Options": "nosniff",
+    "Referrer-Policy": "strict-origin-when-cross-origin",
+    "Cross-Origin-Opener-Policy": "same-origin",
+    "Cross-Origin-Resource-Policy": "same-site",
+    "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
+    "Content-Security-Policy": (
+        "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; "
         "img-src 'self' data: https://cdn.discordapp.com; connect-src 'self'; "
         "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com"
-    )
+    ),
+}
+
+
+def secure(response):
+    """Every response, including errors, redirects and static files, carries the same protective headers."""
+    for name, value in SECURITY_HEADERS.items():
+        response.headers[name] = value
     return response
 
 
@@ -294,10 +328,168 @@ async def healthz(request):
     return web.json_response({"ok": True})
 
 
+def site_origin(request):
+    settings = request.app["settings"]
+    host = request.headers.get("X-Forwarded-Host", "").split(",")[0].strip() if settings.trust_proxy else ""
+    scheme = "https" if settings.trust_proxy or request.secure else "http"
+    return f"{scheme}://{host or request.host}"
+
+
+def prerendered(request, path):
+    settings = request.app["settings"]
+    data = read_bot_data()
+    if path == "/privacy":
+        return legal.document("Privacy Policy", data.get("privacy", {}))
+    if path == "/terms":
+        return legal.document("Terms of Service", data.get("tos", {}))
+    if path == "/accessibility":
+        return legal.accessibility(settings)
+    if path == "/data-deletion":
+        return legal.deletion_form(settings)
+    return None
+
+
+def render_shell(request, status=200, main=None, path=None):
+    """The page shell with this page's own title, description, canonical address and share image filled in."""
+    path = path or (request.path.rstrip("/") or "/")
+    origin = site_origin(request)
+    title, desc = META.get(path, ("Dashboard · Risk", "Manage Risk in your Discord server.") if path.startswith("/dashboard") or DASH_ID.fullmatch(path) else META["/"])
+    if on_dashboard_host(request) and (path == "/" or DASH_ID.fullmatch(path)):
+        title, desc = "Dashboard · Risk", "Manage Risk in your Discord server."
+    if status == 404:
+        title = "Page not found · Risk"
+    body = prerendered(request, path) if main is None else main
+    noscript = (
+        '<noscript><div class="container page"><h1>Risk</h1><p class="lede">This site needs JavaScript to show the command list and live status. '
+        "Type !commands in your Discord server to see everything Risk can do.</p></div></noscript>"
+    )
+    text = (WEB_DIR / "index.html").read_text(encoding="utf-8")
+    values = {
+        "TITLE": html.escape(title, quote=True),
+        "DESC": html.escape(desc, quote=True),
+        "URL": html.escape(origin + path, quote=True),
+        "IMAGE": html.escape(origin + DEFAULT_IMAGE, quote=True),
+        "YEAR": str(time.gmtime().tm_year),
+        "MAIN": body if body else noscript,
+        "PRERENDER_ATTR": " data-prerendered" if body else "",
+    }
+    for key, value in values.items():
+        text = text.replace("{{" + key + "}}", value)
+    return web.Response(text=text, status=status, content_type="text/html", charset="utf-8", headers={"Cache-Control": "no-cache"})
+
+
 def page(status=200):
     async def handler(request):
-        return web.FileResponse(WEB_DIR / "index.html", status=status, headers={"Cache-Control": "no-cache"})
+        return render_shell(request, status)
     return handler
+
+
+def text_response(body, content_type="text/plain", max_age=3600):
+    return web.Response(text=body, content_type=content_type, charset="utf-8", headers={"Cache-Control": f"public, max-age={max_age}"})
+
+
+async def robots(request):
+    origin = site_origin(request)
+    if on_dashboard_host(request):
+        return text_response("User-agent: *\nDisallow: /\n")
+    if on_docs_host(request):
+        return text_response(f"User-agent: *\nAllow: /\n\nSitemap: {origin}/sitemap.xml\n")
+    return text_response(
+        "User-agent: *\nAllow: /\nDisallow: /api/\nDisallow: /dashboard\nDisallow: /staff\n\n"
+        f"Sitemap: {origin}/sitemap.xml\n"
+    )
+
+
+def docs_slugs():
+    return sorted(f.stem for f in DOCS_DIR.glob("*.html"))
+
+
+async def sitemap(request):
+    origin = site_origin(request)
+    if on_dashboard_host(request):
+        raise web.HTTPNotFound()
+    if on_docs_host(request):
+        urls = [origin + ("/" if slug == "index" else f"/{slug}") for slug in docs_slugs()]
+    else:
+        urls = [origin + p for p in SITEMAP_PAGES] + [origin + ("/docs/" if slug == "index" else f"/docs/{slug}") for slug in docs_slugs()]
+    today = time.strftime("%Y-%m-%d", time.gmtime())
+    items = "".join(f"<url><loc>{html.escape(u)}</loc><lastmod>{today}</lastmod></url>" for u in urls)
+    xml = f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{items}</urlset>\n'
+    return text_response(xml, "application/xml")
+
+
+async def security_txt(request):
+    settings = request.app["settings"]
+    origin = site_origin(request)
+    contacts = []
+    for item in re.split(r"[,\s]+", settings.security_contact):
+        if item.startswith("https://") or item.startswith("mailto:"):
+            contacts.append(item)
+        elif "@" in item:
+            contacts.append("mailto:" + item)
+    if not contacts and settings.contact_email:
+        contacts.append("mailto:" + settings.contact_email)
+    if not contacts and settings.support_url.startswith("https://"):
+        contacts.append(settings.support_url)
+    if not contacts:
+        contacts.append(origin + "/accessibility#contact")
+    expires = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime(time.time() + 365 * 86400 - 3600))
+    lines = [f"Contact: {c}" for c in contacts] + [
+        f"Expires: {expires}",
+        "Preferred-Languages: en",
+        f"Canonical: {origin}/.well-known/security.txt",
+        f"Policy: {origin}/privacy",
+    ]
+    return text_response("\n".join(lines) + "\n", max_age=86400)
+
+
+async def notify_deletion(request, entry):
+    settings = request.app["settings"]
+    url = settings.deletion_webhook
+    if not re.fullmatch(r"https://(?:discord|discordapp)\.com/api/webhooks/\d+/[\w-]+", url or ""):
+        return False
+    kinds = {"delete": "delete my data", "export": "send me a copy", "both": "copy, then delete"}
+    lines = [
+        f"**Data request {entry['reference']}**: {kinds[entry['kind']]}",
+        f"User ID: `{entry['user_id']}`",
+    ]
+    if entry["server_id"]:
+        lines.append(f"Server ID: `{entry['server_id']}`")
+    if entry["reach"]:
+        lines.append("Reach them at: " + entry["reach"].replace("`", "'"))
+    if entry["details"]:
+        lines.append("Note: " + entry["details"].replace("`", "'"))
+    try:
+        async with request.app["session"].post(url, json={"content": "\n".join(lines)[:1900], "allowed_mentions": {"parse": []}}, timeout=aiohttp.ClientTimeout(total=8)) as reply:
+            return reply.status < 300
+    except (aiohttp.ClientError, asyncio.TimeoutError):
+        return False
+
+
+async def data_deletion_post(request):
+    settings = request.app["settings"]
+    origin_header = request.headers.get("Origin")
+    if origin_header and urlsplit(origin_header).netloc.lower() != urlsplit(site_origin(request)).netloc.lower():
+        return web.Response(status=403, text="That request didn't come from this site.")
+    ip = client_ip(request, settings)
+    if request.app["deletions"].limited(ip):
+        return render_shell(request, 429, main=legal.deletion_form(settings, "You've sent several requests in the last hour. Wait a while and try again, or use the support server."), path="/data-deletion")
+    try:
+        form = await request.post()
+    except (ValueError, web.HTTPException):
+        form = {}
+    entry, error = legal.parse_request(form)
+    if error == "silent":
+        return render_shell(request, 200, main=legal.confirmation("DEL-" + "0" * 8, settings), path="/data-deletion")
+    if error:
+        values = {k: str(form.get(k) or "")[:500] for k in ("kind", "user_id", "server_id", "reach", "details")}
+        return render_shell(request, 400, main=legal.deletion_form(settings, error, values), path="/data-deletion")
+    saved = request.app["deletions"].add(entry)
+    sent = await notify_deletion(request, entry)
+    print(f"[data-deletion] {entry['reference']} {entry['kind']} user={entry['user_id']} saved={saved} webhook={sent}")
+    if not saved and not sent:
+        return render_shell(request, 503, main=legal.deletion_form(settings, "We couldn't record that request. Please try again later or use the support server."), path="/data-deletion")
+    return render_shell(request, 200, main=legal.confirmation(entry["reference"], settings), path="/data-deletion")
 
 
 async def fallback(request):
@@ -346,6 +538,7 @@ def make_app():
     app["settings"] = Settings()
     app["status"] = StatusCache()
     app["hits"] = defaultdict(deque)
+    app["deletions"] = legal.DeletionStore(ROOT / "data" / "deletion-requests.json")
     app["dashboard"] = Dashboard(app["settings"], env)
     app["dashboard"].add_routes(app)
     app.on_startup.append(on_startup)
@@ -358,6 +551,11 @@ def make_app():
     app.router.add_get("/api/tos", api_tos)
     app.router.add_get("/api/privacy", api_privacy)
     app.router.add_get("/healthz", healthz)
+    app.router.add_get("/robots.txt", robots)
+    app.router.add_get("/sitemap.xml", sitemap)
+    app.router.add_get("/.well-known/security.txt", security_txt)
+    app.router.add_get("/security.txt", lambda r: web.HTTPFound("/.well-known/security.txt"))
+    app.router.add_post("/data-deletion", data_deletion_post)
     app.router.add_get("/favicon.png", lambda r: web.FileResponse(WEB_DIR / "favicon.png"))
     app.router.add_static("/assets", WEB_DIR / "assets", follow_symlinks=False)
     app.router.add_get("/{tail:.*}", fallback)

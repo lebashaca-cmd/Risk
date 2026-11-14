@@ -818,3 +818,26 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
   .sa-overview { grid-template-columns: 1fr; }
 }
 .sa-list li.sa-stack { flex-direction: column; gap: 0.1rem; align-items: flex-start; }
+
+
+/* Legal pages, forms and the cookie banner */
+.prose ul, .prose ol { margin: 0; padding-left: 1.3rem; display: grid; gap: 0.4rem; }
+.prose a { color: var(--bone); }
+.linkbutton { background: none; border: 0; padding: 0.35rem 0; font: inherit; color: inherit; cursor: pointer; text-decoration: none; }
+.linkbutton:hover { color: var(--bone); text-decoration: underline; }
+.form { display: grid; gap: 1.1rem; max-width: 32rem; }
+.field { display: grid; gap: 0.35rem; }
+.field label { font-weight: 500; color: var(--bone); }
+.field input, .field select, .field textarea { width: 100%; font: inherit; color: var(--bone); background: var(--deck); border: 1px solid var(--edge-strong); border-radius: 10px; padding: 0.7rem 0.9rem; }
+.field input:focus-visible, .field select:focus-visible, .field textarea:focus-visible { outline: 2px solid var(--bone); outline-offset: 2px; }
+.field .fine { margin: 0; }
+.form-error { border: 1px solid var(--edge-strong); border-left: 4px solid #fff; background: var(--deck); padding: 0.8rem 1rem; border-radius: 10px; color: var(--bone); max-width: 32rem; }
+.hp { position: absolute; left: -10000px; width: 1px; height: 1px; overflow: hidden; }
+.ref { font-family: var(--mono); letter-spacing: 0.04em; }
+.consent { position: fixed; z-index: 80; left: 1rem; right: 1rem; bottom: 1rem; max-width: 40rem; margin-inline: auto; padding: 1.1rem 1.25rem; background: var(--panel); color: var(--bone); border: 1px solid var(--edge-strong); border-radius: 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55); }
+.consent h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
+.consent p { margin: 0 0 0.9rem; color: var(--mist); font-size: 0.92rem; line-height: 1.55; }
+.consent a { color: var(--bone); }
+.consent-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-end; }
+@media (prefers-reduced-motion: no-preference) { .consent { animation: consent-in 0.25s var(--ease) both; } }
+@keyframes consent-in { from { opacity: 0; transform: translateY(0.6rem); } to { opacity: 1; transform: none; } }

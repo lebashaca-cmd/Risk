@@ -134,3 +134,14 @@ a.tag:hover { background: rgba(255, 255, 255, 0.16); }
   html { scroll-behavior: auto; }
   * { transition: none !important; }
 }
+
+/* Cookie banner and footer links */
+.foot a, .foot button { color: inherit; }
+.foot button { background: none; border: 0; padding: 0; font: inherit; text-decoration: underline; text-decoration-color: var(--edge-strong); text-underline-offset: 0.2em; cursor: pointer; }
+.foot p { margin: 0 0 0.4rem; }
+.consent { position: fixed; z-index: 80; left: 1rem; right: 1rem; bottom: 1rem; max-width: 40rem; margin-inline: auto; padding: 1.1rem 1.25rem; background: var(--panel); color: var(--bone); border: 1px solid var(--edge-strong); border-radius: 14px; box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55); }
+.consent h2 { font-size: 1.05rem; margin: 0 0 0.4rem; border: 0; padding: 0; }
+.consent p { margin: 0 0 0.9rem; color: var(--mist); font-size: 0.92rem; line-height: 1.55; }
+.consent-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-end; }
+.consent .btn { font: inherit; font-size: 0.92rem; padding: 0.5rem 1rem; border-radius: 10px; border: 1px solid var(--edge-strong); background: transparent; color: var(--bone); cursor: pointer; }
+.consent .btn-primary { background: var(--bone); color: #111; border-color: var(--bone); }
