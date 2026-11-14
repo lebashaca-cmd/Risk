@@ -3,3 +3,4 @@ __pycache__/
 .env
 discord-bot-python/data/
 node_modules/
+website/data/deletion-requests.json

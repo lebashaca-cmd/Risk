@@ -35,6 +35,9 @@ tags: [risk, config]
 | `DASHBOARD_KEY` | Same value as the bot |
 | `DOCS_HOST` | Site only. For example `docs.yourdomain.com`. Serves the documentation there. The docs are always at `/docs/` too |
 | `DASHBOARD_HOST` | For example `dashboard.yourdomain.com`. Turns on `dashboard.<domain>/<server id>` URLs |
+| `CONTACT_EMAIL` | Site only. Public contact address on the accessibility and data-deletion pages and in security.txt |
+| `SECURITY_CONTACT` | Site only. Address or https link for vulnerability reports (security.txt). Falls back to `CONTACT_EMAIL`, then `SUPPORT_URL` |
+| `DELETION_WEBHOOK_URL` | Site only. Discord channel webhook that receives every data-deletion request (Render's free disk is wiped on deploy) |
 | `CLIENT_ID` | The bot's application id |
 | `BOT_STATUS_URL` | Where the bot's status server answers |
 | `TRUST_PROXY` | Set so the site trusts Render's forwarded headers |

@@ -25,7 +25,10 @@ Open http://localhost:8080.
 | `CLIENT_ID` | The bot's application ID. Builds the "Add Risk to your server" link. Without it the button is hidden. |
 | `INVITE_URL` | Use your own invite link instead of building one. |
 | `INVITE_PERMISSIONS` | Override the permissions number in the invite link. |
-| `SUPPORT_URL` | Optional support server link. Also used on the VIP page. |
+| `SUPPORT_URL` | Optional support server link. Also used on the VIP page, the legal pages and security.txt. |
+| `CONTACT_EMAIL` | Optional public contact address shown on the accessibility and data-deletion pages and in security.txt. |
+| `SECURITY_CONTACT` | Optional address or https link for security reports (security.txt). Falls back to `CONTACT_EMAIL`, then `SUPPORT_URL`. |
+| `DELETION_WEBHOOK_URL` | A Discord channel webhook. Each data-deletion request is posted there. Set it: Render's free disk is wiped on every deploy, so the file copy alone can be lost. |
 | `STAFF_GUILD_ID` (bot) | The ID of your own Risk server. Staff panel access is only ever given to members of this server. |
 | `STAFF_ROLE_IDS`, `DEV_ROLE_IDS` (bot) | Optional Discord role IDs in that server that count as Staff and Developer in the panel. Comma separated. |
 | `OWNER_IDS` (bot) | Optional extra owner user IDs. The bot application's owner is always an owner. |
@@ -35,6 +38,26 @@ Open http://localhost:8080.
 | `TRUST_PROXY` | Set to `1` behind a proxy so rate limits see real visitor IPs. |
 
 Nothing secret goes in this site. The application ID is public, and the site never sees your bot token.
+
+## Security headers, legal pages and cookies
+
+- Every response (pages, static files, errors, redirects) carries Strict-Transport-Security (2 years, includeSubDomains), X-Frame-Options SAMEORIGIN, a Content-Security-Policy with `frame-ancestors 'self'`, X-Content-Type-Options nosniff, Cross-Origin-Opener-Policy same-origin, Cross-Origin-Resource-Policy same-site, Referrer-Policy and Permissions-Policy. They are set in `secure()` in `server.py`.
+- `/privacy`, `/terms`, `/accessibility` and `/data-deletion` are server-rendered HTML (see `legal.py`), so they work without JavaScript. The privacy and terms text comes from `cogs/privacy.py` and the terms cog; run `tools/export_bot_data.py` after editing them.
+- `/robots.txt`, `/sitemap.xml` and `/.well-known/security.txt` are generated per host. `security.txt` needs a contact: set `SECURITY_CONTACT`, `CONTACT_EMAIL` or `SUPPORT_URL`.
+- The cookie banner (`src/consent.ts`) holds back the only optional third-party request, Google Fonts, until the visitor allows it. The site sets no analytics or marketing cookies. If you ever add one, load it from `consent.ts` only after consent is granted.
+- Data-deletion requests are saved to `data/deletion-requests.json` (gitignored) and posted to `DELETION_WEBHOOK_URL`. Answer each reference number within 30 days, as the page promises.
+
+## Email DNS records (SPF and DMARC)
+
+These are DNS records, so they are added at the company that hosts the DNS for risk-site.xyz (not in this code). If the domain sends no email, publish:
+
+| Type | Name | Value |
+| --- | --- | --- |
+| TXT | `risk-site.xyz` | `v=spf1 -all` |
+| TXT | `_dmarc.risk-site.xyz` | `v=DMARC1; p=reject; adkim=s; aspf=s; pct=100` |
+| TXT | `*._domainkey.risk-site.xyz` | `v=DKIM1; p=` |
+
+If you send mail from the domain (for example a support@ address through a mail host), replace the SPF value with the include that host gives you, for example `v=spf1 include:_spf.example.com ~all`, turn on DKIM at the host, and start DMARC at `p=none; rua=mailto:you@risk-site.xyz` before moving to `quarantine` and then `reject`. Check the result with any SPF/DMARC checker.
 
 ## Keep the command list up to date
 
