@@ -28,7 +28,11 @@ Open http://localhost:8080.
 | `SUPPORT_URL` | Optional support server link. Also used on the VIP page, the legal pages and security.txt. |
 | `CONTACT_EMAIL` | Optional public contact address shown on the accessibility and data-deletion pages and in security.txt. |
 | `SECURITY_CONTACT` | Optional address or https link for security reports (security.txt). Falls back to `CONTACT_EMAIL`, then `SUPPORT_URL`. |
-| `DELETION_WEBHOOK_URL` | A Discord channel webhook. Each data-deletion request is posted there. Set it: Render's free disk is wiped on every deploy, so the file copy alone can be lost. |
+| `TURNSTILE_SECRET_KEY` | **Required for the data-deletion form.** The secret key of your Cloudflare Turnstile widget. Set it in Render's Environment tab only. Without it the form is switched off (it fails closed). |
+| `TURNSTILE_SITE_KEY` | Optional. Defaults to the Risk widget's public site key. |
+| `TURNSTILE_HOSTNAMES` | Optional, comma separated. Hostnames Cloudflare may report for a valid token, for example `risk-site.xyz,www.risk-site.xyz`. Defaults to the host the request came in on (localhost is refused when `TRUST_PROXY` is on). |
+| `TRUST_CLOUDFLARE` | Set to `1` when the site is behind Cloudflare. Rate limits then use the visitor's real address from `CF-Connecting-IP` instead of Cloudflare's. |
+| `DELETION_WEBHOOK_URL` | Fallback only. If the bot can't be reached, the request is posted to this Discord webhook as a plain note (webhooks can't carry buttons). The normal route is the bot, see below. |
 | `STAFF_GUILD_ID` (bot) | The ID of your own Risk server. Staff panel access is only ever given to members of this server. |
 | `STAFF_ROLE_IDS`, `DEV_ROLE_IDS` (bot) | Optional Discord role IDs in that server that count as Staff and Developer in the panel. Comma separated. |
 | `OWNER_IDS` (bot) | Optional extra owner user IDs. The bot application's owner is always an owner. |
@@ -45,7 +49,8 @@ Nothing secret goes in this site. The application ID is public, and the site nev
 - `/privacy`, `/terms`, `/accessibility` and `/data-deletion` are server-rendered HTML (see `legal.py`), so they work without JavaScript. The privacy and terms text comes from `cogs/privacy.py` and the terms cog; run `tools/export_bot_data.py` after editing them.
 - `/robots.txt`, `/sitemap.xml` and `/.well-known/security.txt` are generated per host. `security.txt` needs a contact: set `SECURITY_CONTACT`, `CONTACT_EMAIL` or `SUPPORT_URL`.
 - The cookie banner (`src/consent.ts`) holds back the only optional third-party request, Google Fonts, until the visitor allows it. The site sets no analytics or marketing cookies. If you ever add one, load it from `consent.ts` only after consent is granted.
-- Data-deletion requests are saved to `data/deletion-requests.json` (gitignored) and posted to `DELETION_WEBHOOK_URL`. Answer each reference number within 30 days, as the page promises.
+- The data-deletion form is protected by Cloudflare Turnstile (action `data_deletion`). The browser gets a token from the widget, `server.py` checks it with Cloudflare's siteverify API using `TURNSTILE_SECRET_KEY`, and accepts it only if it succeeded, has the right action and comes from an allowed hostname. Tokens are single use. Add your site's hostnames to the widget in the Cloudflare dashboard.
+- A valid request is sent to the bot (`POST /dash/privacy/request`, same key as the dashboard). The bot posts it to the owner with buttons: **Show data**, **Send copy to user**, **Delete all data** (with a confirm step) and **Mark handled**. Where it posts: the channel in `PRIVACY_CHANNEL_ID` on the bot host, otherwise the owner's DMs. People can also run `!mydata` and `!forgetme` themselves. A copy of each request is also kept in `data/deletion-requests.json` (gitignored), and the webhook is used only if the bot is offline. Answer each reference number within 30 days, as the page promises.
 
 ## Email DNS records (SPF and DMARC)
 

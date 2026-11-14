@@ -29,3 +29,7 @@ services:
         sync: false
       - key: DELETION_WEBHOOK_URL
         sync: false
+      - key: TURNSTILE_SECRET_KEY
+        sync: false
+      - key: TRUST_CLOUDFLARE
+        value: "1"

@@ -80,6 +80,13 @@ def deletion_form(settings, error="", values=None):
     contact = contact_block(settings)
     err = f'<p class="form-error" role="alert">{esc(error)}</p>' if error else ""
     kind = values.get("kind", "delete")
+    if settings.turnstile_secret:
+        turnstile = (
+            f'<div class="field"><div class="cf-turnstile" data-sitekey="{esc(settings.turnstile_site_key)}" data-action="data_deletion" data-theme="dark"></div>'
+            '<noscript><p class="form-error">Turn on JavaScript to complete the security check.</p></noscript></div>'
+        )
+    else:
+        turnstile = '<p class="form-error" role="status">Requests are paused until the site\'s security check is switched on. Use the support server for now, or try again later.</p>'
     return f"""<div class="view container page"><h1>Delete my data</h1>
 <p class="lede">Ask Risk to delete what it has saved about you, or to send you a copy.</p>
 <div class="prose">
@@ -91,11 +98,12 @@ def deletion_form(settings, error="", values=None):
 <h2 id="how-it-works">How it works</h2>
 <ol>
 <li>Fill in the form below. You only need your Discord user ID. In Discord, turn on Developer Mode, then right-click your name and choose Copy User ID.</li>
-<li>You get a reference number straight away. Keep it.</li>
-<li>We may ask you to confirm it's really you, for example by messaging you on Discord or in the support server. We never ask for your password or token.</li>
-<li>We delete the data, or send you a copy, within 30 days, and tell you when it's done.</li>
+<li>Pass the quick security check from Cloudflare, then send the form. You get a reference number straight away. Keep it.</li>
+<li>Your request goes to the Risk owner in Discord. Anyone could type your ID into a form, so we may message you on Discord to check it's really you. We never ask for your password or token.</li>
+<li>For a copy, the bot sends it to your Discord DMs. For deletion, we delete everything Risk saved about you and tell you when it's done. Both happen within 30 days.</li>
 </ol>
-<p>Prefer not to use the form? Contact us through {contact} and include your Discord user ID.</p>
+<p>Prefer to do it yourself? In any server with Risk, type <code>!mydata</code> to get a copy in a private message, or <code>!forgetme</code> to delete your data after confirming. No form needed.</p>
+<p>Can't use either? Contact us through {contact} and include your Discord user ID.</p>
 <h2 id="request-form">Make a request</h2>
 {err}
 <form class="form" method="post" action="/data-deletion">
@@ -113,8 +121,10 @@ def deletion_form(settings, error="", values=None):
 <div class="field"><label for="details">Anything else? (optional)</label>
 <textarea id="details" name="details" rows="4" maxlength="500">{esc(values.get("details", ""))}</textarea></div>
 <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
-<button class="btn btn-primary" type="submit">Send request</button>
+{turnstile}
+<button class="btn btn-primary" type="submit"{" disabled" if not settings.turnstile_secret else ""}>Send request</button>
 </form>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
 </div></div>"""
 
 

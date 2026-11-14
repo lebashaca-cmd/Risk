@@ -227,6 +227,12 @@ async function start() {
         else
             link.hidden = true;
     });
+    document.querySelectorAll("[data-support]").forEach((link) => {
+        if (config.supportUrl)
+            link.href = config.supportUrl;
+        else
+            link.hidden = true;
+    });
     document.querySelectorAll("[data-staff]").forEach((link) => {
         const target = config.staffUrl ?? "/staff";
         link.href = target;

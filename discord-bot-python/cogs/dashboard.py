@@ -1030,6 +1030,15 @@ class Dashboard(commands.Cog):
         if parts and parts[0] == "staff":
             return await self.route_staff(request, method, parts[1:])
 
+        if parts == ["privacy", "request"] and method == "POST":
+            requests = self.bot.get_cog("DataRequests")
+            if requests is None:
+                raise ApiError(503, "The data request tools aren't loaded on the bot. Upload cogs/data_requests.py and utils/userdata.py and restart it.")
+            answer = await requests.submit(await self.read_json(request))
+            if answer.get("error"):
+                raise ApiError(400, answer["error"])
+            return answer
+
         if parts == ["status-page"] and method == "GET":
             page = self.bot.get_cog("StatusPage")
             return page.public() if page else {"buttons": [], "notice": {"on": False}, "incidents": [], "usage": None, "uptime": None}

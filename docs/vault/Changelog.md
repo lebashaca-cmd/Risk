@@ -33,7 +33,8 @@ tags: [risk, changelog]
 | 19 (later) | `!rank` draws a level card image (needs Pillow); Sticky and Rep moved into the Community section; 12 AI commands (`ai_tools.py`); new fun (`fun_plus.py`), community (`community_plus.py`: kudos, intro, quote book, check-in streaks, teams, qotd) and utility (`utility_plus.py`) commands |
 | 19 (later) | Leaderboard picture shows every stat the text one did. About 140 more commands: `fun_more.py` (reactions, text styles, tarot, Wordle, minesweeper, quick draw, flag/capital quizzes), `utility_more.py` (maths, money, dates, text tools, DM generators), `community_more.py` (events with RSVP, LFG buttons, game lists, pronouns, spotlight, pulse), `ai_more.py` (36 AI helpers) |
 | 19 (later) | Website hardening and compliance: HSTS, X-Frame-Options, CSP frame-ancestors, COOP/CORP on every response; server-rendered /privacy, /terms, /accessibility and /data-deletion (form + reference number + webhook); cookie banner that holds back Google Fonts until consent; robots.txt, sitemap.xml, security.txt; Open Graph tags; copyright footer |
+| 19 (later) | New site footer; Cloudflare Turnstile on the data-deletion form (server-side siteverify, fails closed); deletion requests go to the bot, which posts Show data / Send copy / Delete all data / Mark handled buttons (`cogs/data_requests.py`, `utils/userdata.py`); `!mydata` and `!forgetme` |
 
-Command count: 571 (the count now includes the subcommands of command groups, like `customcmd add`).
+Command count: 573 (the count now includes the subcommands of command groups, like `customcmd add`).
 
 Related: [Testing](Testing.md), [Open items](Open-Items.md)

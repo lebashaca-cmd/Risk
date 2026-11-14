@@ -50,7 +50,7 @@ SECTIONS = [
         "sign-in check cookie while Discord's page is open, and then a session cookie that lasts 6 hours. They are not "
         "set for visitors who don't sign in, and they can't be turned off while you use the dashboard. The site also saves "
         "your cookie choice in your browser's local storage under the name risk-consent, so it doesn't ask again. "
-        "One optional extra needs your consent: the Poppins and JetBrains Mono fonts load from Google Fonts, which "
+        "The data-deletion form uses Cloudflare Turnstile, a bot check. It loads only on that page, is needed to keep the form safe, and lets Cloudflare see your IP address and browser details (Cloudflare's own privacy policy applies); it needs no consent banner choice. One optional extra needs your consent: the Poppins and JetBrains Mono fonts load from Google Fonts, which "
         "then sees your IP address and browser details. They load only after you choose Allow Google Fonts in the "
         "cookie banner. If you choose Essential only, your device's own fonts are used. You can change your choice "
         "at any time with Cookie settings in the footer, and you can clear the risk-consent entry and the session "
@@ -73,9 +73,13 @@ SECTIONS = [
     ),
     (
         "10. Your choices",
-        "You can ask what Risk has saved about you, or ask for it to be deleted, with the form on the website at "
-        "/data-deletion, which gives you a reference number, or through the support server. Either way, include your "
-        "Discord user ID, and expect an answer within 30 days. Server admins can switch features off, exclude channels from XP and logs, "
+        "You can see or delete what Risk has saved about you yourself: !mydata sends you a copy in a private message "
+        "and !forgetme deletes it after you confirm. You can also use the form on the website at /data-deletion, "
+        "which gives you a reference number, or ask in the support server. For website requests, include your Discord "
+        "user ID and expect an answer within 30 days; we may message you on Discord to check it's really you. "
+        "Deleting removes your coins, items, levels, warnings and the rest of what is listed above. We keep a short "
+        "record of the request itself (reference, date and outcome) as proof it was handled, plus the bot's block "
+        "list and server bans, which protect other people. Server admins can switch features off, exclude channels from XP and logs, "
         "or remove the bot. Removing the bot stops all collection from that server.",
     ),
     (

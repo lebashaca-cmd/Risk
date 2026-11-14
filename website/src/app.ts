@@ -237,6 +237,10 @@ async function start(): Promise<void> {
     if (config.inviteUrl) link.href = config.inviteUrl;
     else link.hidden = true;
   });
+  document.querySelectorAll<HTMLAnchorElement>("[data-support]").forEach((link) => {
+    if (config.supportUrl) link.href = config.supportUrl;
+    else link.hidden = true;
+  });
   document.querySelectorAll<HTMLAnchorElement>("[data-staff]").forEach((link) => {
     const target = config.staffUrl ?? "/staff";
     link.href = target;
