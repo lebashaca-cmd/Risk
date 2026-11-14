@@ -80,6 +80,12 @@ class Settings:
         self.contact_email = env("CONTACT_EMAIL")
         self.security_contact = env("SECURITY_CONTACT")
         self.deletion_webhook = env("DELETION_WEBHOOK_URL")
+        # Cloudflare Turnstile. The site key is public; the secret key is read from the environment and never leaves the server.
+        self.turnstile_site_key = env("TURNSTILE_SITE_KEY", "0x4AAAAAAGAcT1VgWgrqXBXF")
+        self.turnstile_secret = env("TURNSTILE_SECRET_KEY")
+        self.turnstile_hosts = {h.strip().lower() for h in re.split(r"[,\s]+", env("TURNSTILE_HOSTNAMES")) if h.strip()}
+        self.turnstile_verify_url = env("TURNSTILE_VERIFY_URL", "https://challenges.cloudflare.com/turnstile/v0/siteverify")
+        self.trust_cloudflare = env("TRUST_CLOUDFLARE").lower() in ("1", "true", "yes")
         # Basic used to be called Monthly, so the old variable names still work.
         self.vip_plans = {
             "basic": (env("VIP_BASIC_URL") or env("VIP_MONTHLY_URL"), (env("VIP_BASIC_PRICE") or env("VIP_MONTHLY_PRICE") or "$4.99")[:20]),
@@ -190,6 +196,11 @@ async def get_status(app):
 
 
 def client_ip(request, settings):
+    if settings.trust_cloudflare:
+        # Cloudflare puts the visitor's real address here; the last X-Forwarded-For entry would be Cloudflare's own.
+        real = request.headers.get("CF-Connecting-IP", "").strip()
+        if real:
+            return real
     if settings.trust_proxy:
         forwarded = request.headers.get("X-Forwarded-For", "")
         parts = [p.strip() for p in forwarded.split(",") if p.strip()]
@@ -235,7 +246,8 @@ SECURITY_HEADERS = {
     "Permissions-Policy": "camera=(), microphone=(), geolocation=(), payment=(), usb=(), interest-cohort=()",
     "Content-Security-Policy": (
         "default-src 'self'; base-uri 'none'; object-src 'none'; frame-ancestors 'self'; form-action 'self'; "
-        "img-src 'self' data: https://cdn.discordapp.com; connect-src 'self'; "
+        "script-src 'self' https://challenges.cloudflare.com; frame-src https://challenges.cloudflare.com; "
+        "img-src 'self' data: https://cdn.discordapp.com; connect-src 'self' https://challenges.cloudflare.com; "
         "style-src 'self' https://fonts.googleapis.com; font-src https://fonts.gstatic.com"
     ),
 }
@@ -443,14 +455,48 @@ async def security_txt(request):
     return text_response("\n".join(lines) + "\n", max_age=86400)
 
 
+TURNSTILE_ACTION = "data_deletion"
+
+
+async def verify_turnstile(request, token):
+    """Checks a Turnstile token with Cloudflare. Returns "ok", or why not. Anything unclear counts as a failure."""
+    settings = request.app["settings"]
+    if not settings.turnstile_secret:
+        return "unconfigured"
+    token = (token or "").strip()
+    if not token or len(token) > 2048:
+        return "missing"
+    form = {"secret": settings.turnstile_secret, "response": token, "remoteip": client_ip(request, settings)}
+    try:
+        async with request.app["session"].post(settings.turnstile_verify_url, data=form, timeout=aiohttp.ClientTimeout(total=8)) as reply:
+            result = await reply.json(content_type=None)
+    except (aiohttp.ClientError, asyncio.TimeoutError, ValueError):
+        return "unreachable"
+    if not isinstance(result, dict) or result.get("success") is not True or result.get("action") != TURNSTILE_ACTION:
+        return "failed"
+    allowed = set(settings.turnstile_hosts) or {site_origin(request).split("//", 1)[1].split(":")[0].lower()}
+    if settings.trust_proxy:
+        allowed -= {"localhost", "127.0.0.1", "::1"}
+    return "ok" if str(result.get("hostname", "")).lower() in allowed else "failed"
+
+
+TURNSTILE_MESSAGES = {
+    "unconfigured": (503, "Requests are paused until the site's verification is switched on. Please use the support server for now."),
+    "missing": (400, "Please complete the check above the button, then send the request again."),
+    "failed": (400, "The check didn't pass. Please try again."),
+    "unreachable": (503, "We couldn't reach Cloudflare to run the check. Please try again in a minute."),
+}
+
+
 async def notify_deletion(request, entry):
+    """Fallback only: if the bot can't be reached, post a plain note to a Discord webhook (webhooks can't carry buttons)."""
     settings = request.app["settings"]
     url = settings.deletion_webhook
     if not re.fullmatch(r"https://(?:discord|discordapp)\.com/api/webhooks/\d+/[\w-]+", url or ""):
         return False
     kinds = {"delete": "delete my data", "export": "send me a copy", "both": "copy, then delete"}
     lines = [
-        f"**Data request {entry['reference']}**: {kinds[entry['kind']]}",
+        f"**Data request {entry['reference']}**: {kinds[entry['kind']]} (the bot couldn't be reached, so there are no buttons: use `!mydata` / the owner tools once it's back)",
         f"User ID: `{entry['user_id']}`",
     ]
     if entry["server_id"]:
@@ -481,14 +527,23 @@ async def data_deletion_post(request):
     entry, error = legal.parse_request(form)
     if error == "silent":
         return render_shell(request, 200, main=legal.confirmation("DEL-" + "0" * 8, settings), path="/data-deletion")
+    values = {k: str(form.get(k) or "")[:500] for k in ("kind", "user_id", "server_id", "reach", "details")}
     if error:
-        values = {k: str(form.get(k) or "")[:500] for k in ("kind", "user_id", "server_id", "reach", "details")}
         return render_shell(request, 400, main=legal.deletion_form(settings, error, values), path="/data-deletion")
+    check = await verify_turnstile(request, str(form.get("cf-turnstile-response") or ""))
+    if check != "ok":
+        status, message = TURNSTILE_MESSAGES.get(check, TURNSTILE_MESSAGES["failed"])
+        return render_shell(request, status, main=legal.deletion_form(settings, message, values), path="/data-deletion")
     saved = request.app["deletions"].add(entry)
-    sent = await notify_deletion(request, entry)
-    print(f"[data-deletion] {entry['reference']} {entry['kind']} user={entry['user_id']} saved={saved} webhook={sent}")
-    if not saved and not sent:
-        return render_shell(request, 503, main=legal.deletion_form(settings, "We couldn't record that request. Please try again later or use the support server."), path="/data-deletion")
+    dashboard = request.app["dashboard"]
+    to_bot = False
+    if dashboard.enabled:
+        status, payload = await dashboard.ask_bot(request, "POST", "privacy/request", body=entry)
+        to_bot = status == 200 and payload.get("delivered") is True
+    sent = False if to_bot else await notify_deletion(request, entry)
+    print(f"[data-deletion] {entry['reference']} {entry['kind']} user={entry['user_id']} saved={saved} bot={to_bot} webhook={sent}", flush=True)
+    if not (saved or to_bot or sent):
+        return render_shell(request, 503, main=legal.deletion_form(settings, "We couldn't record that request. Please try again later or use the support server.", values), path="/data-deletion")
     return render_shell(request, 200, main=legal.confirmation(entry["reference"], settings), path="/data-deletion")
 
 

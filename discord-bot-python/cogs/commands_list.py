@@ -45,7 +45,7 @@ CATEGORY_BY_COG = {
     "FunPlus": "Fun",
     "CommunityPlus": "Community",
     "UtilityPlus": "Utility",
-    "AITools": "AI", "AIMore": "AI", "FunMore": "Fun", "UtilityMore": "Utility", "CommunityMore": "Community",
+    "AITools": "AI", "DataRequests": "Info", "AIMore": "AI", "FunMore": "Fun", "UtilityMore": "Utility", "CommunityMore": "Community",
 }
 ORDER = ["Info", "Utility", "Moderation", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "AI", "Lookups"]
 HIDDEN_PREFIX_COMMANDS = {"help"}

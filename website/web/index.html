@@ -51,31 +51,47 @@
   </main>
 
   <footer class="site-footer" aria-label="Site footer">
-    <div class="container footer-inner">
-      <div class="footer-brand">
-        <a class="wordmark" href="/" data-link aria-label="Risk home">
-          <img class="logo-img" src="/assets/logo.jpg" alt="" width="28" height="28">
-          <span>risk</span>
-        </a>
-        <p>Tickets, logs and moderation for Discord.</p>
-        <p class="fine">Risk isn't affiliated with Discord Inc.</p>
-        <p class="fine">&copy; {{YEAR}} Risk. All rights reserved.</p>
-      </div>
-      <div class="footer-links">
-        <nav aria-label="Footer">
-          <a href="/commands" data-link>Commands</a>
-          <a href="/dashboard" data-link data-dashboard>Dashboard</a>
-          <a href="/vip" data-link>VIP</a>
-          <a href="/status" data-link>Status</a>
-          <a href="/docs/" data-docs>Docs</a>
-          <a href="/terms">Terms</a>
-          <a href="/privacy">Privacy</a>
-          <a href="/accessibility">Accessibility</a>
-          <a href="/data-deletion">Delete my data</a>
-          <button class="linkbutton" type="button" data-consent-open>Cookie settings</button>
-          <a data-invite href="/commands">Add to server</a>
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a class="wordmark" href="/" data-link aria-label="Risk home">
+            <img class="logo-img" src="/assets/logo.jpg" alt="" width="28" height="28">
+            <span>risk</span>
+          </a>
+          <p>Tickets, logs and moderation for Discord.</p>
+          <a class="btn btn-primary btn-small" data-invite href="/commands">Add to server</a>
+        </div>
+        <nav class="footer-col" aria-labelledby="footer-explore">
+          <h2 id="footer-explore">Explore</h2>
+          <ul>
+            <li><a href="/commands" data-link>Commands</a></li>
+            <li><a href="/docs/" data-docs>Docs</a></li>
+            <li><a href="/vip" data-link>VIP</a></li>
+            <li><a href="/status" data-link>Status</a></li>
+          </ul>
         </nav>
-        <a class="btn btn-quiet btn-small footer-staff" href="/staff" data-link data-staff>Staff</a>
+        <nav class="footer-col" aria-labelledby="footer-manage">
+          <h2 id="footer-manage">Manage</h2>
+          <ul>
+            <li><a href="/dashboard" data-link data-dashboard>Dashboard</a></li>
+            <li><a href="/staff" data-link data-staff>Staff panel</a></li>
+            <li><a href="/commands" data-support target="_blank" rel="noopener noreferrer">Support server</a></li>
+          </ul>
+        </nav>
+        <nav class="footer-col" aria-labelledby="footer-legal">
+          <h2 id="footer-legal">Legal and privacy</h2>
+          <ul>
+            <li><a href="/terms">Terms of Service</a></li>
+            <li><a href="/privacy">Privacy Policy</a></li>
+            <li><a href="/accessibility">Accessibility</a></li>
+            <li><a href="/data-deletion">Delete my data</a></li>
+            <li><button class="linkbutton" type="button" data-consent-open>Cookie settings</button></li>
+          </ul>
+        </nav>
+      </div>
+      <div class="footer-base">
+        <p>&copy; {{YEAR}} Risk. All rights reserved.</p>
+        <p>Risk isn't affiliated with Discord Inc.</p>
       </div>
     </div>
   </footer>
