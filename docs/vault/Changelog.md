@@ -34,6 +34,7 @@ tags: [risk, changelog]
 | 19 (later) | Leaderboard picture shows every stat the text one did. About 140 more commands: `fun_more.py` (reactions, text styles, tarot, Wordle, minesweeper, quick draw, flag/capital quizzes), `utility_more.py` (maths, money, dates, text tools, DM generators), `community_more.py` (events with RSVP, LFG buttons, game lists, pronouns, spotlight, pulse), `ai_more.py` (36 AI helpers) |
 | 19 (later) | Website hardening and compliance: HSTS, X-Frame-Options, CSP frame-ancestors, COOP/CORP on every response; server-rendered /privacy, /terms, /accessibility and /data-deletion (form + reference number + webhook); cookie banner that holds back Google Fonts until consent; robots.txt, sitemap.xml, security.txt; Open Graph tags; copyright footer |
 | 19 (later) | New site footer; Cloudflare Turnstile on the data-deletion form (server-side siteverify, fails closed); deletion requests go to the bot, which posts Show data / Send copy / Delete all data / Mark handled buttons (`cogs/data_requests.py`, `utils/userdata.py`); `!mydata` and `!forgetme` |
+| 19 (later) | Cloudflare Turnstile now guards the whole site, not just the deletion form: one check per visitor, signed 12-hour `risk_human` cookie, search and link-preview bots let through, `TURNSTILE_GATE=0` to switch off; privacy policy and cookie banner updated |
 
 Command count: 573 (the count now includes the subcommands of command groups, like `customcmd add`).
 

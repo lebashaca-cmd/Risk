@@ -82,7 +82,7 @@ function openBanner(opener: HTMLElement | null): void {
   const text = document.createElement("p");
   text.id = "consent-text";
   text.append(
-    "Risk sets no tracking or advertising cookies and runs no analytics. Signing in to the dashboard uses one essential session cookie. ",
+    "Risk sets no tracking or advertising cookies and runs no analytics. Two essential cookies keep the site safe: one after you pass the Cloudflare check, and one if you sign in to the dashboard. ",
     "The optional Poppins and JetBrains Mono fonts come from Google, which then sees your IP address. Without them you get your device's own fonts. ",
   );
   const more = document.createElement("a");
