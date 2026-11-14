@@ -37,7 +37,8 @@ tags: [risk, config]
 | `DASHBOARD_HOST` | For example `dashboard.yourdomain.com`. Turns on `dashboard.<domain>/<server id>` URLs |
 | `CONTACT_EMAIL` | Site only. Public contact address on the accessibility and data-deletion pages and in security.txt |
 | `SECURITY_CONTACT` | Site only. Address or https link for vulnerability reports (security.txt). Falls back to `CONTACT_EMAIL`, then `SUPPORT_URL` |
-| `TURNSTILE_SECRET_KEY` | Site only. Secret key of the Cloudflare Turnstile widget. The data-deletion form is off without it. Set it in Render only |
+| `TURNSTILE_SECRET_KEY` | Site only. Secret key of the Cloudflare Turnstile widget. Turns on the check for the whole site (cookie `risk_human`, 12h). Off without it. Set it in Render only |
+| `TURNSTILE_GATE` | Site only. `0` switches the whole-site check off (break-glass) |
 | `TURNSTILE_SITE_KEY` / `TURNSTILE_HOSTNAMES` | Site only. Optional: public site key (has a default) and the hostnames a valid token may report |
 | `TRUST_CLOUDFLARE` | Site only. `1` when behind Cloudflare, so rate limits use the visitor's real address |
 | `DELETION_WEBHOOK_URL` | Site only. Fallback: a plain note is posted here if the bot is offline when a data-deletion request arrives |

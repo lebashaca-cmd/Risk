@@ -80,7 +80,9 @@ def deletion_form(settings, error="", values=None):
     contact = contact_block(settings)
     err = f'<p class="form-error" role="alert">{esc(error)}</p>' if error else ""
     kind = values.get("kind", "delete")
-    if settings.turnstile_secret:
+    if settings.gate_active:
+        turnstile = ""
+    elif settings.turnstile_secret:
         turnstile = (
             f'<div class="field"><div class="cf-turnstile" data-sitekey="{esc(settings.turnstile_site_key)}" data-action="data_deletion" data-theme="dark"></div>'
             '<noscript><p class="form-error">Turn on JavaScript to complete the security check.</p></noscript></div>'
@@ -98,7 +100,7 @@ def deletion_form(settings, error="", values=None):
 <h2 id="how-it-works">How it works</h2>
 <ol>
 <li>Fill in the form below. You only need your Discord user ID. In Discord, turn on Developer Mode, then right-click your name and choose Copy User ID.</li>
-<li>Pass the quick security check from Cloudflare, then send the form. You get a reference number straight away. Keep it.</li>
+<li>Send the form. You get a reference number straight away. Keep it.</li>
 <li>Your request goes to the Risk owner in Discord. Anyone could type your ID into a form, so we may message you on Discord to check it's really you. We never ask for your password or token.</li>
 <li>For a copy, the bot sends it to your Discord DMs. For deletion, we delete everything Risk saved about you and tell you when it's done. Both happen within 30 days.</li>
 </ol>
@@ -122,9 +124,9 @@ def deletion_form(settings, error="", values=None):
 <textarea id="details" name="details" rows="4" maxlength="500">{esc(values.get("details", ""))}</textarea></div>
 <div class="hp" aria-hidden="true"><label for="website">Leave this empty</label><input id="website" name="website" type="text" tabindex="-1" autocomplete="off"></div>
 {turnstile}
-<button class="btn btn-primary" type="submit"{" disabled" if not settings.turnstile_secret else ""}>Send request</button>
+<button class="btn btn-primary" type="submit"{" disabled" if not (settings.turnstile_secret or settings.gate_active) else ""}>Send request</button>
 </form>
-<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+{"" if settings.gate_active else '<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>'}
 </div></div>"""
 
 
@@ -141,12 +143,13 @@ class DeletionStore:
     """Saves requests to a JSON file and keeps a per-address rate limit. Render's free disk is wiped on every
     deploy, so the real copy goes to DELETION_WEBHOOK_URL (a Discord channel webhook) when it is set."""
 
-    def __init__(self, path):
+    def __init__(self, path, limit=FORM_LIMIT):
         self.path = Path(path)
         self.hits = defaultdict(deque)
+        self.limit = limit
 
     def limited(self, ip):
-        limit, window = FORM_LIMIT
+        limit, window = self.limit
         now = time.monotonic()
         recent = self.hits[ip]
         while recent and now - recent[0] > window:

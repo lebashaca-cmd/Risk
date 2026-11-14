@@ -1,8 +1,11 @@
 import asyncio
+import hashlib
+import hmac
 import html
 import json
 import os
 import re
+import secrets
 import time
 from collections import defaultdict, deque
 from pathlib import Path
@@ -86,6 +89,8 @@ class Settings:
         self.turnstile_hosts = {h.strip().lower() for h in re.split(r"[,\s]+", env("TURNSTILE_HOSTNAMES")) if h.strip()}
         self.turnstile_verify_url = env("TURNSTILE_VERIFY_URL", "https://challenges.cloudflare.com/turnstile/v0/siteverify")
         self.trust_cloudflare = env("TRUST_CLOUDFLARE").lower() in ("1", "true", "yes")
+        # The whole-site check is on whenever the Turnstile secret is set. TURNSTILE_GATE=0 switches it off without removing the secret.
+        self.gate_active = bool(self.turnstile_secret) and env("TURNSTILE_GATE", "1").lower() not in ("0", "false", "no", "off")
         # Basic used to be called Monthly, so the old variable names still work.
         self.vip_plans = {
             "basic": (env("VIP_BASIC_URL") or env("VIP_MONTHLY_URL"), (env("VIP_BASIC_PRICE") or env("VIP_MONTHLY_PRICE") or "$4.99")[:20]),
@@ -209,8 +214,115 @@ def client_ip(request, settings):
     return request.remote or "unknown"
 
 
+GATE_COOKIE = "risk_human"
+GATE_TTL = 12 * 3600
+GATE_ACTION = "site_access"
+GATE_OPEN = ("/assets/", "/api/", "/.well-known/")
+GATE_OPEN_EXACT = {"/healthz", "/robots.txt", "/sitemap.xml", "/security.txt", "/favicon.png", "/favicon.ico", "/verify-human"}
+# Link previews and search engines can't solve a challenge, so they are let through (they only ever see public pages).
+FRIENDLY_BOTS = re.compile(r"googlebot|bingbot|duckduckbot|discordbot|twitterbot|facebookexternalhit|slackbot|linkedinbot|whatsapp|telegrambot|applebot|uptimerobot", re.I)
+
+
+def gate_key(settings):
+    return hashlib.sha256(("risk-gate:" + settings.turnstile_secret).encode()).digest()
+
+
+def make_pass(settings):
+    expires = int(time.time()) + GATE_TTL
+    body = f"{expires}.{secrets.token_hex(8)}"
+    return f"{body}.{hmac.new(gate_key(settings), body.encode(), hashlib.sha256).hexdigest()[:32]}"
+
+
+def pass_ok(settings, value):
+    parts = (value or "").split(".")
+    if len(parts) != 3 or not parts[0].isdigit() or int(parts[0]) < time.time():
+        return False
+    expected = hmac.new(gate_key(settings), f"{parts[0]}.{parts[1]}".encode(), hashlib.sha256).hexdigest()[:32]
+    return hmac.compare_digest(expected, parts[2])
+
+
+def gate_applies(request):
+    settings = request.app["settings"]
+    if not settings.gate_active:
+        return False
+    path = request.path
+    if request.method == "POST" and path == "/data-deletion":
+        pass
+    elif request.method not in ("GET", "HEAD"):
+        return False
+    if path in GATE_OPEN_EXACT or path.startswith(GATE_OPEN):
+        return False
+    last = path.rsplit("/", 1)[-1]
+    if "." in last and not last.endswith((".html", ".htm")):
+        return False  # a stylesheet, script, image or data file
+    if FRIENDLY_BOTS.search(request.headers.get("User-Agent", "")):
+        return False
+    return not pass_ok(settings, request.cookies.get(GATE_COOKIE, ""))
+
+
+def safe_next(value):
+    value = (value or "/").strip()
+    if not value.startswith("/") or value.startswith("//") or "\\" in value or any(ord(c) < 32 for c in value):
+        return "/"
+    return value[:300]
+
+
+def gate_page(request, error="", status=403):
+    settings = request.app["settings"]
+    target = request.path_qs if request.method in ("GET", "HEAD") else request.path
+    err = f'<p class="form-error" role="alert">{html.escape(error)}</p>' if error else ""
+    body = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>One moment · Risk</title><meta name="robots" content="noindex"><meta name="color-scheme" content="dark"><meta name="theme-color" content="#131314">
+<link rel="icon" href="/favicon.png" type="image/png"><link rel="stylesheet" href="/assets/css/site.css"></head>
+<body class="gate-body"><a class="skip" href="#gate">Skip to main content</a>
+<main id="gate" class="gate" tabindex="-1">
+<img class="logo-img" src="/assets/logo.jpg" alt="" width="56" height="56">
+<h1>Checking that you're a person</h1>
+<p class="lede">This takes a few seconds and keeps bots away from Risk. You'll go straight to the page you asked for.</p>
+{err}
+<form id="gate-form" method="post" action="/verify-human">
+<input type="hidden" name="next" value="{html.escape(safe_next(target), quote=True)}">
+<div class="cf-turnstile" data-sitekey="{html.escape(settings.turnstile_site_key, quote=True)}" data-action="{GATE_ACTION}" data-theme="dark" data-callback="riskGateDone"></div>
+<noscript><p class="form-error">Turn on JavaScript to finish the check.</p></noscript>
+<button class="btn btn-primary" type="submit">Continue</button>
+</form>
+<p class="fine">Cloudflare Turnstile runs this check and sees your IP address and browser details. It sets one essential security cookie that lasts 12 hours. <a href="/privacy#cookies-and-tracking-technologies">Read the privacy policy</a>.</p>
+</main>
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<script type="module" src="/assets/js/gate.js"></script>
+</body></html>"""
+    return web.Response(text=body, status=status, content_type="text/html", charset="utf-8", headers={"Cache-Control": "no-store"})
+
+
+async def verify_human(request):
+    settings = request.app["settings"]
+    if not settings.gate_active:
+        return web.HTTPFound("/")
+    origin_header = request.headers.get("Origin")
+    if origin_header and urlsplit(origin_header).netloc.lower() != urlsplit(site_origin(request)).netloc.lower():
+        return web.Response(status=403, text="That request didn't come from this site.")
+    if request.app["gate_limit"].limited(client_ip(request, settings)):
+        return gate_page(request, "Too many attempts. Wait a few minutes and try again.", 429)
+    try:
+        form = await request.post()
+    except (ValueError, web.HTTPException):
+        form = {}
+    target = safe_next(str(form.get("next") or "/"))
+    check = await verify_turnstile(request, str(form.get("cf-turnstile-response") or ""), GATE_ACTION)
+    if check != "ok":
+        message = {"unreachable": "We couldn't reach Cloudflare to run the check. Try again in a minute.", "missing": "Finish the check, then press Continue."}.get(check, "The check didn't pass. Try again.")
+        return gate_page(request, message, 503 if check == "unreachable" else 403)
+    response = web.HTTPSeeOther(target)
+    response.set_cookie(GATE_COOKIE, make_pass(settings), max_age=GATE_TTL, path="/", httponly=True, secure=site_origin(request).startswith("https://"), samesite="Lax")
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
+
 @web.middleware
 async def guard(request, handler):
+    if gate_applies(request):
+        return secure(gate_page(request))
     if request.path.startswith("/api/"):
         limit, window = API_LIMIT
         hits = request.app["hits"]
@@ -458,7 +570,7 @@ async def security_txt(request):
 TURNSTILE_ACTION = "data_deletion"
 
 
-async def verify_turnstile(request, token):
+async def verify_turnstile(request, token, action="data_deletion"):
     """Checks a Turnstile token with Cloudflare. Returns "ok", or why not. Anything unclear counts as a failure."""
     settings = request.app["settings"]
     if not settings.turnstile_secret:
@@ -472,7 +584,7 @@ async def verify_turnstile(request, token):
             result = await reply.json(content_type=None)
     except (aiohttp.ClientError, asyncio.TimeoutError, ValueError):
         return "unreachable"
-    if not isinstance(result, dict) or result.get("success") is not True or result.get("action") != TURNSTILE_ACTION:
+    if not isinstance(result, dict) or result.get("success") is not True or result.get("action") != action:
         return "failed"
     allowed = set(settings.turnstile_hosts) or {site_origin(request).split("//", 1)[1].split(":")[0].lower()}
     if settings.trust_proxy:
@@ -530,7 +642,7 @@ async def data_deletion_post(request):
     values = {k: str(form.get(k) or "")[:500] for k in ("kind", "user_id", "server_id", "reach", "details")}
     if error:
         return render_shell(request, 400, main=legal.deletion_form(settings, error, values), path="/data-deletion")
-    check = await verify_turnstile(request, str(form.get("cf-turnstile-response") or ""))
+    check = "ok" if settings.gate_active else await verify_turnstile(request, str(form.get("cf-turnstile-response") or ""))
     if check != "ok":
         status, message = TURNSTILE_MESSAGES.get(check, TURNSTILE_MESSAGES["failed"])
         return render_shell(request, status, main=legal.deletion_form(settings, message, values), path="/data-deletion")
@@ -594,6 +706,7 @@ def make_app():
     app["status"] = StatusCache()
     app["hits"] = defaultdict(deque)
     app["deletions"] = legal.DeletionStore(ROOT / "data" / "deletion-requests.json")
+    app["gate_limit"] = legal.DeletionStore(ROOT / "data" / "unused.json", limit=(30, 600))
     app["dashboard"] = Dashboard(app["settings"], env)
     app["dashboard"].add_routes(app)
     app.on_startup.append(on_startup)
@@ -611,6 +724,7 @@ def make_app():
     app.router.add_get("/.well-known/security.txt", security_txt)
     app.router.add_get("/security.txt", lambda r: web.HTTPFound("/.well-known/security.txt"))
     app.router.add_post("/data-deletion", data_deletion_post)
+    app.router.add_post("/verify-human", verify_human)
     app.router.add_get("/favicon.png", lambda r: web.FileResponse(WEB_DIR / "favicon.png"))
     app.router.add_static("/assets", WEB_DIR / "assets", follow_symlinks=False)
     app.router.add_get("/{tail:.*}", fallback)
