@@ -100,16 +100,18 @@ mark { background: #f2f2f2; color: #111; border-radius: 3px; padding: 0 0.12em; 
 .nav-toggle:focus-visible { outline-offset: -5px; border-radius: 18px; }
 .nav-eyes { display: inline-flex; align-items: center; gap: 0.5rem; }
 .nav-eye { width: 2.1rem; height: 1.3rem; flex: none; display: block; }
-.nav[data-open="true"] .nav-eye { width: 1.7rem; height: 1.05rem; }
+.nav[data-open="true"] .nav-eyes { display: none; }
+.nav-close { display: none; width: 1.1rem; height: 1.1rem; fill: none; stroke: var(--mist); stroke-width: 2; stroke-linecap: round; }
+.nav[data-open="true"] .nav-close { display: block; }
+.nav-toggle:hover .nav-close { stroke: #fff; }
 .nav-eye svg { width: 100%; height: 100%; overflow: visible; }
-.eye-shape { fill: #f4f4f4; stroke: rgba(255, 255, 255, 0.55); stroke-width: 1.2; }
-.eye-iris { fill: #8f9bb3; }
-.eye-pupil { fill: #0d0d0f; }
-.eye-glint { fill: #fff; }
+.eye-shape { fill: none; stroke: #8a8a90; stroke-width: 1.4; }
+.eye-iris, .eye-glint { display: none; }
+.eye-pupil { fill: #b4b4ba; r: 4.2px; }
 .eye-ball { transform: translate(var(--ex, 0px), var(--ey, 0px)); transition: transform 0.28s var(--ease); }
-.eye-lid { fill: #27272a; transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); }
+.eye-lid { fill: #1d1d1f; stroke: #8a8a90; stroke-width: 1.4; transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); opacity: 0; }
 .nav-eye.is-blink .eye-lid { animation: eye-blink 0.2s ease-in-out; }
-@keyframes eye-blink { 0%, 100% { transform: scaleY(0); } 50% { transform: scaleY(1.05); } }
+@keyframes eye-blink { 0%, 100% { transform: scaleY(0); opacity: 1; } 50% { transform: scaleY(1.05); opacity: 1; } }
 .nav-hint {
   position: absolute; top: 3.75rem; left: 50%; translate: -50% -0.4rem; opacity: 0; pointer-events: none;
   font-size: 0.72rem; font-weight: 500; color: #111; background: #f2f2f2; padding: 0.28rem 0.7rem; border-radius: 999px; white-space: nowrap;
