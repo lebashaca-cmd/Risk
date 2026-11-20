@@ -10,8 +10,15 @@ export function initNavMenu() {
     if (!nav || !toggle || !panel)
         return;
     const isOpen = () => nav.dataset.open === "true";
+    const inner = panel.querySelector(".nav-panel-in");
+    // Height is set explicitly so it can animate smoothly along with the width.
+    const fit = () => nav.style.setProperty("--nav-h", isOpen() && inner ? `${inner.offsetHeight}px` : "3.4rem");
+    if (inner && "ResizeObserver" in window)
+        new ResizeObserver(() => { if (isOpen())
+            fit(); }).observe(inner);
     const setOpen = (open, focusToggle = false) => {
         nav.dataset.open = String(open);
+        fit();
         toggle.setAttribute("aria-expanded", String(open));
         toggle.setAttribute("aria-label", open ? "Close menu" : "Open menu");
         panel.toggleAttribute("inert", !open);
