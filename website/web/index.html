@@ -29,21 +29,45 @@
   <a class="skip" href="#app">Skip to main content</a>
 
   <header class="nav-wrap">
-    <div class="nav">
-      <a class="wordmark" href="/" data-link aria-label="Risk home">
-        <img class="logo-img" src="/assets/logo.jpg" alt="" width="28" height="28">
-        <span class="wm-text">risk</span>
-      </a>
-      <nav class="nav-links" aria-label="Main">
-        <span class="nav-ind" aria-hidden="true"></span>
-        <a href="/commands" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5h16v14H4z"/><path d="M8 10l3 2-3 2"/><path d="M13 15h3"/></svg>Commands</a>
-        <a href="/terms" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5"/><path d="M10 16h5"/></svg>Terms</a>
-        <a href="/vip" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/></svg>VIP</a>
-        <a href="/dashboard" data-link data-dashboard><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5h7v6H4z"/><path d="M13 5h7v4h-7z"/><path d="M13 11h7v8h-7z"/><path d="M4 13h7v6H4z"/></svg>Dashboard</a>
-        <a class="nav-status" href="/status" data-link aria-label="Status"><span class="status-dot" data-status-dot data-state="checking"></span>Status</a>
-      </nav>
-      <a class="btn btn-primary btn-small" data-invite href="/commands"><span class="btn-long">Add to server</span><span class="btn-short">Add</span></a>
+    <div class="nav" data-open="false">
+<button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-panel" aria-label="Open menu">
+        <span class="nav-eyes">
+          <span class="nav-eye" aria-hidden="true">
+            <svg viewBox="0 0 40 24" focusable="false">
+              <path class="eye-shape" d="M2 12C7 4.5 13 2 20 2s13 2.5 18 10c-5 7.5-11 10-18 10S7 19.5 2 12z"/>
+              <g class="eye-ball"><circle class="eye-iris" cx="20" cy="12" r="6.5"/><circle class="eye-pupil" cx="20" cy="12" r="3"/><circle class="eye-glint" cx="18.3" cy="10.2" r="1.1"/></g>
+              <path class="eye-lid" d="M2 12C7 4.5 13 2 20 2s13 2.5 18 10c-5 7.5-11 10-18 10S7 19.5 2 12z"/>
+            </svg>
+          </span>
+          <span class="nav-eye" aria-hidden="true">
+            <svg viewBox="0 0 40 24" focusable="false">
+              <path class="eye-shape" d="M2 12C7 4.5 13 2 20 2s13 2.5 18 10c-5 7.5-11 10-18 10S7 19.5 2 12z"/>
+              <g class="eye-ball"><circle class="eye-iris" cx="20" cy="12" r="6.5"/><circle class="eye-pupil" cx="20" cy="12" r="3"/><circle class="eye-glint" cx="18.3" cy="10.2" r="1.1"/></g>
+              <path class="eye-lid" d="M2 12C7 4.5 13 2 20 2s13 2.5 18 10c-5 7.5-11 10-18 10S7 19.5 2 12z"/>
+            </svg>
+          </span>
+        </span>
+        <svg class="nav-close" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M6 6l12 12M18 6L6 18"/></svg>
+      </button>
+      <div class="nav-panel" id="nav-panel" role="group" aria-label="Site menu">
+        <div class="nav-panel-in">
+          <a class="wordmark" href="/" data-link aria-label="Risk home">
+            <img class="logo-img" src="/assets/logo.jpg" alt="" width="28" height="28">
+            <span class="wm-text">risk</span>
+          </a>
+          <nav class="nav-links" aria-label="Main">
+            <span class="nav-ind" aria-hidden="true"></span>
+            <a href="/commands" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5h16v14H4z"/><path d="M8 10l3 2-3 2"/><path d="M13 15h3"/></svg>Commands</a>
+            <a href="/terms" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/><path d="M10 12h5"/><path d="M10 16h5"/></svg>Terms</a>
+            <a href="/vip" data-link><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M3 8l4 4 5-7 5 7 4-4-2 11H5z"/></svg>VIP</a>
+            <a href="/dashboard" data-link data-dashboard><svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 5h7v6H4z"/><path d="M13 5h7v4h-7z"/><path d="M13 11h7v8h-7z"/><path d="M4 13h7v6H4z"/></svg>Dashboard</a>
+            <a class="nav-status" href="/status" data-link aria-label="Status"><span class="status-dot" data-status-dot data-state="checking"></span>Status</a>
+          </nav>
+          <a class="btn btn-primary btn-small" data-invite href="/commands"><span class="btn-long">Add to server</span><span class="btn-short">Add</span></a>
+        </div>
+      </div>
     </div>
+    <span class="nav-hint" aria-hidden="true">click me</span>
   </header>
 
   <main id="app" tabindex="-1"{{PRERENDER_ATTR}}>
