@@ -4,6 +4,7 @@ import { h, mount } from "./dom.js";
 import { renderCommands } from "./commands.js";
 import { renderDashboard } from "./dashboard.js";
 import { renderHome } from "./home.js";
+import { initNavMenu } from "./navmenu.js";
 import { applyStatus, startStatusPolling } from "./status.js";
 import { renderPrivacy, renderTerms } from "./terms.js";
 import { renderStaff } from "./staff.js";
@@ -228,6 +229,7 @@ async function start(): Promise<void> {
   smoothScroll();
   watchHeader();
   bindNav();
+  initNavMenu();
   try {
     config = await api.config();
   } catch {
