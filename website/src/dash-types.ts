@@ -156,6 +156,17 @@ export interface RespondersSettings {
   items: Responder[];
 }
 
+export interface CustomCommand {
+  name: string;
+  reply: string;
+}
+
+export interface CustomCommandsSettings {
+  items: CustomCommand[];
+  unlocked: boolean;
+  limit: number;
+}
+
 export interface Announcement {
   id?: number;
   channel: string | null;
@@ -206,6 +217,7 @@ export interface AllSettings {
   overview: OverviewSettings;
   commands: CommandsSettings;
   responders: RespondersSettings;
+  customcmds: CustomCommandsSettings;
   announcements: AnnouncementsSettings;
   vip: VipSettings;
   general: GeneralSettings;

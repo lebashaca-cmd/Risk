@@ -42,7 +42,7 @@ NEVER_MATCHES = "​​ignored​​"
 # Server-wide basic rules for commands. Members with Manage Server ignore all of them.
 BASICS = {"blocked_channels": [], "only_channels": [], "blocked_roles": [], "delete_invocations": False, "cooldown": 0}
 BASICS_EXEMPT = {"help", "dashboard"}
-SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "announcements", "vip")
+SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "customcmds", "announcements", "vip")
 READ_ONLY = ("overview",)
 MAX_BODY = 1_000_000
 MAX_PROFILE_BODY = 7_500_000
@@ -61,6 +61,7 @@ REQUIREMENTS = {
     "automod": [("AutoMod", "automod.py", ["cfg", "store.save"])],
     "commands": [],
     "responders": [],
+    "customcmds": [("VIP", "vip.py", ["has"]), ("VIPPlus", "vip_plus.py", ["custom_cap", "custom_name_error", "store.save", "store.data"])],
     "overview": [],
     "announcements": [("VIP", "vip.py", ["schedules", "is_vip", "limit", "store.save"])],
     "vip": [("VIP", "vip.py", ["info", "limit", "cfg", "store.save"])],
@@ -725,6 +726,39 @@ class Dashboard(commands.Cog):
         self.cfg(guild.id)["responders"] = items
         self.store.save()
 
+    # Custom commands (VIP White and up): your own !name commands that reply with text
+    def read_customcmds(self, guild):
+        plus = self.bot.get_cog("VIPPlus")
+        items = plus.store.data["customcmds"].get(str(guild.id), {})
+        return {
+            "items": [{"name": name, "reply": reply} for name, reply in sorted(items.items())],
+            "unlocked": self.bot.get_cog("VIP").has(guild.id, "white"),
+            "limit": plus.custom_cap(guild.id),
+        }
+
+    def write_customcmds(self, guild, body):
+        vip, plus = self.bot.get_cog("VIP"), self.bot.get_cog("VIPPlus")
+        if not vip.has(guild.id, "white"):
+            raise ApiError(403, "Custom commands are included with VIP White, VIP Supreme and Lifetime.")
+        cap = plus.custom_cap(guild.id)
+        existing = plus.store.data["customcmds"].get(str(guild.id), {})
+        items = {}
+        for item in as_list(body.get("items", []), "Custom commands", cap):
+            if not isinstance(item, dict):
+                raise ApiError(400, "Each custom command needs a name and a reply.")
+            name = as_text(item.get("name"), "Command name", 40, required=True).lower().lstrip("!?,")
+            problem = plus.custom_name_error(name, existing)
+            if problem:
+                raise ApiError(400, f"\"{name[:20]}\": {problem.replace('`', '')}")
+            if name in items:
+                raise ApiError(400, f"There are two custom commands named \"{name}\".")
+            items[name] = as_text(item.get("reply"), f"The reply for \"{name}\"", 1500, required=True)
+        if items:
+            plus.store.data["customcmds"][str(guild.id)] = items
+        else:
+            plus.store.data["customcmds"].pop(str(guild.id), None)
+        plus.store.save()
+
     # Announcements (VIP): messages Risk repeats on a timer
     def read_announcements(self, guild):
         cog = self.bot.get_cog("VIP")
@@ -1158,6 +1192,8 @@ class Dashboard(commands.Cog):
         cog = self.bot.get_cog
         if section in ("general", "commands", "responders"):
             return [self.store.data]
+        if section == "customcmds":
+            return [cog("VIPPlus").store.data]
         if section in ("announcements", "vip"):
             return [cog("VIP").store.data, self.store.data]
         if section == "welcome":

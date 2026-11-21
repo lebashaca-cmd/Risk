@@ -1,4 +1,4 @@
-import type { Announcement, CommandRule, Meta, OverviewSettings, Responder, RespondersSettings, SectionId, VipSettings, AnnouncementsSettings, CommandsSettings } from "./dash-types.js";
+import type { Announcement, CommandRule, CustomCommand, CustomCommandsSettings, Meta, OverviewSettings, Responder, RespondersSettings, SectionId, VipSettings, AnnouncementsSettings, CommandsSettings } from "./dash-types.js";
 import { group, lockControls, multiChannels, multiRoles, numberInput, selectInput, textArea, textInput, toggle, vipBadge } from "./dash-ui.js";
 import type { Choice } from "./dash-ui.js";
 import { h } from "./dom.js";
@@ -44,7 +44,7 @@ function upsell(vip: VipSettings | null, what: string): HTMLElement {
 
 const SECTION_LABEL: Record<string, string> = {
   general: "General", welcome: "Welcome and leave", logs: "Server logs", levels: "Levels", automod: "Auto-moderation", community: "Community",
-  profile: "Bot profile", commands: "Commands", responders: "Auto-replies", announcements: "Announcements", vip: "VIP",
+  profile: "Bot profile", commands: "Commands", responders: "Auto-replies", customcmds: "Custom commands", announcements: "Announcements", vip: "VIP",
 };
 
 // Overview
@@ -209,6 +209,44 @@ export const responders: ExtraRenderer<RespondersSettings> = (draft, meta, chang
   });
   draw();
   return [group("Auto-replies", "Risk answers when a message matches. Replies never ping anyone and skip channels where commands are ignored.", list, count, add)];
+};
+
+// Custom commands (VIP White and up)
+export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommandsSettings> => (draft, _meta, changed) => {
+  const list = h("div", { class: "dash-rules" });
+  const count = h("p", { class: "dash-hint", role: "status" });
+  const draw = (): void => {
+    list.replaceChildren();
+    count.textContent = `${draft.items.length} of ${draft.limit} custom commands.`;
+    if (draft.items.length === 0) list.appendChild(h("p", { class: "dash-empty" }, "No custom commands yet."));
+    draft.items.forEach((item: CustomCommand, index) => {
+      const remove = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Remove");
+      remove.addEventListener("click", () => {
+        draft.items.splice(index, 1);
+        draw();
+        changed();
+      });
+      list.appendChild(
+        h(
+          "div",
+          { class: "dash-card" },
+          textInput("Command name", item.name, (v) => { item.name = v; changed(); }, { max: 20, placeholder: "for example: rules", hint: "Letters, numbers, _ and -. Members run it with ! ? , or your server's own prefix in front. Names of built-in commands can't be used." }),
+          textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 1500, rows: 4, hint: "Plain text. You can use {user} (pings whoever ran it), {server}, {server.members}, {choose:a|b} and 40 more variables (see the docs)." }),
+          h("div", { class: "dash-card-actions" }, remove),
+        ),
+      );
+    });
+  };
+  const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add a custom command");
+  add.addEventListener("click", () => {
+    if (draft.items.length >= draft.limit) return toast(`That is the most custom commands this server can have (${draft.limit}).`);
+    draft.items.push({ name: "", reply: "" });
+    draw();
+    changed();
+  });
+  draw();
+  if (!draft.unlocked) return [upsell(vip, "Custom commands are included with VIP White, VIP Supreme and Lifetime.")];
+  return [group("Custom commands", "Commands you make up. Anyone in the server can run them. They can also be managed in chat with !customcmd.", list, count, add)];
 };
 
 // Announcements (VIP)
