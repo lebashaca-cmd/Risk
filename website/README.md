@@ -123,12 +123,13 @@ How it fits together: the site (this folder) handles the Discord sign-in and for
 3. **Render** (service, Environment tab):
    - `DASHBOARD_KEY` = the same key
    - `DASHBOARD_HOST` = `dashboard.<your domain>` (no `https://`)
+   - Optional: `SITE_HOST` = your main site address. The Risk logo on the dashboard links there. When it is not set, the dashboard address with its first part removed is used (`dashboard.example.com` goes to `example.com`).
 4. **Custom domain.** In Render, Settings, Custom Domains, add `dashboard.<your domain>` and create the DNS record Render shows. Add your main domain too if you want the site there. Render's `onrender.com` address can't have subdomains, so this step needs a domain you own.
 5. **Discord redirect.** In the Developer Portal, OAuth2, Redirects, add `https://dashboard.<your domain>/api/auth/callback`.
 
 ### Docs site
 
-The documentation is plain HTML in `web/docs/`, built by `python tools/build_docs.py` from `docs-src/*.md`, `data/bot.json` and the bot's `utils/variables.py`. It is always available at `/docs/`. To also serve it at a subdomain, add `docs.<your domain>` as a custom domain on Render and set `DOCS_HOST` = `docs.<your domain>` (no `https://`). Rebuild after changing commands (`python tools/export_bot_data.py ../discord-bot-python` first).
+The documentation is plain HTML in `web/docs/`, built by `python tools/build_docs.py` from `docs-src/*.md`, `data/bot.json` and the bot's `utils/variables.py`. It is always available at `/docs/`. The docs address never shows the Cloudflare check. To also serve it at a subdomain, add `docs.<your domain>` as a custom domain on Render and set `DOCS_HOST` = `docs.<your domain>` (no `https://`). Rebuild after changing commands (`python tools/export_bot_data.py ../discord-bot-python` first).
 
 Without `DASHBOARD_HOST` the dashboard still works on the main address at `/dashboard/<server id>`. If `DASHBOARD_HOST` is set, `/dashboard/...` on the main site redirects to the subdomain.
 

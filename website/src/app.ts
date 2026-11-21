@@ -251,6 +251,12 @@ async function start(): Promise<void> {
   document.querySelectorAll<HTMLAnchorElement>("[data-docs]").forEach((link) => {
     link.href = config.docsUrl ?? "/docs/";
   });
+  // On the dashboard address "/" is the dashboard, so the Risk logo has to point at the main site instead.
+  document.querySelectorAll<HTMLAnchorElement>("[data-home]").forEach((link) => {
+    const target = config.siteUrl ?? "/";
+    link.href = target;
+    if (/^https?:/.test(target)) link.removeAttribute("data-link");
+  });
   document.querySelectorAll<HTMLAnchorElement>("[data-dashboard]").forEach((link) => {
     const target = config.dashboardUrl ?? "/dashboard";
     link.href = target;

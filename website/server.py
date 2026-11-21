@@ -101,6 +101,8 @@ class Settings:
         self.trust_proxy = env("TRUST_PROXY") in ("1", "true", "yes")
         host = env("DASHBOARD_HOST").lower()
         self.dashboard_host = host.removeprefix("https://").removeprefix("http://").strip("/")
+        site = env("SITE_HOST").lower()
+        self.site_host = site.removeprefix("https://").removeprefix("http://").strip("/")
         docs = env("DOCS_HOST").lower()
         self.docs_host = docs.removeprefix("https://").removeprefix("http://").strip("/")
         permissions = env("INVITE_PERMISSIONS")
@@ -245,6 +247,8 @@ def gate_applies(request):
     settings = request.app["settings"]
     if not settings.gate_active:
         return False
+    if on_docs_host(request):
+        return False  # the documentation is public, so it never shows the check
     path = request.path
     if request.method == "POST" and path == "/data-deletion":
         pass
@@ -415,13 +419,19 @@ async def api_config(request):
         dashboard_url = f"https://{settings.dashboard_host}/"
     else:
         dashboard_url = "/dashboard"
+    site_url = "/"
+    if settings.site_host:
+        site_url = f"https://{settings.site_host}/"
+    elif on_dashboard_host(request) and settings.dashboard_host.count(".") >= 2:
+        # dashboard.example.com -> example.com. Set SITE_HOST when the main site lives somewhere else.
+        site_url = "https://" + settings.dashboard_host.split(".", 1)[1] + "/"
     staff_url = f"https://{settings.dashboard_host}/staff" if settings.dashboard_host and not on_dashboard_host(request) else "/staff"
     docs_url = f"https://{settings.docs_host}/" if settings.docs_host else "/docs/"
     vip = settings.vip()
     for plan, saved in (await request.app["dashboard"].vip_prices(request)).items():
         if plan in vip:
             vip[plan] = {"price": saved["price"] or vip[plan]["price"], "url": saved["url"] or vip[plan]["url"]}
-    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "staffUrl": staff_url, "docsUrl": docs_url, "dashboardHost": on_dashboard_host(request), "vip": vip}, 15)
+    return json_ok({"name": settings.name, "inviteUrl": settings.invite(), "supportUrl": settings.support_url or None, "dashboardUrl": dashboard_url, "staffUrl": staff_url, "docsUrl": docs_url, "dashboardHost": on_dashboard_host(request), "siteUrl": site_url, "vip": vip}, 15)
 
 
 async def api_status(request):

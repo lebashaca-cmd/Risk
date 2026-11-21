@@ -4,6 +4,7 @@ export interface SiteConfig {
   supportUrl: string | null;
   dashboardUrl?: string;
   dashboardHost?: boolean;
+  siteUrl?: string;
   staffUrl?: string;
   docsUrl?: string;
   vip?: Record<"basic" | "lifetime" | "white" | "supreme", VipPlan>;
