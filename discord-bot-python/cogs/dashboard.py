@@ -35,7 +35,7 @@ except ImportError:  # log_tools.py missing or old
     LOG_CATEGORIES = {}
 from utils.helpers import ModError, explain_error
 from utils.store import JsonStore
-from utils.variables import expand
+from utils.variables import catalog as variable_catalog, expand
 
 DEFAULT_PREFIXES = ("!", "?", ",")
 NEVER_MATCHES = "​​ignored​​"
@@ -407,6 +407,7 @@ class Dashboard(commands.Cog):
             "commands": cmds,
             "logCategories": [{"id": key, "label": label} for key, (label, _) in LOG_CATEGORIES.items()],
             "defaultPrefixes": list(DEFAULT_PREFIXES),
+            "variables": variable_catalog(),
             "vip": self.vip_info(guild.id)["vip"],
             "limits": {key: self.cap(guild.id, key) for key in LIMITS},
         }

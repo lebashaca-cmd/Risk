@@ -54,6 +54,10 @@ Two kinds of rules for commands. **Basic rules** apply to every command, and **c
 
 Answer messages that match a trigger. Choose whether the trigger must be contained in the message, be the whole message or start the message. Replies never ping anyone, and the same reply is not repeated more than once every ten seconds. Replies can use [variables](variables). With VIP you can send a reply as an embed.
 
+### Custom commands (VIP)
+
+Write a plain-text reply for each command. Type `{` in the reply box to find matching [variables](variables), then select one or use the arrow keys and Enter.
+
 ### Announcements (VIP)
 
 Repeat a message in a channel on a timer from every five minutes up to every 30 days. See [VIP plans](vip).

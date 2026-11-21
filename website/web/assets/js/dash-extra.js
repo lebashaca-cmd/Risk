@@ -132,7 +132,7 @@ export const responders = (draft, meta, changed) => {
     return [group("Auto-replies", "Risk answers when a message matches. Replies never ping anyone and skip channels where commands are ignored.", list, count, add)];
 };
 // Custom commands (VIP White and up)
-export const customcmds = (vip) => (draft, _meta, changed) => {
+export const customcmds = (vip) => (draft, meta, changed) => {
     const list = h("div", { class: "dash-rules" });
     const count = h("p", { class: "dash-hint", role: "status" });
     const draw = () => {
@@ -147,7 +147,7 @@ export const customcmds = (vip) => (draft, _meta, changed) => {
                 draw();
                 changed();
             });
-            list.appendChild(h("div", { class: "dash-card" }, textInput("Command name", item.name, (v) => { item.name = v; changed(); }, { max: 20, placeholder: "for example: rules", hint: "Letters, numbers, _ and -. Members run it with ! ? , or your server's own prefix in front. Names of built-in commands can't be used." }), textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 1500, rows: 4, hint: "Plain text. You can use {user} (pings whoever ran it), {server}, {server.members}, {choose:a|b} and 40 more variables (see the docs)." }), h("div", { class: "dash-card-actions" }, remove)));
+            list.appendChild(h("div", { class: "dash-card" }, textInput("Command name", item.name, (v) => { item.name = v; changed(); }, { max: 20, placeholder: "for example: rules", hint: "Letters, numbers, _ and -. Members run it with ! ? , or your server's own prefix in front. Names of built-in commands can't be used." }), textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 1500, rows: 4, variables: meta.variables, hint: "Plain text. Type { to find a variable, or see the docs for the full list." }), h("div", { class: "dash-card-actions" }, remove)));
         });
     };
     const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add a custom command");

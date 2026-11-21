@@ -57,10 +57,18 @@ export interface RoleOption {
   assignable: boolean;
 }
 
+export interface TemplateVariable {
+  token: string;
+  group: string;
+  description: string;
+  example: string;
+}
+
 export interface Meta {
   channels: ChannelOption[];
   roles: RoleOption[];
   commands: { name: string; category: string }[];
+  variables: TemplateVariable[];
   logCategories: { id: string; label: string }[];
   defaultPrefixes: string[];
   vip: boolean;

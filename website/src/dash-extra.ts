@@ -212,7 +212,7 @@ export const responders: ExtraRenderer<RespondersSettings> = (draft, meta, chang
 };
 
 // Custom commands (VIP White and up)
-export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommandsSettings> => (draft, _meta, changed) => {
+export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommandsSettings> => (draft, meta, changed) => {
   const list = h("div", { class: "dash-rules" });
   const count = h("p", { class: "dash-hint", role: "status" });
   const draw = (): void => {
@@ -231,7 +231,7 @@ export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommand
           "div",
           { class: "dash-card" },
           textInput("Command name", item.name, (v) => { item.name = v; changed(); }, { max: 20, placeholder: "for example: rules", hint: "Letters, numbers, _ and -. Members run it with ! ? , or your server's own prefix in front. Names of built-in commands can't be used." }),
-          textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 1500, rows: 4, hint: "Plain text. You can use {user} (pings whoever ran it), {server}, {server.members}, {choose:a|b} and 40 more variables (see the docs)." }),
+          textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 1500, rows: 4, variables: meta.variables, hint: "Plain text. Type { to find a variable, or see the docs for the full list." }),
           h("div", { class: "dash-card-actions" }, remove),
         ),
       );

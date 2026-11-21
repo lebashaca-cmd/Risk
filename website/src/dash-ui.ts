@@ -1,6 +1,6 @@
 import { h } from "./dom.js";
 import type { Child } from "./dom.js";
-import type { Meta } from "./dash-types.js";
+import type { Meta, TemplateVariable } from "./dash-types.js";
 
 let counter = 0;
 export function uid(prefix: string): string {
@@ -41,6 +41,7 @@ interface TextOptions {
   placeholder?: string;
   hint?: string;
   rows?: number;
+  variables?: TemplateVariable[];
 }
 
 export function textInput(label: string, value: string, onChange: (value: string) => void, options: TextOptions = {}): HTMLElement {
@@ -53,14 +54,120 @@ export function textInput(label: string, value: string, onChange: (value: string
 
 export function textArea(label: string, value: string, onChange: (value: string) => void, options: TextOptions = {}): HTMLElement {
   const id = uid("ta");
-  const area = h("textarea", { id, class: "dash-input dash-area", maxlength: options.max ?? 1500, rows: options.rows ?? 4, placeholder: options.placeholder ?? "", "aria-describedby": options.hint ? `${id}-hint` : null });
+  const area = h("textarea", {
+    id,
+    class: "dash-input dash-area",
+    maxlength: options.max ?? 1500,
+    rows: options.rows ?? 4,
+    placeholder: options.placeholder ?? "",
+    "aria-describedby": options.hint ? `${id}-hint` : null,
+    role: options.variables ? "combobox" : null,
+    "aria-autocomplete": options.variables ? "list" : null,
+    "aria-expanded": options.variables ? "false" : null,
+    "aria-controls": options.variables ? `${id}-suggestions` : null,
+  });
   area.value = value;
   const counterEl = h("span", { class: "dash-count", "aria-hidden": "true" }, `${value.length}/${options.max ?? 1500}`);
+  const suggestions = options.variables ? h("div", { id: `${id}-suggestions`, class: "dash-variable-suggestions", role: "listbox", "aria-label": "Available variables", hidden: true }) : null;
+  const wrap = h("div", { class: "dash-area-wrap" }, area, counterEl, suggestions);
+  let active = 0;
+
+  const closeSuggestions = (): void => {
+    if (!suggestions) return;
+    suggestions.hidden = true;
+    area.setAttribute("aria-expanded", "false");
+    area.removeAttribute("aria-activedescendant");
+  };
+  const selectVariable = (token: string): void => {
+    if (!suggestions) return;
+    const caret = area.selectionStart ?? area.value.length;
+    const end = area.selectionEnd ?? caret;
+    const before = area.value.slice(0, caret);
+    const open = /\{([^{}]*)$/.exec(before);
+    if (!open) return;
+    const start = caret - open[0].length;
+    area.value = area.value.slice(0, start) + token + area.value.slice(end);
+    const nextCaret = start + token.length;
+    area.setSelectionRange(nextCaret, nextCaret);
+    counterEl.textContent = `${area.value.length}/${options.max ?? 1500}`;
+    closeSuggestions();
+    area.focus();
+    onChange(area.value);
+  };
+  const updateSuggestions = (): void => {
+    if (!suggestions || !options.variables) return;
+    const caret = area.selectionStart ?? area.value.length;
+    const open = /\{([^{}]*)$/.exec(area.value.slice(0, caret));
+    if (!open) {
+      closeSuggestions();
+      return;
+    }
+
+    const query = (open[1] ?? "").toLowerCase();
+    const matches = options.variables.filter(({ token }) => {
+      const name = token.slice(1, -1).toLowerCase();
+      return name.startsWith(query) || (query.includes(":") && name.split(":", 1)[0] === query.split(":", 1)[0]);
+    });
+    if (!matches.length) {
+      closeSuggestions();
+      return;
+    }
+
+    active = 0;
+    const shown = matches.slice(0, 8);
+    suggestions.replaceChildren(...shown.map((variable, index) => {
+      const optionId = `${id}-suggestion-${index}`;
+      const option = h(
+        "button",
+        { id: optionId, type: "button", class: "dash-variable-option", role: "option", "aria-selected": index === 0 ? "true" : "false" },
+        h("span", { class: "dash-variable-token" }, variable.token),
+        h("span", { class: "dash-variable-group" }, variable.group),
+        h("span", { class: "dash-variable-description" }, variable.description),
+      );
+      option.addEventListener("mousedown", (event) => event.preventDefault());
+      option.addEventListener("click", () => selectVariable(variable.token));
+      return option;
+    }));
+    if (matches.length > shown.length) {
+      suggestions.appendChild(h("p", { class: "dash-variable-more" }, `Type more to narrow ${matches.length} matches.`));
+    }
+    suggestions.hidden = false;
+    area.setAttribute("aria-expanded", "true");
+    area.setAttribute("aria-activedescendant", `${id}-suggestion-0`);
+  };
   area.addEventListener("input", () => {
     counterEl.textContent = `${area.value.length}/${options.max ?? 1500}`;
     onChange(area.value);
+    updateSuggestions();
   });
-  return labelled(id, label, h("div", { class: "dash-area-wrap" }, area, counterEl), options.hint);
+  if (suggestions) {
+    area.addEventListener("keydown", (event) => {
+      if (suggestions.hidden) return;
+      const options = [...suggestions.querySelectorAll<HTMLElement>('[role="option"]')];
+      if (event.key === "Escape") {
+        closeSuggestions();
+      } else if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        event.preventDefault();
+        active = (active + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
+        options.forEach((option, index) => option.setAttribute("aria-selected", String(index === active)));
+        area.setAttribute("aria-activedescendant", options[active]?.id ?? "");
+      } else if (event.key === "Enter" || event.key === "Tab") {
+        const selected = options[active];
+        if (selected) {
+          event.preventDefault();
+          selectVariable(selected.querySelector(".dash-variable-token")?.textContent ?? "");
+          active = 0;
+        }
+      }
+    });
+    area.addEventListener("keyup", (event) => {
+      if (event.key === "Escape") return;
+      if (suggestions.hidden || !["ArrowUp", "ArrowDown", "Enter", "Tab"].includes(event.key)) updateSuggestions();
+    });
+    area.addEventListener("click", updateSuggestions);
+    area.addEventListener("blur", closeSuggestions);
+  }
+  return labelled(id, label, wrap, options.hint);
 }
 
 export function numberInput(label: string, value: number, onChange: (value: number) => void, min: number, max: number, step = 1, hint?: string): HTMLElement {
