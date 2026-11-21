@@ -76,6 +76,18 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
     def need(self, ctx, group):
         self.vip.need(ctx, group)
 
+    # Custom commands: shared by the !customcmd commands and the dashboard editor
+    def custom_cap(self, guild_id):
+        return CUSTOM_LIMIT["supreme" if self.vip.has(guild_id, "supreme") else "white"]
+
+    def custom_name_error(self, name, existing=()):
+        """Why a custom command name can't be used, or None. Names already saved are allowed to stay."""
+        if not NAME_RE.match(name):
+            return "A name is 1 to 20 letters, numbers, `_` or `-`."
+        if name not in existing and self.bot.get_command(name) is not None:
+            return "A built-in command already uses that name."
+        return None
+
     def colour(self, guild):
         return self.vip.embed_color(guild.id) or discord.Color.gold()
 
@@ -276,14 +288,13 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
         """Adds a custom command. Usage: !customcmd add <name> <reply>"""
         self.need(ctx, "white")
         name = name.lower()
-        if not NAME_RE.match(name):
-            raise ModError("A name is 1 to 20 letters, numbers, `_` or `-`.")
-        if self.bot.get_command(name) is not None:
-            raise ModError("A built-in command already uses that name.")
+        problem = self.custom_name_error(name)
+        if problem:
+            raise ModError(problem)
         if len(reply) > 1500:
             raise ModError("Keep the reply under 1500 characters.")
         items = self.store.data["customcmds"].setdefault(str(ctx.guild.id), {})
-        cap = CUSTOM_LIMIT["supreme" if self.vip.has(ctx.guild.id, "supreme") else "white"]
+        cap = self.custom_cap(ctx.guild.id)
         if name not in items and len(items) >= cap:
             raise ModError(f"This server has used all {cap} custom commands.")
         items[name] = reply
