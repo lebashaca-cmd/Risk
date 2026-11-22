@@ -100,6 +100,7 @@ export interface LogsSettings {
 export interface LevelsSettings {
   announce: string;
   message: string;
+  card: boolean;
   multiplier: number;
   cooldown: number;
   mode: "stack" | "replace";

@@ -234,6 +234,7 @@ const levels: Renderer<"levels"> = (draft, meta, changed) => {
       "Level-up message",
       null,
       selectInput("Where to announce", channelChoices(meta, null, [{ value: "same", label: "In the channel where they levelled up" }, { value: "off", label: "Don't announce" }]), draft.announce, (v) => { draft.announce = v; changed(); }),
+      toggle("Send the Level-up! picture", "Adds a small picture with their avatar and their old and new level. It is skipped when the message is an embed.", draft.card, (v) => { draft.card = v; changed(); }),
       textArea("Message", draft.message, (v) => { draft.message = v; changed(); }, { max: 500, rows: 3, hint: "Use {user} to mention them, {name} for their name and {level} for the new level, plus {xp}, {nextlevel} and {messages}. Put {embed} at the start and the end to send it as an embed. Leave empty for the default." }),
     ),
     group(

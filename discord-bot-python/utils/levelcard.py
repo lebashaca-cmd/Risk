@@ -237,6 +237,31 @@ def render_board(title, subtitle, rows, footer, guild_icon=None, guild_name=""):
     return out.getvalue()
 
 
+def render_levelup(old_level, new_level, avatar=None):
+    """The small "Level-up!" card sent with a level-up message: the member's avatar, the title and "old • new"."""
+    w, h = 800, 280
+    image = Image.new("RGBA", (w, h), (0, 0, 0, 0))
+    draw = ImageDraw.Draw(image)
+    draw.rounded_rectangle((0, 0, w - 1, h - 1), radius=44, fill=(24, 24, 28), outline=EDGE, width=2)
+    size = 196
+    left, top = 42, (h - size) // 2
+    if avatar is not None:
+        image.paste(round_image(avatar, size), (left, top), round_image(avatar, size))
+    else:
+        draw.ellipse((left, top, left + size, top + size), fill=CHIP)
+    title, numbers = font(86), font(66)
+    text = clean(f"{int(old_level)} \u2022 {int(new_level)}")
+    area_left, area_right = left + size + 30, w - 36
+    centre = (area_left + area_right) / 2
+    title_width = draw.textlength("Level-up!", font=title)
+    numbers_width = draw.textlength(text, font=numbers)
+    draw.text((centre - title_width / 2, 44), "Level-up!", font=title, fill=WHITE)
+    draw.text((centre - numbers_width / 2, 150), text, font=numbers, fill=WHITE)
+    out = io.BytesIO()
+    image.save(out, "PNG", optimize=True)
+    return out.getvalue()
+
+
 def open_image(data):
     if not data or not HAVE_PIL:
         return None
