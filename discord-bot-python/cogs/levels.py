@@ -9,10 +9,10 @@ import discord
 from discord.ext import commands, tasks
 
 from utils.helpers import NO_MENTIONS, explain_error, message_payload
-from utils.levelcard import HAVE_PIL, open_image, render
+from utils.levelcard import HAVE_PIL, open_image, render, render_levelup
 from utils.store import JsonStore
 
-DEFAULT_MESSAGE = "🎉 {user} reached level **{level}**!"
+DEFAULT_MESSAGE = "{user} has reached level **{level}**. GG!"
 MAX_XP = 10_000_000
 
 
@@ -121,6 +121,7 @@ class Levels(commands.Cog):
         data.setdefault("noxp_roles", [])
         data.setdefault("multiplier", 1.0)
         data.setdefault("cooldown", 60)
+        data.setdefault("card", True)
         return data
 
     def ranked(self, guild_id):
@@ -156,7 +157,7 @@ class Levels(commands.Cog):
             return 0
         return len(added)
 
-    async def announce(self, member, channel, level):
+    async def announce(self, member, channel, level, before=None):
         config = self.cfg(member.guild.id)
         target = config["channel"]
         if target == "off":
@@ -170,6 +171,16 @@ class Levels(commands.Cog):
         payload = message_payload(template, member, {"{level}": str(level), "{name}": member.display_name}, color=vip.embed_color(member.guild.id) if vip else None, channel=channel, extra=extra)
         if payload.get("content"):
             payload["content"] = payload["content"][:1900]
+        picture = None
+        if config["card"] and HAVE_PIL and not payload.get("embed"):
+            try:
+                avatar = open_image(await member.display_avatar.replace(size=256, format="png").read())
+                data = await asyncio.to_thread(render_levelup, before if before is not None else level - 1, level, avatar)
+                picture = discord.File(io.BytesIO(data), filename="levelup.png")
+            except Exception as error:
+                print(f"[levels] level-up card failed: {type(error).__name__}: {error}")
+        if picture is not None:
+            payload["file"] = picture
         try:
             await channel.send(**payload, allowed_mentions=discord.AllowedMentions(users=[member]))
         except discord.HTTPException:
@@ -201,7 +212,7 @@ class Levels(commands.Cog):
         after = level_for(entry["xp"])
         if after > before:
             await self.apply_rewards(message.author)
-            await self.announce(message.author, message.channel, after)
+            await self.announce(message.author, message.channel, after, before)
 
     # Viewing
     @commands.command(name="rank", aliases=["level"])
@@ -418,6 +429,19 @@ class Levels(commands.Cog):
             text = f"Level-ups are announced in {channel.mention}."
         self.settings.save()
         await ctx.reply(text, mention_author=False)
+
+    @commands.command(name="levelcard")
+    @commands.has_permissions(manage_guild=True)
+    async def levelcard(self, ctx, state: str = ""):
+        """Turns the "Level-up!" picture on or off. It is sent with the level-up message, with the member's avatar and their old and new level. Usage: !levelcard off"""
+        config = self.cfg(ctx.guild.id)
+        lowered = state.lower()
+        if lowered not in ("on", "off"):
+            await ctx.reply(f"The level-up picture is **{'on' if config['card'] else 'off'}**. Use `{ctx.clean_prefix}levelcard on` or `off`.", mention_author=False)
+            return
+        config["card"] = lowered == "on"
+        self.settings.save()
+        await ctx.reply(f"The level-up picture is now **{lowered}**." + ("" if HAVE_PIL or lowered == "off" else " Pillow isn't installed on the bot host, so it won't show yet."), mention_author=False)
 
     @commands.command(name="xpmultiplier")
     @commands.has_permissions(manage_guild=True)

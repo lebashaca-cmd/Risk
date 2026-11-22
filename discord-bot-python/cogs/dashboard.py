@@ -533,6 +533,7 @@ class Dashboard(commands.Cog):
         return {
             "announce": config["channel"] if config["channel"] in ("same", "off") else str(config["channel"]),
             "message": config["message"] or "",
+            "card": bool(config["card"]),
             "multiplier": config["multiplier"],
             "cooldown": config["cooldown"],
             "mode": config["mode"],
@@ -552,6 +553,8 @@ class Dashboard(commands.Cog):
         if "message" in body:
             text = as_text(body["message"], "Level-up message", 500)
             config["message"] = text or None
+        if "card" in body:
+            config["card"] = bool(body["card"])
         if "multiplier" in body:
             config["multiplier"] = as_float(body["multiplier"], "XP multiplier", 0.1, LIMITS["xp_multiplier"][1])
         if "cooldown" in body:
