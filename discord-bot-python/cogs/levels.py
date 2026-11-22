@@ -172,7 +172,9 @@ class Levels(commands.Cog):
         if payload.get("content"):
             payload["content"] = payload["content"][:1900]
         picture = None
-        if config["card"] and HAVE_PIL and not payload.get("embed"):
+        if config["card"] and not HAVE_PIL:
+            print("[levels] level-up card skipped: Pillow isn't installed (pip install Pillow)")
+        if config["card"] and HAVE_PIL:
             try:
                 avatar = open_image(await member.display_avatar.replace(size=256, format="png").read())
                 data = await asyncio.to_thread(render_levelup, before if before is not None else level - 1, level, avatar)
@@ -181,6 +183,8 @@ class Levels(commands.Cog):
                 print(f"[levels] level-up card failed: {type(error).__name__}: {error}")
         if picture is not None:
             payload["file"] = picture
+            if payload.get("embed") is not None and payload["embed"].image.url is None:
+                payload["embed"].set_image(url="attachment://levelup.png")  # embed messages show the card inside the embed
         try:
             await channel.send(**payload, allowed_mentions=discord.AllowedMentions(users=[member]))
         except discord.HTTPException:
@@ -433,9 +437,16 @@ class Levels(commands.Cog):
     @commands.command(name="levelcard")
     @commands.has_permissions(manage_guild=True)
     async def levelcard(self, ctx, state: str = ""):
-        """Turns the "Level-up!" picture on or off. It is sent with the level-up message, with the member's avatar and their old and new level. Usage: !levelcard off"""
+        """Turns the "Level-up!" picture on or off. It is sent with the level-up message, with the member's avatar and their old and new level. Usage: !levelcard off | !levelcard test (sends a sample level-up)"""
         config = self.cfg(ctx.guild.id)
         lowered = state.lower()
+        if lowered == "test":
+            if not HAVE_PIL:
+                await ctx.reply("Pillow isn't installed on the bot host, so the picture can't be drawn. Run `pip install Pillow` there and restart.", mention_author=False)
+                return
+            level = level_for(self.entry(ctx.guild.id, ctx.author.id)["xp"])
+            await self.announce(ctx.author, ctx.channel, level + 1, level)
+            return
         if lowered not in ("on", "off"):
             await ctx.reply(f"The level-up picture is **{'on' if config['card'] else 'off'}**. Use `{ctx.clean_prefix}levelcard on` or `off`.", mention_author=False)
             return

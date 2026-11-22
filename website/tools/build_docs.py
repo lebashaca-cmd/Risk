@@ -392,7 +392,7 @@ def main(bot_dir):
 <meta property="og:title" content="{html.escape(page['title'])} · Risk docs">
 <meta property="og:description" content="{desc}">
 <meta name="twitter:card" content="summary">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#131314">
 <link rel="icon" href="/favicon.png" type="image/png">
 <link rel="apple-touch-icon" href="/favicon.png">
 <link rel="stylesheet" href="docs.css">

@@ -29,7 +29,7 @@ A server is on one plan. Each command asks for a group, and the plan decides whi
 
 | Group | Commands |
 |---|---|
-| Basic | `vipcolor`, `vippoll`, `vipsay`, `vipannounce`, `viprolecolor`, `servercard`, `topmessages`, `userreport`, `rolereport`, plus `vipembed`, `serverstats`, `schedule`, `vipinrole` |
+| Basic | `vipcolor`, `vippoll`, `vipsay`, `vipannounce`, `viprolecolor`, `servercard`, `topmessages`, `userreport`, `rolereport`, plus `vipembed`, `serverstats`, `schedule`, `vipinrole`, `vipdraw`, `vipcountdown`, `vipchoose` |
 | White | `customcmd` (up to 50, 200 on Supreme), `autoreact`, `welcomedm`, `embededit`, `stafflist`, `honeypot`, `stickyroles`, `joingate`, `viplog` |
 | Supreme | `autodelete`, `slowmodeall`, `lockall`, `unlockall`, `serverbackup`, `membercounter`, `permaudit`, `massrole`, `exportmembers` |
 | Lifetime | `founder`, `motd` |

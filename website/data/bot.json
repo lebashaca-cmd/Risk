@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T17:14:13+00:00",
+  "generatedAt": "2026-11-22T17:27:38+00:00",
   "prefixes": [
     "!",
     "?",
@@ -1811,6 +1811,16 @@
       "permission": null
     },
     {
+      "name": "baka",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Calls someone a baka.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "bandname",
       "kind": "prefix",
       "category": "Fun",
@@ -1881,6 +1891,17 @@
       "permission": null
     },
     {
+      "name": "bored",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shows you are bored, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "capitalquiz",
       "kind": "prefix",
       "category": "Fun",
@@ -1895,6 +1916,16 @@
       "kind": "prefix",
       "category": "Fun",
       "description": "Shows a random cat picture.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "catboy",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "A random catboy picture.",
       "examples": [
         ""
       ],
@@ -1987,6 +2018,16 @@
       "description": "Cuddles someone.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "cups",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "The shell game: a ball is under one of 3 cups. Pick 1, 2 or 3.",
+      "examples": [
+        "2"
       ],
       "permission": null
     },
@@ -2091,6 +2132,26 @@
       "permission": null
     },
     {
+      "name": "feed",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Feeds someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "femboy",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "A random femboy picture (safe-for-work).",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "fight",
       "kind": "prefix",
       "category": "Fun",
@@ -2161,6 +2222,47 @@
       "permission": null
     },
     {
+      "name": "handhold",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Holds someone's hand.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "handshake",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shakes someone's hand.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "happy",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shows you are happy, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "highcard",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Draws a card each against Risk or another member. Higher card wins, ace is high.",
+      "examples": [
+        "| !highcard @user"
+      ],
+      "permission": null
+    },
+    {
       "name": "highfive",
       "kind": "prefix",
       "category": "Fun",
@@ -2181,12 +2283,52 @@
       "permission": null
     },
     {
+      "name": "hotcold",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Find a secret number from 1 to 100 with hot and cold hints.",
+      "examples": [
+        "start | !hotcold guess 42"
+      ],
+      "permission": null
+    },
+    {
+      "name": "hotcold guess",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Guesses the number.",
+      "examples": [
+        "42"
+      ],
+      "permission": null
+    },
+    {
+      "name": "hotcold start",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Starts a hot-and-cold game.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "hug",
       "kind": "prefix",
       "category": "Fun",
       "description": "Hugs someone.",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "husbando",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "A random husbando picture.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -2211,12 +2353,83 @@
       "permission": null
     },
     {
+      "name": "kitsune",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "A random kitsune (fox person) picture.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "laugh",
       "kind": "prefix",
       "category": "Fun",
       "description": "Laughs (with someone, not at them).",
       "examples": [
         "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "lurk",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Lurks quietly, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mastermind",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Break a secret 4-colour code in 10 tries. Colours: r o y g b p.",
+      "examples": [
+        "start | !mastermind guess rgby | !mastermind quit"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mastermind guess",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Guesses the code.",
+      "examples": [
+        "rgby"
+      ],
+      "permission": null
+    },
+    {
+      "name": "mastermind quit",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Gives up and shows the code.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "mastermind start",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Starts a new Mastermind game.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "memory",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Memorise a row of emoji, then type them back in order.",
+      "examples": [
+        "| !memory 8 (3 to 8 emoji)"
       ],
       "permission": null
     },
@@ -2251,6 +2464,16 @@
       "permission": null
     },
     {
+      "name": "neko",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "A random neko picture.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "nickgen",
       "kind": "prefix",
       "category": "Fun",
@@ -2261,11 +2484,33 @@
       "permission": null
     },
     {
+      "name": "nod",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Nods, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "nom",
       "kind": "prefix",
       "category": "Fun",
       "description": "Nibbles on someone (gently).",
       "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "nope",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Says nope, on your own or with someone.",
+      "examples": [
+        "",
         "@user"
       ],
       "permission": null
@@ -2285,6 +2530,16 @@
       "kind": "prefix",
       "category": "Fun",
       "description": "Pats someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "peck",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Gives someone a little peck.",
       "examples": [
         "@user"
       ],
@@ -2326,6 +2581,17 @@
       "category": "Fun",
       "description": "Pokes someone.",
       "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "pout",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Pouts, on your own or with someone.",
+      "examples": [
+        "",
         "@user"
       ],
       "permission": null
@@ -2451,11 +2717,43 @@
       "permission": null
     },
     {
+      "name": "shoot",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shoots a finger gun at someone.",
+      "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "shrug",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Shrugs, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
+      ],
+      "permission": null
+    },
+    {
       "name": "slap",
       "kind": "prefix",
       "category": "Fun",
       "description": "Slaps someone with a wet noodle.",
       "examples": [
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "sleep",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Goes to sleep, on your own or with someone.",
+      "examples": [
+        "",
         "@user"
       ],
       "permission": null
@@ -2467,6 +2765,28 @@
       "description": "Writes text in small capitals.",
       "examples": [
         "hello there"
+      ],
+      "permission": null
+    },
+    {
+      "name": "smile",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Smiles, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "smug",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Looks smug, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
       ],
       "permission": null
     },
@@ -2527,6 +2847,28 @@
       "description": "Draws three tarot cards for past, present and future (just for fun).",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "think",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Thinks hard, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
+      ],
+      "permission": null
+    },
+    {
+      "name": "thumbsup",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Gives a thumbs up, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
       ],
       "permission": null
     },
@@ -2601,6 +2943,16 @@
       "permission": null
     },
     {
+      "name": "waifu",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "A random waifu picture.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "wave",
       "kind": "prefix",
       "category": "Fun",
@@ -2647,6 +2999,17 @@
       "description": "Asks a would-you-rather question.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "yawn",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Yawns, on your own or with someone.",
+      "examples": [
+        "",
+        "@user"
       ],
       "permission": null
     },
@@ -3036,7 +3399,7 @@
       "category": "Levels",
       "description": "Turns the \"Level-up!\" picture on or off. It is sent with the level-up message, with the member's avatar and their old and new level.",
       "examples": [
-        "off"
+        "off | !levelcard test (sends a sample level-up)"
       ],
       "permission": "Manage Server"
     },
@@ -5739,6 +6102,36 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "vipautothread",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Starts a thread under every new message in a channel, good for suggestions or feedback.",
+      "examples": [
+        "#ideas | !vipautothread #ideas off"
+      ],
+      "permission": "Manage Channels"
+    },
+    {
+      "name": "vipchoose",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Picks one of your options at random. Separate them with commas.",
+      "examples": [
+        "pizza, tacos, sushi"
+      ],
+      "permission": null
+    },
+    {
+      "name": "vipcleanbots",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Deletes recent messages from bots in this channel (not pinned ones).",
+      "examples": [
+        "100"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
       "name": "vipcolor",
       "kind": "prefix",
       "category": "VIP",
@@ -5757,6 +6150,26 @@
         ""
       ],
       "permission": null
+    },
+    {
+      "name": "vipcountdown",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Posts a live countdown that updates itself for everyone.",
+      "examples": [
+        "3d Server event | !vipcountdown 2h30m Movie night"
+      ],
+      "permission": "Manage Messages"
+    },
+    {
+      "name": "vipdraw",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Picks random members who have a role, like a quick raffle.",
+      "examples": [
+        "@Members 3"
+      ],
+      "permission": "Manage Messages"
     },
     {
       "name": "vipembed",
@@ -5807,6 +6220,26 @@
         "#staff-log | off"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "vipnewmembers",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Lists members who joined recently, with how old their accounts are.",
+      "examples": [
+        "3d"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "vipnicklock",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Locks a member's nickname: if they change it, Risk puts it back.",
+      "examples": [
+        "@user Cool Name | !vipnicklock @user (to unlock)"
+      ],
+      "permission": "Manage Nicknames"
     },
     {
       "name": "vippoll",
