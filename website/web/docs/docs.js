@@ -126,15 +126,3 @@
     if (event.key === "/" && tag !== "INPUT" && tag !== "TEXTAREA") { event.preventDefault(); input.focus(); }
   });
 })();
-
-(function () {
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-  var root = document.documentElement, running = false;
-  var t = { x: innerWidth * 0.6, y: innerHeight * 0.3 }, n = { x: t.x, y: t.y };
-  function frame() {
-    n.x += (t.x - n.x) * 0.08; n.y += (t.y - n.y) * 0.08;
-    root.style.setProperty("--gx", n.x.toFixed(1) + "px"); root.style.setProperty("--gy", n.y.toFixed(1) + "px");
-    if (Math.abs(t.x - n.x) + Math.abs(t.y - n.y) > 0.5) requestAnimationFrame(frame); else running = false;
-  }
-  addEventListener("pointermove", function (e) { t.x = e.clientX; t.y = e.clientY; if (!running) { running = true; requestAnimationFrame(frame); } }, { passive: true });
-})();
