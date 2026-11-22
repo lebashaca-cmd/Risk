@@ -1,6 +1,7 @@
 import { api } from "./api.js";
 import { initMotionFlag, prefersReduced, smoothScroll } from "./anim.js";
 import { h, mount } from "./dom.js";
+import { startGlow } from "./glow.js";
 import { renderCommands } from "./commands.js";
 import { renderDashboard } from "./dashboard.js";
 import { renderHome } from "./home.js";
@@ -217,6 +218,7 @@ async function start() {
     watchHeader();
     bindNav();
     initNavMenu();
+    startGlow();
     try {
         config = await api.config();
     }

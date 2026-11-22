@@ -1,8 +1,8 @@
 :root {
   color-scheme: dark;
-  --abyss: #131314;
-  --deck: #1b1b1d;
-  --panel: #1f1f21;
+  --abyss: #000;
+  --deck: #070707;
+  --panel: #0a0a0a;
   --edge: rgba(255, 255, 255, 0.12);
   --edge-strong: rgba(255, 255, 255, 0.26);
   --bone: #f4f4f4;
@@ -23,7 +23,7 @@ a:hover { text-decoration-color: var(--bone); }
 .skip:focus { top: 0.75rem; }
 
 /* header */
-.top { position: sticky; top: 0; z-index: 30; height: var(--top); display: flex; align-items: center; gap: 1rem; padding: 0 1.25rem; background: rgba(19, 19, 20, 0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--edge); }
+.top { position: sticky; top: 0; z-index: 30; height: var(--top); display: flex; align-items: center; gap: 1rem; padding: 0 1.25rem; background: rgba(0, 0, 0, 0.88); backdrop-filter: blur(10px); border-bottom: 1px solid var(--edge); }
 .brand { font-weight: 600; font-size: 1.15rem; letter-spacing: -0.02em; text-decoration: none; white-space: nowrap; }
 .brand span { color: var(--mist); font-weight: 400; }
 .search { position: relative; flex: 1; max-width: 32rem; margin-left: auto; }
@@ -145,3 +145,10 @@ a.tag:hover { background: rgba(255, 255, 255, 0.16); }
 .consent-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: flex-end; }
 .consent .btn { font: inherit; font-size: 0.92rem; padding: 0.5rem 1rem; border-radius: 10px; border: 1px solid var(--edge-strong); background: transparent; color: var(--bone); cursor: pointer; }
 .consent .btn-primary { background: var(--bone); color: #111; border-color: var(--bone); }
+
+/* Pure black page with a white glow that trails the pointer. */
+body { position: relative; }
+body::before {
+  content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(34rem circle at var(--gx, 60vw) var(--gy, 30vh), rgba(255, 255, 255, 0.19), rgba(255, 255, 255, 0.06) 40%, transparent 70%);
+}

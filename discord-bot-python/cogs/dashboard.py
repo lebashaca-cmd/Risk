@@ -42,7 +42,7 @@ NEVER_MATCHES = "​​ignored​​"
 # Server-wide basic rules for commands. Members with Manage Server ignore all of them.
 BASICS = {"blocked_channels": [], "only_channels": [], "blocked_roles": [], "delete_invocations": False, "cooldown": 0}
 BASICS_EXEMPT = {"help", "dashboard"}
-SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "customcmds", "announcements", "vip", "games")
+SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "customcmds", "announcements", "vip")
 READ_ONLY = ("overview",)
 MAX_BODY = 1_000_000
 MAX_PROFILE_BODY = 7_500_000
@@ -62,7 +62,6 @@ REQUIREMENTS = {
     "commands": [],
     "responders": [],
     "customcmds": [("VIP", "vip.py", ["has"]), ("VIPPlus", "vip_plus.py", ["custom_cap", "custom_name_error", "store.save", "store.data"])],
-    "games": [("Games", "games.py", ["store.save", "store.data", "new_server"])],
     "overview": [],
     "announcements": [("VIP", "vip.py", ["schedules", "is_vip", "limit", "store.save"])],
     "vip": [("VIP", "vip.py", ["info", "limit", "cfg", "store.save"])],
@@ -764,78 +763,6 @@ class Dashboard(commands.Cog):
             plus.store.data["customcmds"].pop(str(guild.id), None)
         plus.store.save()
 
-    # Games: game servers Risk tracks (and can manage) for this server
-    def read_games(self, guild):
-        cog = self.bot.get_cog("Games")
-        data, gid = cog.store.data, str(guild.id)
-        items = []
-        for name, cfg in cog.servers(guild.id).items():
-            state = cog.state(guild.id, name)
-            items.append({
-                "name": name, "game": cfg["game"], "host": cfg["host"], "port": cfg["port"], "queryPort": cfg.get("query_port"),
-                "rconPort": cfg.get("rcon_port"), "hasRconPassword": bool(cfg.get("rcon_password")), "hasToken": bool(cfg.get("token")),
-                "mapUrl": cfg.get("map_url", ""), "track": cfg.get("track", True), "panelUrl": cfg.get("panel_url", ""),
-                "panelId": cfg.get("panel_id", ""), "hasPanelKey": bool(cfg.get("panel_key")),
-                "status": {"online": state.get("online"), "count": state.get("count", 0), "max": state.get("max", 0), "players": state.get("players", [])[:50], "world": state.get("map")} if state else None,
-            })
-        return {"items": items, "feed": str(data["feed"].get(gid) or ""), "games": {k: v[0] for k, v in __import__("cogs.games", fromlist=["GAMES"]).GAMES.items()}}
-
-    def write_games(self, guild, body):
-        cog = self.bot.get_cog("Games")
-        from utils import gamenet
-        games = __import__("cogs.games", fromlist=["GAMES"]).GAMES
-        gid = str(guild.id)
-        current = cog.servers(guild.id)
-        updated = {}
-        for item in as_list(body.get("items", []), "Game servers", 10):
-            if not isinstance(item, dict):
-                raise ApiError(400, "Each game server needs a name, a game and an address.")
-            name = as_text(item.get("name"), "Server name", 20, required=True).lower()
-            if not re.fullmatch(r"[a-z0-9_-]{1,20}", name):
-                raise ApiError(400, "A server name is 1 to 20 letters, numbers, _ or -.")
-            if name in updated:
-                raise ApiError(400, f"There are two game servers named \"{name}\".")
-            old = current.get(name, {})
-            game = item.get("game")
-            if game not in games:
-                raise ApiError(400, f"\"{name}\": pick a game from the list.")
-            try:
-                host, port = gamenet.parse_address(f"{as_text(item.get('host'), 'Address', 253, required=True)}:{as_int(item.get('port', games[game][1]), 'Port', 1, 65535)}", games[game][1])
-            except gamenet.GameError as error:
-                raise ApiError(400, f"\"{name}\": {error}")
-            cfg = cog.new_server(game, host, port)
-            cfg["track"] = as_bool(item.get("track", True), "Tracking")
-            for field, key in (("queryPort", "query_port"), ("rconPort", "rcon_port")):
-                if item.get(field) not in (None, ""):
-                    cfg[key] = as_int(item[field], field, 1, 65535)
-            for field, key, size in (("mapUrl", "map_url", 200), ("panelUrl", "panel_url", 200)):
-                text = as_text(item.get(field), field, size)
-                if text:
-                    if not re.fullmatch(r"https?://[^\s]{4,200}", text):
-                        raise ApiError(400, f"\"{name}\": {field} must be a full link starting with http:// or https://.")
-                    cfg[key] = text
-            panel_id = as_text(item.get("panelId"), "Panel server id", 60)
-            if panel_id:
-                cfg["panel_id"] = panel_id
-            # Secrets are never sent to the browser. A blank box keeps what is saved; "clear" flags remove it.
-            for field, key, clear in (("rconPassword", "rcon_password", "clearRconPassword"), ("token", "token", "clearToken"), ("panelKey", "panel_key", "clearPanelKey")):
-                text = as_text(item.get(field), field, 300)
-                if text:
-                    cfg[key] = text
-                elif old.get(key) and not item.get(clear):
-                    cfg[key] = old[key]
-            updated[name] = cfg
-        for name in set(current) - set(updated):
-            cog.forget(guild.id, name)
-        current.clear()
-        current.update(updated)
-        channel = pick_channel(guild, body.get("feed"), "Feed channel")
-        if channel:
-            cog.store.data["feed"][gid] = channel
-        else:
-            cog.store.data["feed"].pop(gid, None)
-        cog.store.save()
-
     # Announcements (VIP): messages Risk repeats on a timer
     def read_announcements(self, guild):
         cog = self.bot.get_cog("VIP")
@@ -1271,8 +1198,6 @@ class Dashboard(commands.Cog):
             return [self.store.data]
         if section == "customcmds":
             return [cog("VIPPlus").store.data]
-        if section == "games":
-            return [cog("Games").store.data]
         if section in ("announcements", "vip"):
             return [cog("VIP").store.data, self.store.data]
         if section == "welcome":
