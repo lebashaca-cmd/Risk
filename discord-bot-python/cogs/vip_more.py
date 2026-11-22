@@ -72,10 +72,10 @@ class VIPMore(commands.Cog, name="VIPMore"):
         return member.id == member.guild.owner_id or perms.administrator or perms.manage_guild or perms.ban_members or perms.manage_messages
 
     # ------------------------------------------------------------------ Basic
-    @commands.command(name="inrole")
+    @commands.command(name="vipinrole")
     @commands.guild_only()
-    async def inrole(self, ctx, *, role: discord.Role):
-        """VIP. Lists the members who have a role. Usage: !inrole @Moderators"""
+    async def vipinrole(self, ctx, *, role: discord.Role):
+        """VIP. Lists the members who have a role. Usage: !vipinrole @Moderators"""
         self.need(ctx, "basic")
         members = sorted(role.members, key=lambda m: m.display_name.lower())
         if not members:
