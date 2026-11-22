@@ -176,6 +176,37 @@ export interface CustomCommandsSettings {
   limit: number;
 }
 
+export interface GameServer {
+  name: string;
+  game: string;
+  host: string;
+  port: number;
+  queryPort: number | null;
+  rconPort: number | null;
+  mapUrl: string;
+  track: boolean;
+  panelUrl: string;
+  panelId: string;
+  hasRconPassword?: boolean;
+  hasToken?: boolean;
+  hasPanelKey?: boolean;
+  // Secrets are write-only: the server never sends them back. Leave blank to keep what is saved.
+  rconPassword?: string;
+  token?: string;
+  panelKey?: string;
+  clearRconPassword?: boolean;
+  clearToken?: boolean;
+  clearPanelKey?: boolean;
+  status?: { online: boolean | null; count: number; max: number; players: string[]; world: string | null } | null;
+  isNew?: boolean;
+}
+
+export interface GamesSettings {
+  items: GameServer[];
+  feed: string;
+  games: Record<string, string>;
+}
+
 export interface Announcement {
   id?: number;
   channel: string | null;
@@ -227,6 +258,7 @@ export interface AllSettings {
   commands: CommandsSettings;
   responders: RespondersSettings;
   customcmds: CustomCommandsSettings;
+  games: GamesSettings;
   announcements: AnnouncementsSettings;
   vip: VipSettings;
   general: GeneralSettings;

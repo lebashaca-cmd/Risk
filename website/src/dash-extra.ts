@@ -1,5 +1,5 @@
-import type { Announcement, CommandRule, CustomCommand, CustomCommandsSettings, Meta, OverviewSettings, Responder, RespondersSettings, SectionId, VipSettings, AnnouncementsSettings, CommandsSettings } from "./dash-types.js";
-import { group, lockControls, multiChannels, multiRoles, numberInput, selectInput, textArea, textInput, toggle, vipBadge } from "./dash-ui.js";
+import type { Announcement, CommandRule, CustomCommand, CustomCommandsSettings, GameServer, GamesSettings, Meta, OverviewSettings, Responder, RespondersSettings, SectionId, VipSettings, AnnouncementsSettings, CommandsSettings } from "./dash-types.js";
+import { channelSelect, group, lockControls, multiChannels, multiRoles, numberInput, selectInput, textArea, textInput, toggle, vipBadge } from "./dash-ui.js";
 import type { Choice } from "./dash-ui.js";
 import { h } from "./dom.js";
 import { toast } from "./ui.js";
@@ -44,7 +44,7 @@ function upsell(vip: VipSettings | null, what: string): HTMLElement {
 
 const SECTION_LABEL: Record<string, string> = {
   general: "General", welcome: "Welcome and leave", logs: "Server logs", levels: "Levels", automod: "Auto-moderation", community: "Community",
-  profile: "Bot profile", commands: "Commands", responders: "Auto-replies", customcmds: "Custom commands", announcements: "Announcements", vip: "VIP",
+  profile: "Bot profile", commands: "Commands", responders: "Auto-replies", customcmds: "Custom commands", games: "Games", announcements: "Announcements", vip: "VIP",
 };
 
 // Overview
@@ -247,6 +247,81 @@ export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommand
   draw();
   if (!draft.unlocked) return [upsell(vip, "Custom commands are included with VIP White, VIP Supreme and Lifetime.")];
   return [group("Custom commands", "Commands you make up. Anyone in the server can run them. They can also be managed in chat with !customcmd.", list, count, add)];
+};
+
+// Games: servers Risk watches and can manage
+const secretBox = (label: string, saved: boolean, hint: string, set: (v: string) => void, clear: (v: boolean) => void): HTMLElement => {
+  const box = textInput(label, "", set, { max: 300, placeholder: saved ? "Saved. Type to replace it." : "Not set", hint });
+  box.querySelector("input")?.setAttribute("type", "password");
+  box.querySelector("input")?.setAttribute("autocomplete", "new-password");
+  if (!saved) return box;
+  return h("div", {}, box, toggle(`Remove the saved ${label.toLowerCase()}`, undefined, false, clear));
+};
+
+export const games: ExtraRenderer<GamesSettings> = (draft, meta, changed) => {
+  const list = h("div", { class: "dash-rules" });
+  const count = h("p", { class: "dash-hint", role: "status" });
+  const draw = (): void => {
+    list.replaceChildren();
+    count.textContent = `${draft.items.length} of 10 game servers.`;
+    if (draft.items.length === 0) list.appendChild(h("p", { class: "dash-empty" }, "No game servers yet. Add one to see who is online and get join and leave posts."));
+    draft.items.forEach((item: GameServer, index) => {
+      const remove = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Remove");
+      remove.addEventListener("click", () => {
+        draft.items.splice(index, 1);
+        draw();
+        changed();
+      });
+      const kinds: Choice[] = Object.entries(draft.games).map(([value, label]) => ({ value, label }));
+      const s = item.status;
+      const live = s ? (s.online ? `Online, ${s.count}/${s.max} players${s.players.length ? `: ${s.players.slice(0, 12).join(", ")}` : ""}${s.world ? `. World: ${s.world}` : ""}.` : "Offline at the last check.") : "Not checked yet. Risk checks every minute.";
+      const parts: HTMLElement[] = [
+        h("p", { class: "dash-hint", role: "status" }, item.isNew ? "Saved when you press Save." : live),
+        item.isNew
+          ? textInput("Name", item.name, (v) => { item.name = v.toLowerCase(); changed(); }, { max: 20, placeholder: "for example: survival", hint: "Letters, numbers, _ and -. You use it in commands, so it can't be changed later." })
+          : h("p", {}, h("strong", {}, item.name)),
+        selectInput("Game", kinds, item.game, (v) => { item.game = v; changed(); }, "Minecraft Bedrock, Steam games (CS2, Rust, ARK, Garry's Mod, Valheim) and Terraria need the matching game type."),
+        textInput("Address", item.host, (v) => { item.host = v; changed(); }, { max: 253, placeholder: "play.example.com", hint: "The public address players use. Private network addresses are refused." }),
+        numberInput("Port", item.port, (v) => { item.port = v; changed(); }, 1, 65535, 1, "Minecraft 25565, Bedrock 19132, Steam games 27015, Terraria TShock REST 7878."),
+        toggle("Track joins and leaves", "Remember who plays and for how long. Used by seen, top and the feed.", item.track, (v) => { item.track = v; changed(); }),
+      ];
+      if (item.game === "minecraft") {
+        parts.push(
+          numberInput("Query port", item.queryPort ?? 0, (v) => { item.queryPort = v || null; changed(); }, 0, 65535, 1, "Set enable-query=true in server.properties, then use the same port as the game (25565). Gives the full player list and the world name. 0 is off."),
+          numberInput("RCON port", item.rconPort ?? 0, (v) => { item.rconPort = v || null; changed(); }, 0, 65535, 1, "Turns on running commands, saying, kicking and the whitelist from Discord. Set enable-rcon=true. 0 is off."),
+        );
+      }
+      if (item.game === "minecraft" || item.game === "source") {
+        parts.push(secretBox("RCON password", !!item.hasRconPassword, "Never shown again after you save it.", (v) => { item.rconPassword = v; changed(); }, (v) => { item.clearRconPassword = v; changed(); }));
+        if (item.game === "source") parts.push(numberInput("RCON port", item.rconPort ?? 0, (v) => { item.rconPort = v || null; changed(); }, 0, 65535, 1, "Usually the same as the game port. 0 is off."));
+      }
+      if (item.game === "terraria") {
+        parts.push(secretBox("REST token", !!item.hasToken, "The TShock REST application token. Needed for players and commands.", (v) => { item.token = v; changed(); }, (v) => { item.clearToken = v; changed(); }));
+      }
+      if (item.game === "minecraft") {
+        parts.push(
+          textInput("Live map link", item.mapUrl, (v) => { item.mapUrl = v; changed(); }, { max: 200, placeholder: "https://map.example.com", hint: "Your Dynmap or BlueMap page. !gameserver map links to it." }),
+          textInput("Panel address", item.panelUrl, (v) => { item.panelUrl = v; changed(); }, { max: 200, placeholder: "https://panel.example.com", hint: "Pterodactyl panel. Needed for restart and world reset." }),
+          textInput("Panel server id", item.panelId, (v) => { item.panelId = v; changed(); }, { max: 60, placeholder: "8 characters, like 1a2b3c4d" }),
+          secretBox("Panel API key", !!item.hasPanelKey, "A client API key from your panel account. Never shown again after you save it.", (v) => { item.panelKey = v; changed(); }, (v) => { item.clearPanelKey = v; changed(); }),
+        );
+      }
+      parts.push(h("div", { class: "dash-card-actions" }, remove));
+      list.appendChild(h("div", { class: "dash-card" }, ...parts));
+    });
+  };
+  const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add a game server");
+  add.addEventListener("click", () => {
+    if (draft.items.length >= 10) return toast("A server can have up to 10 game servers.");
+    draft.items.push({ name: "", game: "minecraft", host: "", port: 25565, queryPort: null, rconPort: null, mapUrl: "", track: true, panelUrl: "", panelId: "", isNew: true });
+    draw();
+    changed();
+  });
+  draw();
+  return [
+    group("Game servers", "Risk checks each server every minute. Commands: !gameserver status, players, seen, top, map. Fortnite stats: !fortnite <name>.", list, count, add),
+    group("Feed", "Post when someone joins or leaves, and when a server goes down or comes back.", channelSelect("Feed channel", meta, draft.feed || null, (v) => { draft.feed = v ?? ""; changed(); }, "Off", "Joins and leaves are exact for servers with Query (Minecraft), Steam games and Terraria.")),
+  ];
 };
 
 // Announcements (VIP)

@@ -36,8 +36,9 @@ NAV = [
     ("VIP", [("vip", "VIP plans"), ("vip-commands", "VIP commands")]),
     ("Reference", [("commands", "All commands"), ("permissions", "Permissions"), ("faq", "Troubleshooting")]),
 ]
-CATEGORY_ORDER = ["Info", "Moderation", "Utility", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "Sticky", "Lookups", "AI", "VIP"]
+CATEGORY_ORDER = ["Info", "Moderation", "Utility", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "Sticky", "Lookups", "AI", "Games", "VIP"]
 CATEGORY_BLURB = {
+    "Games": "Track Minecraft, Terraria and Steam game servers (CS2, Rust, ARK and more): who is online, who joined, and manage the server from Discord. Plus Fortnite stats.",
     "Info": "Status, help and links.", "Moderation": "Keep the server safe: bans, timeouts, locks, auto-mod and bulk tools.",
     "Utility": "Handy tools: lookups, converters, reminders, server and user info.", "Fun": "Games, jokes and reactions.",
     "Economy": "Coins, jobs, shops and gambling.", "Levels": "XP, ranks, leaderboards and level rewards.",
