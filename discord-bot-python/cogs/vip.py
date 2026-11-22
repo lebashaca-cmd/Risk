@@ -48,10 +48,10 @@ TIERS = {
     "supreme": ("VIP Supreme", {"basic", "white", "supreme"}),
 }
 GROUP_COMMANDS = {
-    "basic": ["vipcolor", "vippoll", "vipsay", "vipannounce", "viprolecolor", "servercard", "topmessages", "userreport", "rolereport", "vipembed", "serverstats", "schedule"],
+    "basic": ["vipcolor", "vippoll", "vipsay", "vipannounce", "viprolecolor", "servercard", "topmessages", "userreport", "rolereport", "vipembed", "serverstats", "schedule", "inrole"],
     "lifetime": ["founder", "motd"],
-    "white": ["customcmd", "autoreact", "welcomedm", "embededit", "stafflist"],
-    "supreme": ["autodelete", "slowmodeall", "lockall", "unlockall", "serverbackup", "membercounter", "permaudit"],
+    "white": ["customcmd", "autoreact", "welcomedm", "embededit", "stafflist", "honeypot", "stickyroles", "joingate", "viplog"],
+    "supreme": ["autodelete", "slowmodeall", "lockall", "unlockall", "serverbackup", "membercounter", "permaudit", "massrole", "exportmembers"],
 }
 
 

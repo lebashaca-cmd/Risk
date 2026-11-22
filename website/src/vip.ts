@@ -30,14 +30,14 @@ const PLANS: PlanInfo[] = [
     name: "VIP White",
     period: "per month",
     note: "Everything in Basic, plus tools for running a community.",
-    perks: ["Everything in Basic", "!customcmd: your own text commands (up to 50)", "!autoreact: react to chosen words", "!welcomedm: a private welcome message", "!embededit and !stafflist", "Priority support in the support server"],
+    perks: ["Everything in Basic", "!customcmd: your own text commands (up to 50)", "!autoreact: react to chosen words", "!welcomedm: a private welcome message", "!embededit and !stafflist", "!honeypot: a trap channel that bans spam bots", "!stickyroles and !joingate (new-account filter)", "Priority support in the support server"],
   },
   {
     key: "supreme",
     name: "VIP Supreme",
     period: "per month",
     note: "Everything in White, plus power tools for big servers.",
-    perks: ["Everything in VIP White", "!autodelete: clear a channel on a timer", "!lockall and !unlockall for the whole server", "!serverbackup and !permaudit", "!membercounter and !slowmodeall", "Up to 200 custom commands"],
+    perks: ["Everything in VIP White", "!autodelete: clear a channel on a timer", "!lockall and !unlockall for the whole server", "!serverbackup and !permaudit", "!membercounter and !slowmodeall", "!massrole and !exportmembers", "Up to 200 custom commands"],
   },
 ];
 

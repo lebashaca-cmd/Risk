@@ -29,9 +29,9 @@ A server is on one plan. Each command asks for a group, and the plan decides whi
 
 | Group | Commands |
 |---|---|
-| Basic | `vipcolor`, `vippoll`, `vipsay`, `vipannounce`, `viprolecolor`, `servercard`, `topmessages`, `userreport`, `rolereport`, plus `vipembed`, `serverstats`, `schedule` |
-| White | `customcmd` (up to 50, 200 on Supreme), `autoreact`, `welcomedm`, `embededit`, `stafflist` |
-| Supreme | `autodelete`, `slowmodeall`, `lockall`, `unlockall`, `serverbackup`, `membercounter`, `permaudit` |
+| Basic | `vipcolor`, `vippoll`, `vipsay`, `vipannounce`, `viprolecolor`, `servercard`, `topmessages`, `userreport`, `rolereport`, plus `vipembed`, `serverstats`, `schedule`, `inrole` |
+| White | `customcmd` (up to 50, 200 on Supreme), `autoreact`, `welcomedm`, `embededit`, `stafflist`, `honeypot`, `stickyroles`, `joingate`, `viplog` |
+| Supreme | `autodelete`, `slowmodeall`, `lockall`, `unlockall`, `serverbackup`, `membercounter`, `permaudit`, `massrole`, `exportmembers` |
 | Lifetime | `founder`, `motd` |
 
 `!vipcommands` shows the same list in Discord and marks what the server has. A server on a lower plan that runs a locked command is told which plan it needs. The code is in [vip-plus.py](cogs/cog-vip-plus.md).

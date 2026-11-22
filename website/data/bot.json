@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-14T16:14:53+00:00",
+  "generatedAt": "2026-11-22T00:49:54+00:00",
   "prefixes": [
     "!",
     "?",
@@ -3031,6 +3031,16 @@
       "permission": null
     },
     {
+      "name": "levelcard",
+      "kind": "prefix",
+      "category": "Levels",
+      "description": "Turns the \"Level-up!\" picture on or off. It is sent with the level-up message, with the member's avatar and their old and new level.",
+      "examples": [
+        "off"
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "levelchannel",
       "kind": "prefix",
       "category": "Levels",
@@ -5379,6 +5389,16 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "exportmembers",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Sends you a spreadsheet (CSV) of every member: id, name, when they joined, account age and roles. It goes to your DMs.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "founder",
       "kind": "prefix",
       "category": "VIP",
@@ -5389,6 +5409,76 @@
       "permission": null
     },
     {
+      "name": "honeypot",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. A trap channel: anyone who posts in it is punished straight away, which catches spam bots and raiders.",
+      "examples": [
+        "create | set #channel [ban|kick|timeout|softban] | action <type> | off | status"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "honeypot action",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Changes what happens to whoever posts.",
+      "examples": [
+        "ban|kick|timeout|softban"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "honeypot create",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Makes a #do-not-post channel and turns it into the trap.",
+      "examples": [
+        "[ban|kick|timeout|softban]"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "honeypot off",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Turns the honeypot off. The channel stays.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "honeypot set",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Uses an existing channel as the trap.",
+      "examples": [
+        "#channel [ban|kick|timeout|softban]"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "honeypot status",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Shows the trap channel, the action and how many it has caught.",
+      "examples": [
+        ""
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "joingate",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Stops brand-new accounts: anyone whose Discord account is younger than N days is kicked (or only reported with `warn`).",
+      "examples": [
+        "7 | !joingate 7 warn | off | status"
+      ],
+      "permission": "Manage Server"
+    },
+    {
       "name": "lockall",
       "kind": "prefix",
       "category": "VIP",
@@ -5397,6 +5487,36 @@
         "[reason]. Undo with !unlockall"
       ],
       "permission": "Administrator"
+    },
+    {
+      "name": "massrole",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP Supreme. Gives a role to, or takes it from, many members at once.",
+      "examples": [
+        "give @role [humans|bots|all] confirm | take @role [humans|bots|all] confirm"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "massrole give",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Gives a role to everyone in a group.",
+      "examples": [
+        "@role humans confirm"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
+      "name": "massrole take",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Takes a role from everyone in a group.",
+      "examples": [
+        "@role humans confirm"
+      ],
+      "permission": "Manage Roles"
     },
     {
       "name": "membercounter",
@@ -5549,6 +5669,16 @@
       "permission": null
     },
     {
+      "name": "stickyroles",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Gives members their roles back when they rejoin. Roles with moderator permissions are never restored.",
+      "examples": [
+        "on | off | clear | status"
+      ],
+      "permission": "Manage Roles"
+    },
+    {
       "name": "topmessages",
       "kind": "prefix",
       "category": "VIP",
@@ -5657,6 +5787,16 @@
         ""
       ],
       "permission": null
+    },
+    {
+      "name": "viplog",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP White. Chooses the channel where the honeypot, join gate and sticky roles report what they did.",
+      "examples": [
+        "#staff-log | off"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "vippoll",

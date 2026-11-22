@@ -39,6 +39,7 @@ CATEGORY_BY_FILE = {
     "dashboard": "Info",
     "vip": "VIP",
     "vip_plus": "VIP",
+    "vip_more": "VIP",
     "streams": "Community",
     "levels": "Levels",
     "stats": "Levels",
