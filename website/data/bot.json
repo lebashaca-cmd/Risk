@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T00:49:54+00:00",
+  "generatedAt": "2026-11-22T16:42:54+00:00",
   "prefixes": [
     "!",
     "?",
@@ -5399,6 +5399,16 @@
       "permission": "Manage Server"
     },
     {
+      "name": "fortnite",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Shows a player's Fortnite Battle Royale stats: wins, kills, K/D and more.",
+      "examples": [
+        "Ninja | !fortnite SomeName psn"
+      ],
+      "permission": null
+    },
+    {
       "name": "founder",
       "kind": "prefix",
       "category": "VIP",
@@ -5407,6 +5417,196 @@
         ""
       ],
       "permission": null
+    },
+    {
+      "name": "gameserver",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Game servers: track who is online and manage the server from Discord. Works with Minecraft (Java and Bedrock), Steam games like CS2, Rust and ARK, and Terraria.",
+      "examples": [
+        "add | status | players | seen | top | list"
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver add",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Saves a game server.",
+      "examples": [
+        "survival minecraft play.example.com:25565 (games: minecraft, bedrock, source, terraria)"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver feed",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Posts joins, leaves and downtime in a channel.",
+      "examples": [
+        "#game-feed | off"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver kick",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Kicks a player from the game server.",
+      "examples": [
+        "survival Steve griefing"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver list",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Lists the saved game servers and whether they are up.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver map",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Shows the world name and the link to the live map (Dynmap or BlueMap) if one is set.",
+      "examples": [
+        "survival"
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver players",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Lists who is on a game server right now.",
+      "examples": [
+        "survival"
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver remove",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Forgets a game server and its player history.",
+      "examples": [
+        "survival"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver reset",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Resets a Minecraft world: stops the server, deletes the world folders and starts it again. Needs the Pterodactyl panel settings. This cannot be undone.",
+      "examples": [
+        "survival reset-survival"
+      ],
+      "permission": "Administrator"
+    },
+    {
+      "name": "gameserver restart",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Restarts the game server. With a panel it restarts properly; otherwise it stops the server over RCON and your host has to start it again.",
+      "examples": [
+        "survival confirm"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver run",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Runs a console command on the game server through RCON.",
+      "examples": [
+        "survival time set day"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver save",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Saves the world to disk.",
+      "examples": [
+        "survival"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver say",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Sends a message to everyone in the game.",
+      "examples": [
+        "survival Restarting in 5 minutes"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver seen",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Shows whether a player is online and when they were last seen on this server's game servers.",
+      "examples": [
+        "Steve"
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver set",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Changes one setting: query_port, rcon_port, rcon_password, token, map, panel_url, panel_key, panel_id, track. Use `off` to clear one. Passwords are better set in the dashboard.",
+      "examples": [
+        "survival rcon_port 25575"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "gameserver skin",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Shows a Minecraft player's skin.",
+      "examples": [
+        "Steve"
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver status",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Shows whether a game server is up, who is on, the version and the ping.",
+      "examples": [
+        "survival"
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver top",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Shows who has spent the most time on a game server.",
+      "examples": [
+        "survival"
+      ],
+      "permission": null
+    },
+    {
+      "name": "gameserver whitelist",
+      "kind": "prefix",
+      "category": "Games",
+      "description": "Minecraft whitelist.",
+      "examples": [
+        "survival add Steve | remove Steve | list"
+      ],
+      "permission": "Manage Server"
     },
     {
       "name": "honeypot",

@@ -1,6 +1,6 @@
 import { ApiFailure, dashApi } from "./api.js";
 import { channelChoices, channelSelect, group, multiChannels, multiRoles, numberInput, roleSelect, selectInput, tagEditor, textArea, textInput, toggle, uid, vipBadge, } from "./dash-ui.js";
-import { announcements, commands, customcmds, overview, responders, vipSection } from "./dash-extra.js";
+import { announcements, commands, customcmds, games, overview, responders, vipSection } from "./dash-extra.js";
 import { profileCard } from "./dash-profile.js";
 import { h, mount } from "./dom.js";
 import { toast } from "./ui.js";
@@ -15,6 +15,7 @@ const SECTION_META = [
     { id: "commands", label: "Command rules", blurb: "Limit who can use a command, where, and how often." },
     { id: "responders", label: "Auto-replies", blurb: "Have Risk answer messages that match a trigger." },
     { id: "customcmds", label: "Custom commands", blurb: "Your own commands that reply with text.", vip: true },
+    { id: "games", label: "Games", blurb: "Track and manage Minecraft, Terraria and Steam game servers." },
     { id: "announcements", label: "Announcements", blurb: "Messages Risk repeats on a timer.", vip: true },
     { id: "vip", label: "VIP", blurb: "Your plan and the extras VIP unlocks.", vip: true },
 ];
@@ -208,6 +209,7 @@ const community = (draft, meta, changed) => [
 const RENDERERS = (vip) => ({
     overview, general, welcome, logs, levels, automod, community, commands, responders,
     customcmds: customcmds(vip ?? null),
+    games,
     announcements: announcements(vip ?? null),
     vip: vipSection(),
 });
