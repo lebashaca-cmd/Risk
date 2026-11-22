@@ -187,7 +187,7 @@ class Games(commands.Cog, name="Games"):
         await self.bot.wait_until_ready()
 
     # ------------------------------------------------------------------ commands: overview and setup
-    @commands.group(name="gameserver", aliases=["gs", "games"], invoke_without_command=True)
+    @commands.group(name="gameserver", aliases=["gs", "servers"], invoke_without_command=True)
     @commands.guild_only()
     async def gameserver(self, ctx):
         """Game servers: track who is online and manage the server from Discord. Works with Minecraft (Java and Bedrock), Steam games like CS2, Rust and ARK, and Terraria. Usage: !gameserver add | status | players | seen | top | list"""

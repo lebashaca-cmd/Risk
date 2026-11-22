@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T16:42:54+00:00",
+  "generatedAt": "2026-11-22T16:56:08+00:00",
   "prefixes": [
     "!",
     "?",
@@ -5975,6 +5975,16 @@
       "description": "Owner only. Gives a server VIP for some days (0 = no end).",
       "examples": [
         "<server id> [days] [basic|lifetime|white|supreme] [note]"
+      ],
+      "permission": null
+    },
+    {
+      "name": "vipinrole",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "VIP. Lists the members who have a role.",
+      "examples": [
+        "@Moderators"
       ],
       "permission": null
     },
