@@ -906,3 +906,22 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 .gate form { display: grid; gap: 1rem; justify-items: center; }
 .gate .fine { margin: 0; max-width: 26rem; }
 .gate [hidden] { display: none !important; }
+
+/* Custom command steps */
+.cc-steps { display: grid; gap: 0.75rem; margin: 0.5rem 0; }
+.cc-step { border: 1px solid var(--edge); border-radius: var(--radius-md, 0.6rem); padding: 0.85rem 1rem; display: grid; gap: 0.75rem; }
+.cc-step-head { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; }
+.cc-step-number { display: grid; place-items: center; inline-size: 1.6rem; block-size: 1.6rem; border-radius: 50%; border: 1px solid var(--edge); font-size: 0.8rem; flex: none; }
+.cc-step-title { display: flex; flex-direction: column; flex: 1 1 10rem; min-width: 0; }
+.cc-step-note { font-size: 0.8rem; opacity: 0.7; }
+.cc-step-controls { display: flex; gap: 0.35rem; margin-inline-start: auto; }
+.cc-step-fields { display: grid; gap: 0.9rem; }
+.cc-palette { margin: 0.25rem 0 0.5rem; }
+.cc-palette > summary { display: inline-flex; cursor: pointer; list-style: none; }
+.cc-palette > summary::-webkit-details-marker { display: none; }
+.cc-palette-panel { display: grid; gap: 1rem; margin-top: 0.75rem; padding: 1rem; border: 1px solid var(--edge); border-radius: var(--radius-md, 0.6rem); }
+.cc-palette-name { margin: 0 0 0.4rem; font-size: 0.85rem; opacity: 0.7; }
+.cc-palette-items { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+.cc-palette-item { font: inherit; font-size: 0.9rem; padding: 0.35rem 0.7rem; border-radius: 999px; border: 1px solid var(--edge); background: transparent; color: inherit; cursor: pointer; }
+.cc-palette-item:hover, .cc-palette-item:focus-visible { border-color: currentColor; }
+@media (max-width: 40rem) { .cc-step-controls { margin-inline-start: 0; inline-size: 100%; } }
