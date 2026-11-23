@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T01:04:56+00:00",
+  "generatedAt": "2026-11-23T01:05:07+00:00",
   "prefixes": [
     "!",
     "?",
@@ -2068,6 +2068,16 @@
       "description": "Shows a random dog picture.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "drawduel",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Reaction duel: wait for the signal, then type BANG first. Typing early loses.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
