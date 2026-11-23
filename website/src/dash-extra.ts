@@ -263,7 +263,7 @@ export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommand
         changed();
       });
       const risky = item.steps.some((s) => types.get(s.type)?.danger || ((s.type === "add_role" || s.type === "remove_role" || s.type === "toggle_role" || s.type === "nickname") && s.who === "target"));
-      const steps = h("div", { class: "dash-steps" });
+      const steps = h("div", { class: "cc-steps" });
       item.steps.forEach((step, si) => {
         const info = types.get(step.type);
         if (!info) return;
@@ -274,42 +274,62 @@ export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommand
           draw();
           changed();
         };
-        const up = h("button", { type: "button", class: "btn btn-quiet btn-small", "aria-label": "Move step up" }, "Up");
-        const down = h("button", { type: "button", class: "btn btn-quiet btn-small", "aria-label": "Move step down" }, "Down");
-        const del = h("button", { type: "button", class: "btn btn-quiet btn-small", "aria-label": "Remove step" }, "Remove");
-        up.addEventListener("click", () => move(-1));
-        down.addEventListener("click", () => move(1));
-        del.addEventListener("click", () => {
-          item.steps.splice(si, 1);
-          draw();
-          changed();
-        });
+        const small = (label: string, text: string, onClick: () => void, disabled = false): HTMLElement => {
+          const button = h("button", { type: "button", class: "btn btn-quiet btn-small", "aria-label": label }, text);
+          button.disabled = disabled;
+          button.addEventListener("click", onClick);
+          return button;
+        };
+        const controls = h("div", { class: "cc-step-controls" },
+          small("Move step up", "Up", () => move(-1), si === 0),
+          small("Move step down", "Down", () => move(1), si === item.steps.length - 1),
+          small("Remove step", "Remove", () => {
+            item.steps.splice(si, 1);
+            draw();
+            changed();
+          }),
+        );
         steps.appendChild(
-          h("div", { class: "dash-card dash-step" },
-            h("p", {}, h("strong", {}, `Step ${si + 1}: ${info.label}`), info.danger ? " (changes the server)" : ""),
-            ...info.fields.map((f) => fieldControl(step, f)),
-            h("div", { class: "dash-card-actions" }, up, down, del),
+          h("div", { class: "cc-step" },
+            h("div", { class: "cc-step-head" },
+              h("span", { class: "cc-step-number", "aria-hidden": "true" }, String(si + 1)),
+              h("div", { class: "cc-step-title" }, h("strong", {}, info.label), info.danger ? h("span", { class: "cc-step-note" }, "Changes the server") : ""),
+              controls,
+            ),
+            ...(info.fields.length ? [h("div", { class: "cc-step-fields" }, ...info.fields.map((f) => fieldControl(step, f)))] : [h("p", { class: "dash-hint" }, "Nothing to set for this step.")]),
           ),
         );
       });
-      const kinds: Choice[] = draft.actionTypes.map((t) => ({ value: t.type, label: `${t.group}: ${t.label}` }));
-      let chosen = "reply";
-      const picker = selectInput("Add a step", kinds, chosen, (v) => { chosen = v; });
-      const addStep = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add step");
-      addStep.addEventListener("click", () => {
-        const info = types.get(chosen);
+      const addStep = (type: string): void => {
+        const info = types.get(type);
         if (!info) return;
         if (item.steps.length >= 15) return toast("A command can have up to 15 steps.");
-        const step: Step = { type: chosen };
+        const step: Step = { type };
         for (const f of info.fields) step[f.key] = f.default ?? (f.kind === "bool" ? false : f.kind === "number" ? f.min ?? 0 : "");
         item.steps.push(step);
         if (info.danger && item.who === "everyone") {
           item.who = "mods";
-          toast("This step changes the server, so the command now runs for moderators only. Change who can run it below.");
+          toast("This step changes the server, so the command now runs for moderators only. Change who can run it above.");
         }
+        palette.open = false;
         draw();
         changed();
-      });
+      };
+      const palette = h("details", { class: "cc-palette" });
+      palette.appendChild(h("summary", { class: "btn btn-quiet btn-small" }, item.steps.length ? "Add another step" : "Add a step"));
+      const groups = new Map<string, ActionType[]>();
+      for (const t of draft.actionTypes) groups.set(t.group, [...(groups.get(t.group) ?? []), t]);
+      const panel = h("div", { class: "cc-palette-panel" });
+      for (const [name, members] of groups) {
+        const row = h("div", { class: "cc-palette-items" });
+        for (const t of members) {
+          const button = h("button", { type: "button", class: "cc-palette-item", title: t.danger ? "Changes the server, so the command is limited to moderators" : t.label }, t.label);
+          button.addEventListener("click", () => addStep(t.type));
+          row.appendChild(button);
+        }
+        panel.appendChild(h("div", { class: "cc-palette-group" }, h("p", { class: "cc-palette-name" }, name), row));
+      }
+      palette.appendChild(panel);
       const who = selectInput("Who can run it", [
         { value: "everyone", label: "Everyone" },
         { value: "mods", label: "Moderators (Manage Server, Manage Messages or Timeout Members)" },
@@ -330,7 +350,7 @@ export const customcmds = (vip: VipSettings | null): ExtraRenderer<CustomCommand
         numberInput("Cooldown per person (seconds)", item.cooldown, (v) => { item.cooldown = v; changed(); }, 0, 3600, 1, "How long each person waits before running it again."),
         h("p", { class: "dash-hint" }, `Run ${item.uses} time${item.uses === 1 ? "" : "s"}. Steps run top to bottom. If one fails, the rest are skipped and the person is told why.`),
         steps,
-        h("div", { class: "dash-card-actions" }, picker, addStep),
+        palette,
         h("div", { class: "dash-card-actions" }, remove),
       );
       list.appendChild(card);
