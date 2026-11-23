@@ -34,6 +34,7 @@ try:
 except ImportError:  # log_tools.py missing or old
     LOG_CATEGORIES = {}
 from utils.helpers import ModError, explain_error
+from utils import ccactions
 from utils.store import JsonStore
 from utils.variables import catalog as variable_catalog, expand
 
@@ -61,7 +62,7 @@ REQUIREMENTS = {
     "automod": [("AutoMod", "automod.py", ["cfg", "store.save"])],
     "commands": [],
     "responders": [],
-    "customcmds": [("VIP", "vip.py", ["has"]), ("VIPPlus", "vip_plus.py", ["custom_cap", "custom_name_error", "store.save", "store.data"])],
+    "customcmds": [("VIP", "vip.py", ["has"]), ("VIPPlus", "vip_plus.py", ["custom_cap", "custom_name_error", "cc_item", "cc_problem", "store.save", "store.data"])],
     "overview": [],
     "announcements": [("VIP", "vip.py", ["schedules", "is_vip", "limit", "store.save"])],
     "vip": [("VIP", "vip.py", ["info", "limit", "cfg", "store.save"])],
@@ -730,15 +731,28 @@ class Dashboard(commands.Cog):
         self.cfg(guild.id)["responders"] = items
         self.store.save()
 
-    # Custom commands (VIP White and up): your own !name commands that reply with text
+    # Custom commands (VIP White and up): your own !name commands. Each runs a list of steps (reply, give a role, make a channel...)
     def read_customcmds(self, guild):
         plus = self.bot.get_cog("VIPPlus")
         items = plus.store.data["customcmds"].get(str(guild.id), {})
+        out = []
+        for name in sorted(items):
+            item = plus.cc_item(items[name])
+            out.append({"name": name, "steps": item["steps"], "who": item["who"], "roles": [str(r) for r in item["roles"]], "channels": [str(c) for c in item["channels"]],
+                        "cooldown": item["cooldown"], "uses": item.get("uses", 0)})
+        kinds = {discord.TextChannel: "text", discord.VoiceChannel: "voice", discord.CategoryChannel: "category", discord.ForumChannel: "forum", discord.StageChannel: "stage"}
+        channels = [{"id": str(c.id), "name": c.name, "type": kinds.get(type(c), "text")} for c in sorted(guild.channels, key=lambda c: (c.type.value, c.position)) if type(c) in kinds]
         return {
-            "items": [{"name": name, "reply": reply} for name, reply in sorted(items.items())],
+            "items": out,
             "unlocked": self.bot.get_cog("VIP").has(guild.id, "white"),
             "limit": plus.custom_cap(guild.id),
+            "actionTypes": ccactions.catalog(),
+            "allChannels": channels,
+            "saved": [{"name": k, "value": v} for k, v in sorted(self.cfg_values(guild).items())],
         }
+
+    def cfg_values(self, guild):
+        return self.bot.get_cog("VIPPlus").store.data["ccvars"].get(str(guild.id), {})
 
     def write_customcmds(self, guild, body):
         vip, plus = self.bot.get_cog("VIP"), self.bot.get_cog("VIPPlus")
@@ -746,17 +760,42 @@ class Dashboard(commands.Cog):
             raise ApiError(403, "Custom commands are included with VIP White, VIP Supreme and Lifetime.")
         cap = plus.custom_cap(guild.id)
         existing = plus.store.data["customcmds"].get(str(guild.id), {})
+
+        def fail(message):
+            raise ApiError(400, message)
+
         items = {}
         for item in as_list(body.get("items", []), "Custom commands", cap):
             if not isinstance(item, dict):
-                raise ApiError(400, "Each custom command needs a name and a reply.")
+                raise ApiError(400, "Each custom command needs a name and at least one step.")
             name = as_text(item.get("name"), "Command name", 40, required=True).lower().lstrip("!?,")
             problem = plus.custom_name_error(name, existing)
             if problem:
                 raise ApiError(400, f"\"{name[:20]}\": {problem.replace('`', '')}")
             if name in items:
                 raise ApiError(400, f"There are two custom commands named \"{name}\".")
-            items[name] = as_text(item.get("reply"), f"The reply for \"{name}\"", 1500, required=True)
+            if "steps" not in item and "reply" in item:  # an older page that only sends a reply
+                item = {**item, "steps": [{"type": "reply", "text": item["reply"]}]}
+            steps = ccactions.clean_steps(item.get("steps", []), lambda m, n=name: fail(f"\"{n}\": {m}"))
+            if not steps:
+                raise ApiError(400, f"\"{name}\" needs at least one step.")
+            for number, step in enumerate(steps, 1):
+                for f in ccactions.ACTIONS[step["type"]][3]:
+                    value = step.get(f["key"])
+                    if f["kind"] == "role" and value and value != "created" and guild.get_role(int(value)) is None:
+                        raise ApiError(400, f"\"{name}\" step {number}: that role doesn't exist any more.")
+                    if f["kind"] == "channel" and value and value not in ("created", "current") and guild.get_channel(int(value)) is None:
+                        raise ApiError(400, f"\"{name}\" step {number}: that channel doesn't exist any more.")
+            who = item.get("who", "everyone")
+            if who not in ("everyone", "mods", "roles"):
+                raise ApiError(400, f"\"{name}\": pick who can run it.")
+            roles = [r.id for r in pick_roles(guild, item.get("roles", []), "Allowed roles", 25)] if who == "roles" else []
+            problem = plus.cc_problem(steps, who, roles)
+            if problem:
+                raise ApiError(400, f"\"{name}\": {problem}")
+            previous = plus.cc_item(existing[name]) if name in existing else {}
+            items[name] = {"steps": steps, "who": who, "roles": roles, "channels": pick_channels(guild, item.get("channels", []), "Allowed channels", 25),
+                           "cooldown": as_int(item.get("cooldown", 3), "Cooldown", 0, 3600), "uses": previous.get("uses", 0)}
         if items:
             plus.store.data["customcmds"][str(guild.id)] = items
         else:

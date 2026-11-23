@@ -14,7 +14,7 @@ const SECTION_META = [
     { id: "community", label: "Community", blurb: "Auto role, suggestions, starboard, birthdays, reports, counting and rules." },
     { id: "commands", label: "Command rules", blurb: "Limit who can use a command, where, and how often." },
     { id: "responders", label: "Auto-replies", blurb: "Have Risk answer messages that match a trigger." },
-    { id: "customcmds", label: "Custom commands", blurb: "Your own commands that reply with text.", vip: true },
+    { id: "customcmds", label: "Custom commands", blurb: "Your own commands: replies, roles, channels, moderation and more.", vip: true },
     { id: "announcements", label: "Announcements", blurb: "Messages Risk repeats on a timer.", vip: true },
     { id: "vip", label: "VIP", blurb: "Your plan and the extras VIP unlocks.", vip: true },
 ];

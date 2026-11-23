@@ -165,15 +165,46 @@ export interface RespondersSettings {
   items: Responder[];
 }
 
+export type StepValue = string | number | boolean;
+export type Step = { type: string } & Record<string, StepValue>;
+
+export interface ActionField {
+  key: string;
+  label: string;
+  kind: "text" | "name" | "number" | "bool" | "select" | "role" | "channel";
+  hint?: string;
+  options?: Record<string, string>;
+  min?: number;
+  max?: number;
+  default?: StepValue;
+  kinds?: string[];
+}
+
+export interface ActionType {
+  type: string;
+  label: string;
+  group: string;
+  danger: boolean;
+  fields: ActionField[];
+}
+
 export interface CustomCommand {
   name: string;
-  reply: string;
+  steps: Step[];
+  who: "everyone" | "mods" | "roles";
+  roles: string[];
+  channels: string[];
+  cooldown: number;
+  uses: number;
 }
 
 export interface CustomCommandsSettings {
   items: CustomCommand[];
   unlocked: boolean;
   limit: number;
+  actionTypes: ActionType[];
+  allChannels: { id: string; name: string; type: string }[];
+  saved: { name: string; value: string }[];
 }
 
 export interface Announcement {

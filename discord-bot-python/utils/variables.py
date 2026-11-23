@@ -108,6 +108,72 @@ def choose(c, arg):
     return random.choice(options) if options else None
 
 
+
+def safe_math(c, arg):
+    """{math:2+2*3}: + - * / % ** and brackets only, nothing else is ever evaluated."""
+    import ast
+    import operator
+    ops = {ast.Add: operator.add, ast.Sub: operator.sub, ast.Mult: operator.mul, ast.Div: operator.truediv, ast.Mod: operator.mod, ast.Pow: operator.pow}
+
+    def walk(node):
+        if isinstance(node, ast.Expression):
+            return walk(node.body)
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)) and not isinstance(node.value, bool):
+            return node.value
+        if isinstance(node, ast.UnaryOp) and isinstance(node.op, (ast.UAdd, ast.USub)):
+            return walk(node.operand) * (1 if isinstance(node.op, ast.UAdd) else -1)
+        if isinstance(node, ast.BinOp) and type(node.op) in ops:
+            left, right = walk(node.left), walk(node.right)
+            if isinstance(node.op, ast.Pow) and (abs(right) > 12 or abs(left) > 1e6):
+                raise ValueError("too big")
+            return ops[type(node.op)](left, right)
+        raise ValueError("not allowed")
+
+    if not arg or len(arg) > 100:
+        return None
+    value = walk(ast.parse(arg.strip(), mode="eval"))
+    return str(int(value)) if float(value).is_integer() and abs(value) < 1e15 else f"{value:.6g}"
+
+
+def days_between(arg, forward):
+    try:
+        day = datetime.strptime((arg or "").strip(), "%Y-%m-%d").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return None
+    delta = (day - now()).days + (1 if forward else 0) if forward else (now() - day).days
+    return str(max(0, delta))
+
+
+def text_arg(fn):
+    return lambda c, a: None if a is None else fn(a)
+
+
+def extra_get(key, default=None):
+    return lambda c, a: c.extra.get(key, default)
+
+
+def target_of(c):
+    return c.extra.get("target")
+
+
+def arg_n(n):
+    def run(c, a):
+        args = c.extra.get("args_list")
+        if args is None:
+            return None
+        return clean(args[n - 1]) if len(args) >= n else ""
+    return run
+
+
+def stored(kind):
+    """{var:name} and {counter:name}: values saved by custom command actions."""
+    def run(c, a):
+        values = c.extra.get("vars")
+        if values is None or not a:
+            return None
+        return clean(values.get(a.strip().lower(), "" if kind == "var" else "0"))
+    return run
+
 # (token, group, description, example, handler). A handler takes (ctx, argument) and returns text or None.
 M, G = "member", "guild"
 VARIABLES = [
@@ -164,6 +230,67 @@ VARIABLES = [
     ("{newline}", "Layout", "A line break. Useful in places that only take one line, like the dashboard's text boxes.", "", lambda c, a: "\n"),
     # --- emoji shortcuts
     *[("{" + name + "}", "Emoji", f"The {name} emoji.", emoji, (lambda e: lambda c, a: e)(emoji)) for name, emoji in EMOJI.items()],
+    # --- more about the member
+    ("{user.nick}", "Member", "The member's server nickname, or their account name if they have none.", "Sammy", need(M)(lambda c, a: clean(getattr(c.member, "nick", None) or c.member.name))),
+    ("{user.tag}", "Member", "The account name with an @ in front, safe to show without pinging.", "@sam", need(M)(lambda c, a: "@" + ZWSP + c.member.name)),
+    ("{user.color}", "Member", "The color of the member's name as a hex code.", "#e91e63", need(M)(lambda c, a: str(getattr(c.member, "color", "#000000")))),
+    ("{user.isbot}", "Member", "yes or no: is the member a bot.", "no", need(M)(lambda c, a: "yes" if c.member.bot else "no")),
+    ("{user.boosting}", "Member", "yes or no: is the member boosting the server.", "yes", need(M)(lambda c, a: "yes" if getattr(c.member, "premium_since", None) else "no")),
+    ("{user.joinedago}", "Member", "How long ago the member joined this server.", "4 months", need(M)(lambda c, a: ago(c.member.joined_at) if getattr(c.member, "joined_at", None) else "unknown")),
+    ("{user.roles}", "Member", "The names of the member's roles, up to 15.", "Member, Gamer", need(M)(lambda c, a: clean(", ".join(r.name for r in reversed(getattr(c.member, "roles", [])[1:])[:15]) or "none"))),
+    ("{user.permissions}", "Member", "yes or no: does the member have the Administrator permission.", "no", need(M)(lambda c, a: "yes" if getattr(getattr(c.member, "guild_permissions", None), "administrator", False) else "no")),
+    # --- more about the server
+    ("{server.textchannels}", "Server", "How many text channels the server has.", "20", need(G)(lambda c, a: str(len(c.guild.text_channels)))),
+    ("{server.voicechannels}", "Server", "How many voice channels the server has.", "6", need(G)(lambda c, a: str(len(c.guild.voice_channels)))),
+    ("{server.categories}", "Server", "How many channel categories the server has.", "5", need(G)(lambda c, a: str(len(c.guild.categories)))),
+    ("{server.banner}", "Server", "A link to the server's banner.", "https://cdn.discordapp.com/…", need(G)(lambda c, a: c.guild.banner.url if c.guild.banner else "no banner")),
+    ("{server.verification}", "Server", "The server's verification level.", "medium", need(G)(lambda c, a: str(c.guild.verification_level))),
+    ("{server.locale}", "Server", "The server's preferred language.", "en-US", need(G)(lambda c, a: str(c.guild.preferred_locale))),
+    ("{server.age}", "Server", "How old the server is.", "2 years", need(G)(lambda c, a: ago(c.guild.created_at))),
+    ("{server.humanratio}", "Server", "What percent of the members are people rather than bots.", "99%", need(G)(lambda c, a: f"{round(100 * humans(c.guild) / max(1, c.guild.member_count or 1))}%")),
+    # --- more about the channel
+    ("{channel.id}", "Channel", "The channel's ID.", "123456789012345678", need("channel")(lambda c, a: str(c.channel.id))),
+    ("{channel.topic}", "Channel", "The channel's topic.", "Chat about anything", need("channel")(lambda c, a: clean(getattr(c.channel, "topic", None) or "no topic"))),
+    ("{channel.category}", "Channel", "The name of the category the channel is in.", "Text channels", need("channel")(lambda c, a: clean(getattr(getattr(c.channel, "category", None), "name", None) or "none"))),
+    ("{channel.slowmode}", "Channel", "The channel's slowmode in seconds.", "5", need("channel")(lambda c, a: str(getattr(c.channel, "slowmode_delay", 0)))),
+    ("{channel.created}", "Channel", "The date the channel was made.", "May 2, 2025", need("channel")(lambda c, a: stamp(getattr(c.channel, "created_at", None), "D"))),
+    ("{channel.nsfw}", "Channel", "yes or no: is the channel age-restricted.", "no", need("channel")(lambda c, a: "yes" if getattr(c.channel, "nsfw", False) else "no")),
+    # --- more time
+    ("{hour}", "Time", "The hour in UTC, 24-hour clock.", "14", lambda c, a: f"{now():%H}"),
+    ("{minute}", "Time", "The minute in UTC.", "05", lambda c, a: f"{now():%M}"),
+    ("{date.iso}", "Time", "Today's date as year-month-day, in UTC.", "2026-11-08", lambda c, a: f"{now():%Y-%m-%d}"),
+    ("{time.12}", "Time", "The time in UTC on a 12-hour clock.", "2:05 PM", lambda c, a: f"{now():%I:%M %p}".lstrip("0")),
+    ("{until:2026-12-25}", "Time", "Whole days left until a date (year-month-day). 0 once it has passed.", "47", None),
+    ("{since:2026-01-01}", "Time", "Whole days since a date (year-month-day).", "311", None),
+    # --- text and numbers (put your own text after the colon)
+    ("{upper:text}", "Text", "Your text in CAPITAL letters. You can put another variable inside.", "HELLO", None),
+    ("{lower:text}", "Text", "Your text in small letters.", "hello", None),
+    ("{title:text}", "Text", "Your text with each Word Capitalised.", "Hello World", None),
+    ("{len:text}", "Text", "How many characters your text has.", "5", None),
+    ("{reverse:text}", "Text", "Your text backwards.", "olleh", None),
+    ("{math:2+2*3}", "Text", "Does the sum. Use + - * / % ** and brackets.", "8", None),
+    ("{percent:50}", "Random", "Shows yes about that many percent of the time, otherwise no.", "yes", None),
+    ("{eightball}", "Random", "A magic 8-ball answer.", "Signs point to yes.", lambda c, a: random.choice(("It is certain.", "Without a doubt.", "Yes, definitely.", "Most likely.", "Signs point to yes.", "Ask again later.", "Cannot predict now.", "Don't count on it.", "My sources say no.", "Very doubtful."))),
+    ("{rps}", "Random", "rock, paper or scissors.", "paper", lambda c, a: random.choice(("rock", "paper", "scissors"))),
+    ("{color}", "Random", "A random color as a hex code.", "#4caf50", lambda c, a: "#%06x" % random.randint(0, 0xFFFFFF)),
+    ("{uuid}", "Random", "A short random code, handy for tickets and giveaways.", "a3f9c2", lambda c, a: "%06x" % random.randint(0, 0xFFFFFF)),
+    # --- custom commands only
+    ("{args}", "Custom commands", "Everything typed after the command name.", "hello there", None),
+    ("{arg1}", "Custom commands", "The first word typed after the command. {arg2} to {arg9} work too.", "hello", None),
+    ("{argcount}", "Custom commands", "How many words were typed after the command.", "2", None),
+    ("{target}", "Custom commands", "The first member mentioned (or the first word, if it is a member's name or ID). Mentions them.", "@Alex", None),
+    ("{target.name}", "Custom commands", "The target's display name, without a mention.", "Alex", None),
+    ("{target.id}", "Custom commands", "The target's ID.", "123456789012345678", None),
+    ("{target.avatar}", "Custom commands", "A link to the target's profile picture.", "https://cdn.discordapp.com/…", None),
+    ("{command}", "Custom commands", "The name of the custom command being run.", "rules", None),
+    ("{uses}", "Custom commands", "How many times this custom command has been run, including now.", "12", None),
+    ("{message.id}", "Custom commands", "The ID of the message that ran the command.", "123456789012345678", None),
+    ("{message.link}", "Custom commands", "A link to the message that ran the command.", "https://discord.com/channels/…", None),
+    ("{var:name}", "Custom commands", "A value saved by a Set variable action. Empty if nothing is saved yet.", "blue", None),
+    ("{counter:name}", "Custom commands", "A number saved by an Add to counter action. 0 if nothing is saved yet.", "3", None),
+    ("{created.role}", "Custom commands", "The role a Create role action just made, as a mention.", "@Event", None),
+    ("{created.channel}", "Custom commands", "The channel a Create channel action just made, as a link.", "#event", None),
+    ("{invite}", "Custom commands", "The link a Create invite action just made.", "https://discord.gg/…", None),
     # --- levels (only inside level-up messages)
     ("{level}", "Levels", "The level the member just reached. Level-up messages only.", "7", None),
     ("{xp}", "Levels", "The member's total XP. Level-up messages only.", "1,540", None),
@@ -171,12 +298,39 @@ VARIABLES = [
     ("{messages}", "Levels", "How many messages the member has sent. Level-up messages only.", "412", None),
 ]
 
+TAKES_ARGUMENT = {"random", "choose", "upper", "lower", "title", "len", "reverse", "math", "percent", "until", "since", "var", "counter"}
 HANDLERS = {}
 for token, _group, _desc, _example, handler in VARIABLES:
     if handler is not None:
         HANDLERS[token[1:-1].split(":")[0].lower()] = handler
 HANDLERS["random"] = rand_range
 HANDLERS["choose"] = choose
+HANDLERS["upper"] = text_arg(lambda a: a.upper())
+HANDLERS["lower"] = text_arg(lambda a: a.lower())
+HANDLERS["title"] = text_arg(lambda a: a.title())
+HANDLERS["len"] = text_arg(lambda a: str(len(a)))
+HANDLERS["reverse"] = text_arg(lambda a: a[::-1])
+HANDLERS["math"] = safe_math
+HANDLERS["percent"] = lambda c, a: ("yes" if random.random() * 100 < float(a) else "no") if a and re.fullmatch(r"\s*\d{1,3}(\.\d+)?\s*", a) else None
+HANDLERS["until"] = lambda c, a: days_between(a, True)
+HANDLERS["since"] = lambda c, a: days_between(a, False)
+HANDLERS["args"] = lambda c, a: clean(c.extra["args"]) if "args" in c.extra else None
+HANDLERS["argcount"] = lambda c, a: str(len(c.extra["args_list"])) if "args_list" in c.extra else None
+for _n in range(1, 10):
+    HANDLERS[f"arg{_n}"] = arg_n(_n)
+HANDLERS["target"] = lambda c, a: (target_of(c).mention if target_of(c) else "nobody") if "has_target" in c.extra else None
+HANDLERS["target.name"] = lambda c, a: (clean(target_of(c).display_name) if target_of(c) else "nobody") if "has_target" in c.extra else None
+HANDLERS["target.id"] = lambda c, a: (str(target_of(c).id) if target_of(c) else "") if "has_target" in c.extra else None
+HANDLERS["target.avatar"] = lambda c, a: (target_of(c).display_avatar.url if target_of(c) else "") if "has_target" in c.extra else None
+HANDLERS["command"] = extra_get("command")
+HANDLERS["uses"] = lambda c, a: str(c.extra["uses"]) if "uses" in c.extra else None
+HANDLERS["message.id"] = extra_get("message_id")
+HANDLERS["message.link"] = extra_get("message_link")
+HANDLERS["var"] = stored("var")
+HANDLERS["counter"] = stored("counter")
+HANDLERS["created.role"] = extra_get("created_role")
+HANDLERS["created.channel"] = extra_get("created_channel")
+HANDLERS["invite"] = extra_get("invite")
 HANDLERS["xp"] = lambda c, a: c.extra.get("xp")
 HANDLERS["nextlevel"] = lambda c, a: c.extra.get("nextlevel")
 HANDLERS["messages"] = lambda c, a: c.extra.get("messages")
@@ -198,7 +352,7 @@ def expand(text, member=None, guild=None, channel=None, extra=None):
         handler = HANDLERS.get(match.group(1).lower())
         if handler is None:
             return match.group(0)
-        if match.group(2) is not None and match.group(1).lower() not in ("random", "choose"):
+        if match.group(2) is not None and match.group(1).lower() not in TAKES_ARGUMENT:
             return match.group(0)
         try:
             out = handler(c, match.group(2))
@@ -206,4 +360,9 @@ def expand(text, member=None, guild=None, channel=None, extra=None):
             return match.group(0)
         return match.group(0) if out is None else str(out)
 
-    return TOKEN.sub(fill, text)
+    for _ in range(4):  # inside-out, so {upper:{user.name}} and {math:{counter:n}*2} work
+        filled = TOKEN.sub(fill, text)
+        if filled == text or "{" not in filled:
+            return filled
+        text = filled
+    return text
