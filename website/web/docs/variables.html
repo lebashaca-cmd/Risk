@@ -35,7 +35,7 @@
     <article>
       <h1>Variables</h1>
       <p>Variables are placeholders you type inside a message. Risk swaps each one for the real value when the message is sent. They work in welcome and leave messages, level-up messages, auto-replies, custom commands and more. The <a href="messages">message templates</a> page explains where each one works.</p>
-<p>There are 57 variables. Type <code>!variables</code> in Discord for the same list, <code>!variables Server</code> for one group, and <code>!testvars &lt;message&gt;</code> to see a message with the values filled in.</p>
+<p>There are 112 variables. Type <code>!variables</code> in Discord for the same list, <code>!variables Server</code> for one group, and <code>!testvars &lt;message&gt;</code> to see a message with the values filled in.</p>
 <h2 id="how-to-use-them">How to use them<a class="anchor" href="#how-to-use-them" aria-label="Link to this section">#</a></h2>
 <ul><li>Wrap the name in curly braces: <code>{server}</code>.</li><li>They are not case sensitive.</li><li>An unknown variable is left as typed.</li><li>Variables with a colon take a value after it: <code>{random:1-100}</code> and <code>{choose:red|green|blue}</code>.</li><li>Times marked &quot;shown in each reader&#x27;s own time zone&quot; use Discord&#x27;s time display, so everyone sees their own local time.</li></ul>
 <h3 id="var-member">Member<a class="anchor" href="#var-member" aria-label="Link to this group">#</a></h3>
@@ -53,6 +53,14 @@
 <tr><td><code>{user.rolecount}</code></td><td>How many roles the member has.</td><td>4</td></tr>
 <tr><td><code>{ordinal}</code></td><td>The member&#x27;s join position with its ending: 1st, 2nd, 3rd...</td><td>1,204th</td></tr>
 <tr><td><code>{position}</code></td><td>The member&#x27;s join position as a plain number.</td><td>1204</td></tr>
+<tr><td><code>{user.nick}</code></td><td>The member&#x27;s server nickname, or their account name if they have none.</td><td>Sammy</td></tr>
+<tr><td><code>{user.tag}</code></td><td>The account name with an @ in front, safe to show without pinging.</td><td>@sam</td></tr>
+<tr><td><code>{user.color}</code></td><td>The color of the member&#x27;s name as a hex code.</td><td>#e91e63</td></tr>
+<tr><td><code>{user.isbot}</code></td><td>yes or no: is the member a bot.</td><td>no</td></tr>
+<tr><td><code>{user.boosting}</code></td><td>yes or no: is the member boosting the server.</td><td>yes</td></tr>
+<tr><td><code>{user.joinedago}</code></td><td>How long ago the member joined this server.</td><td>4 months</td></tr>
+<tr><td><code>{user.roles}</code></td><td>The names of the member&#x27;s roles, up to 15.</td><td>Member, Gamer</td></tr>
+<tr><td><code>{user.permissions}</code></td><td>yes or no: does the member have the Administrator permission.</td><td>no</td></tr>
 </tbody></table></div>
 <h3 id="var-server">Server<a class="anchor" href="#var-server" aria-label="Link to this group">#</a></h3>
 <div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
@@ -70,6 +78,14 @@
 <tr><td><code>{server.icon}</code></td><td>A link to the server&#x27;s icon.</td><td>https://cdn.discordapp.com/…</td></tr>
 <tr><td><code>{server.description}</code></td><td>The server&#x27;s community description.</td><td>A friendly place to chat</td></tr>
 <tr><td><code>{server.emojis}</code></td><td>How many custom emojis the server has.</td><td>25</td></tr>
+<tr><td><code>{server.textchannels}</code></td><td>How many text channels the server has.</td><td>20</td></tr>
+<tr><td><code>{server.voicechannels}</code></td><td>How many voice channels the server has.</td><td>6</td></tr>
+<tr><td><code>{server.categories}</code></td><td>How many channel categories the server has.</td><td>5</td></tr>
+<tr><td><code>{server.banner}</code></td><td>A link to the server&#x27;s banner.</td><td>https://cdn.discordapp.com/…</td></tr>
+<tr><td><code>{server.verification}</code></td><td>The server&#x27;s verification level.</td><td>medium</td></tr>
+<tr><td><code>{server.locale}</code></td><td>The server&#x27;s preferred language.</td><td>en-US</td></tr>
+<tr><td><code>{server.age}</code></td><td>How old the server is.</td><td>2 years</td></tr>
+<tr><td><code>{server.humanratio}</code></td><td>What percent of the members are people rather than bots.</td><td>99%</td></tr>
 </tbody></table></div>
 <h3 id="var-layout">Layout<a class="anchor" href="#var-layout" aria-label="Link to this group">#</a></h3>
 <div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
@@ -81,6 +97,12 @@
 <tr><td><code>{channel}</code></td><td>The name of the channel the message is sent in.</td><td>general</td></tr>
 <tr><td><code>{channel.mention}</code></td><td>A clickable link to the channel.</td><td>#general</td></tr>
 <tr><td><code>{bot}</code></td><td>The bot&#x27;s name.</td><td>Risk</td></tr>
+<tr><td><code>{channel.id}</code></td><td>The channel&#x27;s ID.</td><td>123456789012345678</td></tr>
+<tr><td><code>{channel.topic}</code></td><td>The channel&#x27;s topic.</td><td>Chat about anything</td></tr>
+<tr><td><code>{channel.category}</code></td><td>The name of the category the channel is in.</td><td>Text channels</td></tr>
+<tr><td><code>{channel.slowmode}</code></td><td>The channel&#x27;s slowmode in seconds.</td><td>5</td></tr>
+<tr><td><code>{channel.created}</code></td><td>The date the channel was made.</td><td>May 2, 2025</td></tr>
+<tr><td><code>{channel.nsfw}</code></td><td>yes or no: is the channel age-restricted.</td><td>no</td></tr>
 </tbody></table></div>
 <h3 id="var-time">Time<a class="anchor" href="#var-time" aria-label="Link to this group">#</a></h3>
 <div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
@@ -92,6 +114,12 @@
 <tr><td><code>{timestamp}</code></td><td>The current Unix timestamp, in seconds.</td><td>1794233100</td></tr>
 <tr><td><code>{now}</code></td><td>The current date and time, shown in each reader&#x27;s own time zone.</td><td>November 8, 2026 2:05 PM</td></tr>
 <tr><td><code>{now.relative}</code></td><td>&#x27;just now&#x27; that keeps counting for readers. Best for a message that stays on screen.</td><td>a few seconds ago</td></tr>
+<tr><td><code>{hour}</code></td><td>The hour in UTC, 24-hour clock.</td><td>14</td></tr>
+<tr><td><code>{minute}</code></td><td>The minute in UTC.</td><td>05</td></tr>
+<tr><td><code>{date.iso}</code></td><td>Today&#x27;s date as year-month-day, in UTC.</td><td>2026-11-08</td></tr>
+<tr><td><code>{time.12}</code></td><td>The time in UTC on a 12-hour clock.</td><td>2:05 PM</td></tr>
+<tr><td><code>{until:2026-12-25}</code></td><td>Whole days left until a date (year-month-day). 0 once it has passed.</td><td>47</td></tr>
+<tr><td><code>{since:2026-01-01}</code></td><td>Whole days since a date (year-month-day).</td><td>311</td></tr>
 </tbody></table></div>
 <h3 id="var-random">Random<a class="anchor" href="#var-random" aria-label="Link to this group">#</a></h3>
 <div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
@@ -99,6 +127,11 @@
 <tr><td><code>{choose:a|b|c}</code></td><td>One of your options, picked at random. Separate them with |.</td><td>b</td></tr>
 <tr><td><code>{coin}</code></td><td>Heads or tails.</td><td>Heads</td></tr>
 <tr><td><code>{dice}</code></td><td>A six-sided dice roll.</td><td>4</td></tr>
+<tr><td><code>{percent:50}</code></td><td>Shows yes about that many percent of the time, otherwise no.</td><td>yes</td></tr>
+<tr><td><code>{eightball}</code></td><td>A magic 8-ball answer.</td><td>Signs point to yes.</td></tr>
+<tr><td><code>{rps}</code></td><td>rock, paper or scissors.</td><td>paper</td></tr>
+<tr><td><code>{color}</code></td><td>A random color as a hex code.</td><td>#4caf50</td></tr>
+<tr><td><code>{uuid}</code></td><td>A short random code, handy for tickets and giveaways.</td><td>a3f9c2</td></tr>
 </tbody></table></div>
 <h3 id="var-emoji">Emoji<a class="anchor" href="#var-emoji" aria-label="Link to this group">#</a></h3>
 <div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
@@ -111,6 +144,34 @@
 <tr><td><code>{fire}</code></td><td>The fire emoji.</td><td>🔥</td></tr>
 <tr><td><code>{crown}</code></td><td>The crown emoji.</td><td>👑</td></tr>
 <tr><td><code>{sparkles}</code></td><td>The sparkles emoji.</td><td>✨</td></tr>
+</tbody></table></div>
+<h3 id="var-text">Text<a class="anchor" href="#var-text" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{upper:text}</code></td><td>Your text in CAPITAL letters. You can put another variable inside.</td><td>HELLO</td></tr>
+<tr><td><code>{lower:text}</code></td><td>Your text in small letters.</td><td>hello</td></tr>
+<tr><td><code>{title:text}</code></td><td>Your text with each Word Capitalised.</td><td>Hello World</td></tr>
+<tr><td><code>{len:text}</code></td><td>How many characters your text has.</td><td>5</td></tr>
+<tr><td><code>{reverse:text}</code></td><td>Your text backwards.</td><td>olleh</td></tr>
+<tr><td><code>{math:2+2*3}</code></td><td>Does the sum. Use + - * / % ** and brackets.</td><td>8</td></tr>
+</tbody></table></div>
+<h3 id="var-custom-commands">Custom commands<a class="anchor" href="#var-custom-commands" aria-label="Link to this group">#</a></h3>
+<div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>
+<tr><td><code>{args}</code></td><td>Everything typed after the command name.</td><td>hello there</td></tr>
+<tr><td><code>{arg1}</code></td><td>The first word typed after the command. {arg2} to {arg9} work too.</td><td>hello</td></tr>
+<tr><td><code>{argcount}</code></td><td>How many words were typed after the command.</td><td>2</td></tr>
+<tr><td><code>{target}</code></td><td>The first member mentioned (or the first word, if it is a member&#x27;s name or ID). Mentions them.</td><td>@Alex</td></tr>
+<tr><td><code>{target.name}</code></td><td>The target&#x27;s display name, without a mention.</td><td>Alex</td></tr>
+<tr><td><code>{target.id}</code></td><td>The target&#x27;s ID.</td><td>123456789012345678</td></tr>
+<tr><td><code>{target.avatar}</code></td><td>A link to the target&#x27;s profile picture.</td><td>https://cdn.discordapp.com/…</td></tr>
+<tr><td><code>{command}</code></td><td>The name of the custom command being run.</td><td>rules</td></tr>
+<tr><td><code>{uses}</code></td><td>How many times this custom command has been run, including now.</td><td>12</td></tr>
+<tr><td><code>{message.id}</code></td><td>The ID of the message that ran the command.</td><td>123456789012345678</td></tr>
+<tr><td><code>{message.link}</code></td><td>A link to the message that ran the command.</td><td>https://discord.com/channels/…</td></tr>
+<tr><td><code>{var:name}</code></td><td>A value saved by a Set variable action. Empty if nothing is saved yet.</td><td>blue</td></tr>
+<tr><td><code>{counter:name}</code></td><td>A number saved by an Add to counter action. 0 if nothing is saved yet.</td><td>3</td></tr>
+<tr><td><code>{created.role}</code></td><td>The role a Create role action just made, as a mention.</td><td>@Event</td></tr>
+<tr><td><code>{created.channel}</code></td><td>The channel a Create channel action just made, as a link.</td><td>#event</td></tr>
+<tr><td><code>{invite}</code></td><td>The link a Create invite action just made.</td><td>https://discord.gg/…</td></tr>
 </tbody></table></div>
 <h3 id="var-levels">Levels<a class="anchor" href="#var-levels" aria-label="Link to this group">#</a></h3>
 <div class="table-wrap"><table><thead><tr><th>Variable</th><th>What it does</th><th>Looks like</th></tr></thead><tbody>

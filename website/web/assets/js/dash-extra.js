@@ -1,4 +1,4 @@
-import { group, lockControls, multiChannels, multiRoles, numberInput, selectInput, textArea, textInput, toggle, vipBadge } from "./dash-ui.js";
+import { group, lockControls, multiChannels, multiPicker, multiRoles, numberInput, selectInput, textArea, textInput, toggle, vipBadge } from "./dash-ui.js";
 import { h } from "./dom.js";
 import { toast } from "./ui.js";
 const number = new Intl.NumberFormat();
@@ -132,36 +132,134 @@ export const responders = (draft, meta, changed) => {
     return [group("Auto-replies", "Risk answers when a message matches. Replies never ping anyone and skip channels where commands are ignored.", list, count, add)];
 };
 // Custom commands (VIP White and up)
+const STEP_KINDS_OF_CHANNEL = { text: ["text", "announcement"], voice: ["voice"], stage: ["stage"], category: ["category"], forum: ["forum"] };
 export const customcmds = (vip) => (draft, meta, changed) => {
     const list = h("div", { class: "dash-rules" });
     const count = h("p", { class: "dash-hint", role: "status" });
+    const types = new Map(draft.actionTypes.map((t) => [t.type, t]));
+    const fieldControl = (step, f) => {
+        const set = (v) => { step[f.key] = v; changed(); };
+        const value = step[f.key] ?? f.default ?? "";
+        switch (f.kind) {
+            case "text":
+                return textArea(f.label, String(value), (v) => set(v), { max: 1900, rows: 3, variables: meta.variables, hint: f.hint ?? "Type { to find a variable." });
+            case "name":
+                return textInput(f.label, String(value), (v) => set(v), { max: 200, hint: f.hint ?? "Variables like {arg1} and {user} work here." });
+            case "number":
+                return numberInput(f.label, Number(value), (v) => set(v), f.min ?? 0, f.max ?? 1000, 1, f.hint);
+            case "bool":
+                return toggle(f.label, f.hint, Boolean(value), (v) => set(v));
+            case "select":
+                return selectInput(f.label, Object.entries(f.options ?? {}).map(([v, l]) => ({ value: v, label: l })), String(value), (v) => set(v), f.hint);
+            case "role": {
+                const choices = [{ value: "", label: "Pick a role" }, { value: "created", label: "The role made earlier in this command" }, ...meta.roles.map((r) => ({ value: r.id, label: `@${r.name}` }))];
+                return selectInput(f.label, choices, String(value), (v) => set(v), f.hint);
+            }
+            default: {
+                const wanted = new Set((f.kinds ?? ["text"]).flatMap((k) => (k === "any" ? ["text", "announcement", "voice", "stage", "category", "forum"] : STEP_KINDS_OF_CHANNEL[k] ?? [k])));
+                const prefix = (t) => (t === "voice" || t === "stage" ? "\u{1F50A} " : t === "category" ? "\u{1F4C1} " : "#");
+                const choices = [];
+                if (!f.kinds)
+                    choices.push({ value: "", label: "This channel" });
+                else if (f.kinds.includes("category"))
+                    choices.push({ value: "", label: "No category" });
+                else
+                    choices.push({ value: "", label: "Pick a channel" });
+                choices.push({ value: "created", label: "The channel made earlier in this command" });
+                for (const c of draft.allChannels)
+                    if (wanted.has(c.type))
+                        choices.push({ value: c.id, label: `${prefix(c.type)}${c.name}` });
+                return selectInput(f.label, choices, String(value), (v) => set(v), f.hint);
+            }
+        }
+    };
     const draw = () => {
         list.replaceChildren();
-        count.textContent = `${draft.items.length} of ${draft.limit} custom commands.`;
+        count.textContent = `${draft.items.length} of ${draft.limit} custom commands. Saved values: ${draft.saved.length ? draft.saved.map((s) => `${s.name}=${s.value}`).join(", ") : "none yet"}.`;
         if (draft.items.length === 0)
             list.appendChild(h("p", { class: "dash-empty" }, "No custom commands yet."));
         draft.items.forEach((item, index) => {
-            const remove = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Remove");
+            const remove = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Remove command");
             remove.addEventListener("click", () => {
                 draft.items.splice(index, 1);
                 draw();
                 changed();
             });
-            list.appendChild(h("div", { class: "dash-card" }, textInput("Command name", item.name, (v) => { item.name = v; changed(); }, { max: 20, placeholder: "for example: rules", hint: "Letters, numbers, _ and -. Members run it with ! ? , or your server's own prefix in front. Names of built-in commands can't be used." }), textArea("Reply", item.reply, (v) => { item.reply = v; changed(); }, { max: 1500, rows: 4, variables: meta.variables, hint: "Plain text. Type { to find a variable, or see the docs for the full list." }), h("div", { class: "dash-card-actions" }, remove)));
+            const risky = item.steps.some((s) => types.get(s.type)?.danger || ((s.type === "add_role" || s.type === "remove_role" || s.type === "toggle_role" || s.type === "nickname") && s.who === "target"));
+            const steps = h("div", { class: "dash-steps" });
+            item.steps.forEach((step, si) => {
+                const info = types.get(step.type);
+                if (!info)
+                    return;
+                const move = (by) => {
+                    const to = si + by;
+                    if (to < 0 || to >= item.steps.length)
+                        return;
+                    [item.steps[si], item.steps[to]] = [item.steps[to], item.steps[si]];
+                    draw();
+                    changed();
+                };
+                const up = h("button", { type: "button", class: "btn btn-quiet btn-small", "aria-label": "Move step up" }, "Up");
+                const down = h("button", { type: "button", class: "btn btn-quiet btn-small", "aria-label": "Move step down" }, "Down");
+                const del = h("button", { type: "button", class: "btn btn-quiet btn-small", "aria-label": "Remove step" }, "Remove");
+                up.addEventListener("click", () => move(-1));
+                down.addEventListener("click", () => move(1));
+                del.addEventListener("click", () => {
+                    item.steps.splice(si, 1);
+                    draw();
+                    changed();
+                });
+                steps.appendChild(h("div", { class: "dash-card dash-step" }, h("p", {}, h("strong", {}, `Step ${si + 1}: ${info.label}`), info.danger ? " (changes the server)" : ""), ...info.fields.map((f) => fieldControl(step, f)), h("div", { class: "dash-card-actions" }, up, down, del)));
+            });
+            const kinds = draft.actionTypes.map((t) => ({ value: t.type, label: `${t.group}: ${t.label}` }));
+            let chosen = "reply";
+            const picker = selectInput("Add a step", kinds, chosen, (v) => { chosen = v; });
+            const addStep = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add step");
+            addStep.addEventListener("click", () => {
+                const info = types.get(chosen);
+                if (!info)
+                    return;
+                if (item.steps.length >= 15)
+                    return toast("A command can have up to 15 steps.");
+                const step = { type: chosen };
+                for (const f of info.fields)
+                    step[f.key] = f.default ?? (f.kind === "bool" ? false : f.kind === "number" ? f.min ?? 0 : "");
+                item.steps.push(step);
+                if (info.danger && item.who === "everyone") {
+                    item.who = "mods";
+                    toast("This step changes the server, so the command now runs for moderators only. Change who can run it below.");
+                }
+                draw();
+                changed();
+            });
+            const who = selectInput("Who can run it", [
+                { value: "everyone", label: "Everyone" },
+                { value: "mods", label: "Moderators (Manage Server, Manage Messages or Timeout Members)" },
+                { value: "roles", label: "Only certain roles" },
+            ], item.who, (v) => {
+                item.who = v;
+                draw();
+                changed();
+            }, risky ? "This command changes roles, channels or members, so it can't be open to everyone." : "Server admins can always run it.");
+            for (const option of Array.from(who.querySelectorAll("option")))
+                if (risky && option.value === "everyone")
+                    option.disabled = true;
+            const card = h("div", { class: "dash-card" }, textInput("Command name", item.name, (v) => { item.name = v; changed(); }, { max: 20, placeholder: "for example: rules", hint: "Letters, numbers, _ and -. Members run it with ! ? , or your server's own prefix in front. Names of built-in commands can't be used." }), who, ...(item.who === "roles" ? [multiPicker("Roles that can run it", meta.roles.map((r) => ({ value: r.id, label: `@${r.name}` })), item.roles, (v) => { item.roles = v; changed(); })] : []), multiPicker("Only in these channels", meta.channels.map((c) => ({ value: c.id, label: `#${c.name}` })), item.channels, (v) => { item.channels = v; changed(); }, "Leave empty to allow it in every channel."), numberInput("Cooldown per person (seconds)", item.cooldown, (v) => { item.cooldown = v; changed(); }, 0, 3600, 1, "How long each person waits before running it again."), h("p", { class: "dash-hint" }, `Run ${item.uses} time${item.uses === 1 ? "" : "s"}. Steps run top to bottom. If one fails, the rest are skipped and the person is told why.`), steps, h("div", { class: "dash-card-actions" }, picker, addStep), h("div", { class: "dash-card-actions" }, remove));
+            list.appendChild(card);
         });
     };
     const add = h("button", { type: "button", class: "btn btn-quiet btn-small" }, "Add a custom command");
     add.addEventListener("click", () => {
         if (draft.items.length >= draft.limit)
             return toast(`That is the most custom commands this server can have (${draft.limit}).`);
-        draft.items.push({ name: "", reply: "" });
+        draft.items.push({ name: "", steps: [{ type: "reply", text: "" }], who: "everyone", roles: [], channels: [], cooldown: 3, uses: 0 });
         draw();
         changed();
     });
     draw();
     if (!draft.unlocked)
         return [upsell(vip, "Custom commands are included with VIP White, VIP Supreme and Lifetime.")];
-    return [group("Custom commands", "Commands you make up. Anyone in the server can run them. They can also be managed in chat with !customcmd.", list, count, add)];
+    return [group("Custom commands", "Commands you make up. Each one runs steps: reply, send an embed, give a role, make a channel or role, moderate, save values and more. Use {args}, {arg1} and {target} to read what the person typed. They can also be managed in chat with !customcmd.", list, count, add)];
 };
 // Announcements (VIP)
 export const announcements = (vip) => (draft, meta, changed) => {

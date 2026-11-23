@@ -20,6 +20,7 @@ from discord.ext import commands, tasks
 
 from utils.helpers import ModError, NO_MENTIONS, explain_error
 from utils.store import JsonStore
+from utils import ccactions
 from utils.variables import expand
 
 NUMBERS = ["1\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}", "2\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}",
@@ -50,7 +51,9 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
     def __init__(self, bot):
         self.bot = bot
         self.store = JsonStore("vip_plus")
-        for key in ("customcmds", "autoreact", "welcomedm", "autodelete", "queue", "locks", "counters", "motd"):
+        self.cc_cooldown = {}
+        self.cc_running = set()
+        for key in ("customcmds", "ccvars", "autoreact", "welcomedm", "autodelete", "queue", "locks", "counters", "motd"):
             self.store.data.setdefault(key, {} if key != "queue" else [])
 
     async def cog_load(self):
@@ -87,6 +90,59 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
         if name not in existing and self.bot.get_command(name) is not None:
             return "A built-in command already uses that name."
         return None
+
+
+    @staticmethod
+    def cc_item(raw):
+        """A saved custom command as a dict. Older ones were just a reply text."""
+        if isinstance(raw, str):
+            return {"steps": [{"type": "reply", "text": raw}], "who": "everyone", "roles": [], "channels": [], "cooldown": 3, "uses": 0}
+        item = {"steps": [], "who": "everyone", "roles": [], "channels": [], "cooldown": 3, "uses": 0}
+        item.update(raw)
+        return item
+
+    @staticmethod
+    def cc_allowed(member, item):
+        perms = member.guild_permissions
+        if member.id == member.guild.owner_id or perms.administrator:
+            return True
+        if item["who"] == "mods":
+            return perms.manage_guild or perms.manage_messages or perms.moderate_members
+        if item["who"] == "roles":
+            return any(r.id in item["roles"] for r in member.roles)
+        return True
+
+    def cc_problem(self, steps, who, roles):
+        """Why a set of steps can't be saved with this audience, or None."""
+        if ccactions.needs_gate(steps) and who == "everyone":
+            return "Steps that change roles, channels or members need the command limited to moderators or to chosen roles."
+        if who == "roles" and not roles:
+            return "Pick at least one role that may run it."
+        return None
+
+    async def cc_run(self, message, name, raw, args):
+        item = self.cc_item(raw)
+        values = self.store.data["ccvars"].setdefault(str(message.guild.id), {})
+        item["uses"] = item.get("uses", 0) + 1
+        run = ccactions.Run(self.bot, message, name, item, args, item["uses"], values)
+        try:
+            await asyncio.wait_for(run.go(item["steps"]), ccactions.RUN_TIMEOUT + 5)
+        except asyncio.TimeoutError:
+            run.problems.append("The command took too long and was stopped.")
+        if isinstance(raw, dict):
+            raw["uses"] = item["uses"]
+        else:
+            self.store.data["customcmds"][str(message.guild.id)][name] = item
+        self.store.save()
+        if run.touched and run.log:
+            more = self.bot.get_cog("VIPMore")
+            if more is not None:
+                await more.note(message.guild, f"Custom command: {name}", f"Run by {message.author.mention} in {message.channel.mention}\n" + "\n".join(f"\u2022 {line}" for line in run.log[:15]))
+        if run.problems:
+            try:
+                await message.channel.send("\u26A0\uFE0F " + run.problems[0][:500], allowed_mentions=NO_MENTIONS)
+            except discord.HTTPException:
+                pass
 
     def colour(self, guild):
         return self.vip.embed_color(guild.id) or discord.Color.gold()
@@ -278,16 +334,26 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
     @commands.group(name="customcmd", aliases=["cc"], invoke_without_command=True)
     @commands.guild_only()
     async def customcmd(self, ctx):
-        """VIP White. Your own commands that reply with text. Usage: !customcmd add <name> <reply> | remove <name> | list"""
+        """VIP White. Your own commands: they can reply, send embeds, give roles, make channels, moderate and more. Usage: !customcmd add <name> <reply> | remove | list | show | steps | who | cooldown"""
         self.need(ctx, "white")
-        await ctx.reply("Use `customcmd add <name> <reply>`, `customcmd remove <name>` or `customcmd list`. In the reply, `{user}` is the person and `{server}` the server name.", mention_author=False)
+        p = ctx.clean_prefix
+        await ctx.reply(f"`{p}customcmd add <name> <reply>` makes a simple reply command. Everything else (roles, channels, embeds, moderation, up to {ccactions.MAX_STEPS} steps) is easiest in the dashboard's Custom commands tab, or in chat with `{p}customcmd step <name> <type> key=value ...`.\n"
+                        f"`{p}customcmd steps` lists the step types, `{p}customcmd show <name>` shows one command, `{p}customcmd who <name> everyone|mods|@role`, `{p}customcmd cooldown <name> <seconds>`, `{p}customcmd clear <name>`, `{p}customcmd remove <name>`, `{p}customcmd list`.\n"
+                        "In text, `{user}` is the person, `{args}` what they typed after the command, `{target}` the member they mentioned. See `!variables` for the rest.", mention_author=False)
+
+    def cc_get(self, ctx, name):
+        items = self.store.data["customcmds"].setdefault(str(ctx.guild.id), {})
+        name = name.lower()
+        if name not in items:
+            raise ModError("There's no custom command with that name.")
+        return items, name, self.cc_item(items[name])
 
     @customcmd.command(name="add")
     @commands.has_permissions(manage_guild=True)
     async def customcmd_add(self, ctx, name: str, *, reply: str):
-        """Adds a custom command. Usage: !customcmd add <name> <reply>"""
+        """Adds a custom command that replies with text. Usage: !customcmd add <name> <reply>"""
         self.need(ctx, "white")
-        name = name.lower()
+        name = name.lower().lstrip("!?,")
         problem = self.custom_name_error(name)
         if problem:
             raise ModError(problem)
@@ -297,9 +363,10 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
         cap = self.custom_cap(ctx.guild.id)
         if name not in items and len(items) >= cap:
             raise ModError(f"This server has used all {cap} custom commands.")
-        items[name] = reply
+        old = self.cc_item(items[name]) if name in items else None
+        items[name] = {**(old or self.cc_item("")), "steps": [{"type": "reply", "text": reply}]} if old else reply
         self.store.save()
-        await ctx.reply(f"Added `{name}`. Anyone can run it.", mention_author=False)
+        await ctx.reply(f"Added `{name}`. Anyone can run it. Add more steps with `{ctx.clean_prefix}customcmd step {name} <type> ...` or in the dashboard.", mention_author=False)
 
     @customcmd.command(name="remove", aliases=["delete"])
     @commands.has_permissions(manage_guild=True)
@@ -317,7 +384,131 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
         """Lists this server's custom commands. Usage: !customcmd list"""
         self.need(ctx, "white")
         items = self.store.data["customcmds"].get(str(ctx.guild.id), {})
-        await ctx.reply(", ".join(f"`{n}`" for n in sorted(items)) or "No custom commands yet.", mention_author=False)
+        rows = []
+        for n in sorted(items):
+            item = self.cc_item(items[n])
+            rows.append(f"`{n}`" + (" (limited)" if item["who"] != "everyone" else "") + (f" {len(item['steps'])} steps" if len(item["steps"]) > 1 else ""))
+        await ctx.reply(", ".join(rows) or "No custom commands yet.", mention_author=False)
+
+    @customcmd.command(name="steps", aliases=["actions", "types"])
+    async def customcmd_steps(self, ctx, kind: str = ""):
+        """Lists the step types a custom command can use, or the settings of one. Usage: !customcmd steps | !customcmd steps create_channel"""
+        self.need(ctx, "white")
+        if kind and kind.lower() in ccactions.ACTIONS:
+            label, _group, danger, fields = ccactions.ACTIONS[kind.lower()]
+            lines = [f"**{label}** (`{kind.lower()}`)" + (". Needs a moderator-only command." if danger else "")]
+            lines += [f"`{f['key']}`: {f['label']}" + (f" ({', '.join(f['options'])})" if f.get("options") else "") for f in fields] or ["No settings."]
+            await ctx.reply("\n".join(lines), mention_author=False)
+            return
+        groups = {}
+        for key, (label, group, danger, _f) in ccactions.ACTIONS.items():
+            groups.setdefault(group, []).append(f"`{key}`" + ("*" if danger else ""))
+        embed = discord.Embed(title="Custom command steps", description="`*` needs a moderator-only command. See one with `" + ctx.clean_prefix + "customcmd steps <type>`.", color=self.colour(ctx.guild))
+        for group, names in groups.items():
+            embed.add_field(name=group, value=" ".join(names), inline=False)
+        await ctx.reply(embed=embed, mention_author=False)
+
+    @customcmd.command(name="show")
+    async def customcmd_show(self, ctx, name: str):
+        """Shows what a custom command does. Usage: !customcmd show <name>"""
+        self.need(ctx, "white")
+        _items, name, item = self.cc_get(ctx, name)
+        who = {"everyone": "anyone", "mods": "moderators", "roles": "people with " + (", ".join(f"<@&{r}>" for r in item["roles"]) or "chosen roles")}[item["who"]]
+        lines = [f"**{name}**: runs for {who}, {item['cooldown']}s cooldown, used {item['uses']} times."]
+        for i, step in enumerate(item["steps"], 1):
+            info = ccactions.ACTIONS.get(step.get("type"))
+            detail = ", ".join(f"{k}={str(v)[:40]}" for k, v in step.items() if k != "type" and v not in ("", None, False))
+            lines.append(f"{i}. {info[0] if info else step.get('type')}" + (f": {detail}" if detail else ""))
+        await ctx.reply("\n".join(lines)[:1900], mention_author=False, allowed_mentions=NO_MENTIONS)
+
+    @customcmd.command(name="step", aliases=["addstep"])
+    @commands.has_permissions(manage_guild=True)
+    async def customcmd_step(self, ctx, name: str, kind: str, *, settings: str = ""):
+        """Adds a step to a custom command. Usage: !customcmd step welcome add_role role=@Member | !customcmd step lounge create_channel name="{arg1}" ctype=voice"""
+        self.need(ctx, "white")
+        name, kind = name.lower(), kind.lower()
+        items = self.store.data["customcmds"].setdefault(str(ctx.guild.id), {})
+        if name not in items:
+            problem = self.custom_name_error(name)
+            if problem:
+                raise ModError(problem)
+            if len(items) >= self.custom_cap(ctx.guild.id):
+                raise ModError("This server has used all its custom commands.")
+            item = self.cc_item("")
+            item["steps"] = []
+        else:
+            item = self.cc_item(items[name])
+        if kind not in ccactions.ACTIONS:
+            raise ModError(f"I don't know the step `{kind}`. See `{ctx.clean_prefix}customcmd steps`.")
+        step = {"type": kind}
+        converter_role, converter_channel = commands.RoleConverter(), commands.GuildChannelConverter()
+        known = {f["key"]: f for f in ccactions.ACTIONS[kind][3]}
+        for key, value in re.findall(r'(\w+)=("[^"]*"|\S+)', settings):
+            value = value.strip('"')
+            if key not in known:
+                raise ModError(f"`{key}` isn't a setting of `{kind}`. Settings: " + ", ".join(f"`{k}`" for k in known))
+            f = known[key]
+            if f["kind"] == "role" and value not in ("created",):
+                value = str((await converter_role.convert(ctx, value)).id)
+            elif f["kind"] == "channel" and value not in ("created", "current"):
+                value = str((await converter_channel.convert(ctx, value)).id)
+            elif f["kind"] == "bool":
+                value = value.lower() in ("yes", "true", "on", "1")
+            step[key] = value
+        try:
+            steps = ccactions.clean_steps(item["steps"] + [step], lambda m: (_ for _ in ()).throw(ModError(m)))
+        except ModError:
+            raise
+        item["steps"] = steps
+        problem = self.cc_problem(steps, item["who"], item["roles"])
+        if problem and ccactions.needs_gate(steps):
+            item["who"] = "mods"  # a risky step switches the command to moderators automatically
+            problem = None
+        items[name] = item
+        self.store.save()
+        await ctx.reply(f"Added step {len(steps)} to `{name}`." + (" It now runs for moderators only because that step changes the server. Change it with `" + ctx.clean_prefix + f"customcmd who {name} @role`." if item["who"] == "mods" and ccactions.is_danger(step) else ""), mention_author=False)
+
+    @customcmd.command(name="clear")
+    @commands.has_permissions(manage_guild=True)
+    async def customcmd_clear(self, ctx, name: str):
+        """Removes every step from a custom command so you can start over. Usage: !customcmd clear <name>"""
+        self.need(ctx, "white")
+        items, name, item = self.cc_get(ctx, name)
+        item["steps"] = []
+        items[name] = item
+        self.store.save()
+        await ctx.reply(f"`{name}` has no steps now. Add some with `{ctx.clean_prefix}customcmd step {name} <type>`.", mention_author=False)
+
+    @customcmd.command(name="who")
+    @commands.has_permissions(manage_guild=True)
+    async def customcmd_who(self, ctx, name: str, *roles: str):
+        """Chooses who can run a custom command. Usage: !customcmd who welcome everyone | mods | @Role @Role2"""
+        self.need(ctx, "white")
+        items, name, item = self.cc_get(ctx, name)
+        if not roles:
+            raise ModError("Say `everyone`, `mods`, or mention one or more roles.")
+        if roles[0].lower() in ("everyone", "mods"):
+            item["who"], item["roles"] = roles[0].lower(), []
+        else:
+            found = [await commands.RoleConverter().convert(ctx, r) for r in roles[:10]]
+            item["who"], item["roles"] = "roles", [r.id for r in found]
+        problem = self.cc_problem(item["steps"], item["who"], item["roles"])
+        if problem:
+            raise ModError(problem)
+        items[name] = item
+        self.store.save()
+        await ctx.reply(f"`{name}` can now be run by {item['who'] if item['who'] != 'roles' else 'people with those roles'}.", mention_author=False)
+
+    @customcmd.command(name="cooldown")
+    @commands.has_permissions(manage_guild=True)
+    async def customcmd_cooldown(self, ctx, name: str, seconds: int):
+        """Sets how long each person waits before running a custom command again. Usage: !customcmd cooldown <name> 30"""
+        self.need(ctx, "white")
+        items, name, item = self.cc_get(ctx, name)
+        item["cooldown"] = max(0, min(3600, seconds))
+        items[name] = item
+        self.store.save()
+        await ctx.reply(f"Cooldown for `{name}` is {item['cooldown']} seconds.", mention_author=False)
 
     @commands.Cog.listener()
     async def on_message(self, message):
@@ -354,10 +545,27 @@ class VIPPlus(commands.Cog, name="VIPPlus"):
         for prefix in prefixes:
             if prefix and text.startswith(prefix):
                 name = text[len(prefix):].split(None, 1)[0].lower() if text[len(prefix):].strip() else ""
-                reply = items.get(name)
-                if reply:
-                    out = expand(reply.replace("{user}", message.author.mention), member=message.author, guild=message.guild, channel=message.channel)
-                    await message.channel.send(out[:2000], allowed_mentions=discord.AllowedMentions(users=[message.author]))
+                raw = items.get(name)
+                if raw is not None:
+                    item = self.cc_item(raw)
+                    if not self.cc_allowed(message.author, item):
+                        return
+                    if item["channels"] and message.channel.id not in item["channels"]:
+                        return
+                    key = (message.guild.id, message.author.id, name)
+                    now_t = time.monotonic()
+                    if now_t < self.cc_cooldown.get(key, 0):
+                        return
+                    self.cc_cooldown[key] = now_t + item["cooldown"]
+                    if len(self.cc_cooldown) > 5000:
+                        self.cc_cooldown = {k: v for k, v in self.cc_cooldown.items() if v > now_t}
+                    if (message.guild.id, name) in self.cc_running and ccactions.needs_gate(item["steps"]):
+                        return  # never run a server-changing command twice at once
+                    self.cc_running.add((message.guild.id, name))
+                    try:
+                        await self.cc_run(message, name, raw, text[len(prefix):].split(None, 1)[1] if len(text[len(prefix):].split(None, 1)) > 1 else "")
+                    finally:
+                        self.cc_running.discard((message.guild.id, name))
                 return
 
     @commands.group(name="autoreact", invoke_without_command=True)

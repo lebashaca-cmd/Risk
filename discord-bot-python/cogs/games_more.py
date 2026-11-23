@@ -1,6 +1,6 @@
 """More games to play in chat. Everything here is for fun and keeps no coins or permanent data.
 
-highcard, mastermind, cups, hotcold, quickdraw and memory.
+highcard, mastermind, cups, hotcold, drawduel and memory.
 """
 import asyncio
 import random
@@ -132,12 +132,12 @@ class GamesMore(commands.Cog, name="GamesMore"):
         hint = "\U0001F525 Burning hot" if gap <= 3 else "\U0001F975 Hot" if gap <= 8 else "\U0001F642 Warm" if gap <= 20 else "\U0001F976 Cold" if gap <= 40 else "\U0001F9CA Freezing"
         await ctx.reply(f"{hint}. Try {'higher' if number < game['number'] else 'lower'}.", mention_author=False)
 
-    # ------------------------------------------------------------------ quickdraw
-    @commands.command(name="quickdraw")
+    # ------------------------------------------------------------------ drawduel
+    @commands.command(name="drawduel")
     @commands.guild_only()
     @commands.max_concurrency(1, commands.BucketType.channel)
-    async def quickdraw(self, ctx, opponent: discord.Member):
-        """Reaction duel: wait for the signal, then type BANG first. Typing early loses. Usage: !quickdraw @user"""
+    async def drawduel(self, ctx, opponent: discord.Member):
+        """Reaction duel: wait for the signal, then type BANG first. Typing early loses. Usage: !drawduel @user"""
         if opponent.bot or opponent.id == ctx.author.id:
             raise ModError("Pick another member to duel.")
         players = {ctx.author.id: ctx.author, opponent.id: opponent}

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-22T17:27:38+00:00",
+  "generatedAt": "2026-11-23T01:05:07+00:00",
   "prefixes": [
     "!",
     "?",
@@ -2068,6 +2068,16 @@
       "description": "Shows a random dog picture.",
       "examples": [
         ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "drawduel",
+      "kind": "prefix",
+      "category": "Fun",
+      "description": "Reaction duel: wait for the signal, then type BANG first. Typing early loses.",
+      "examples": [
+        "@user"
       ],
       "permission": null
     },
@@ -5704,9 +5714,9 @@
       "name": "customcmd",
       "kind": "prefix",
       "category": "VIP",
-      "description": "VIP White. Your own commands that reply with text.",
+      "description": "VIP White. Your own commands: they can reply, send embeds, give roles, make channels, moderate and more.",
       "examples": [
-        "add <name> <reply> | remove <name> | list"
+        "add <name> <reply> | remove | list | show | steps | who | cooldown"
       ],
       "permission": null
     },
@@ -5714,9 +5724,29 @@
       "name": "customcmd add",
       "kind": "prefix",
       "category": "VIP",
-      "description": "Adds a custom command.",
+      "description": "Adds a custom command that replies with text.",
       "examples": [
         "<name> <reply>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "customcmd clear",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Removes every step from a custom command so you can start over.",
+      "examples": [
+        "<name>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "customcmd cooldown",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Sets how long each person waits before running a custom command again.",
+      "examples": [
+        "<name> 30"
       ],
       "permission": "Manage Server"
     },
@@ -5737,6 +5767,46 @@
       "description": "Removes a custom command.",
       "examples": [
         "<name>"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "customcmd show",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Shows what a custom command does.",
+      "examples": [
+        "<name>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "customcmd step",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Adds a step to a custom command.",
+      "examples": [
+        "welcome add_role role=@Member | !customcmd step lounge create_channel name=\"{arg1}\" ctype=voice"
+      ],
+      "permission": "Manage Server"
+    },
+    {
+      "name": "customcmd steps",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Lists the step types a custom command can use, or the settings of one.",
+      "examples": [
+        "| !customcmd steps create_channel"
+      ],
+      "permission": null
+    },
+    {
+      "name": "customcmd who",
+      "kind": "prefix",
+      "category": "VIP",
+      "description": "Chooses who can run a custom command.",
+      "examples": [
+        "welcome everyone | mods | @Role @Role2"
       ],
       "permission": "Manage Server"
     },
