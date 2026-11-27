@@ -105,6 +105,12 @@ class Music(commands.Cog, name="Music"):
                 delay = min(delay * 2, 120)
 
     async def cog_command_error(self, ctx, error):
+        original = getattr(error, "original", error)
+        if HAVE_POMICE and isinstance(original, (pomice.NodeRestException, pomice.NodeConnectionFailure, pomice.NoNodesAvailable)):
+            # the Lavalink node restarted or dropped us: say so instead of dumping a traceback
+            print(f"[music] Lavalink node error: {type(original).__name__}: {original}")
+            await ctx.send("I lost my connection to the music server. Try that again in a moment - if it keeps happening, the Lavalink server needs a restart.", allowed_mentions=NO_MENTIONS)
+            return
         if not await explain_error(ctx, error):
             raise error
 
@@ -147,7 +153,19 @@ class Music(commands.Cog, name="Music"):
         if ctx.guild.voice_client is not None:  # some other voice client is stuck
             await ctx.guild.voice_client.disconnect(force=True)
         player = await voice.channel.connect(cls=pomice.Player, self_deaf=True)
-        await player.set_volume(self.state(ctx.guild.id).volume)
+        try:
+            await player.set_volume(self.state(ctx.guild.id).volume)
+        except (pomice.NodeRestException, pomice.NodeConnectionFailure) as error:
+            # the node restarted and forgot the voice session, so this player is dead: build a fresh one
+            print(f"[music] stale voice session ({type(error).__name__}), rejoining")
+            try:
+                await player.destroy()
+            except Exception:
+                pass
+            if ctx.guild.voice_client is not None:
+                await ctx.guild.voice_client.disconnect(force=True)
+            player = await voice.channel.connect(cls=pomice.Player, self_deaf=True)
+            await player.set_volume(self.state(ctx.guild.id).volume)
         return player
 
     def cancel_idle(self, state):
