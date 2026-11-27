@@ -18,8 +18,7 @@ STATUS_PORT = int(os.getenv('SERVER_PORT', 25239))
 intents = discord.Intents.default()
 intents.message_content = True
 intents.members = True
-# Needed only for the Discord 'Streaming' status alerts. It's a privileged intent, so it stays off
-# unless you turn it on in the Developer Portal too and set STREAM_PRESENCE=1 or PRESENCE_INTENT=1 (also used by !rep).
+
 intents.presences = os.getenv('STREAM_PRESENCE') == '1' or os.getenv('PRESENCE_INTENT') == '1'
 
 DEFAULT_PREFIXES = ('!', '?', ',')
@@ -34,7 +33,6 @@ bot = commands.Bot(command_prefix=get_prefix, intents=intents, help_command=None
 
 
 def public_servers():
-    """Servers shown on the website. Set HIDE_SERVER_IDS=id1,id2 to leave some out."""
     hidden = {s.strip() for s in os.getenv("HIDE_SERVER_IDS", "").split(",") if s.strip()}
     guilds = [g for g in bot.guilds if str(g.id) not in hidden]
     guilds.sort(key=lambda g: g.member_count or 0, reverse=True)
@@ -98,7 +96,6 @@ bot.load_errors = {}
 @bot.command(name='cogstatus', aliases=['loaded'])
 @commands.is_owner()
 async def cogstatus(ctx):
-    """Owner only. Shows which parts of the bot loaded and which failed. Usage: !cogstatus"""
     files = sorted(f[:-3] for f in os.listdir(COGS_DIR) if f.endswith('.py')) if os.path.isdir(COGS_DIR) else []
     loaded = [f for f in files if f'cogs.{f}' in bot.extensions]
     missing = [f for f in files if f not in loaded]
