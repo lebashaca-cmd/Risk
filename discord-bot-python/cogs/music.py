@@ -18,6 +18,7 @@ import discord
 from discord.ext import commands
 
 from utils.helpers import ModError, NO_MENTIONS, explain_error
+from utils.store import JsonStore
 
 try:
     import pomice
@@ -30,6 +31,9 @@ MAX_QUEUE = 100
 MAX_PLAYLIST = 50
 IDLE_LEAVE = 180  # seconds with nothing playing before Risk leaves
 LOOPS = ("off", "track", "queue")
+BASS_PRESETS = {"off": 0, "low": 25, "medium": 50, "high": 75, "extreme": 100}
+BASS_SHAPE = (1.0, 0.8, 0.55, 0.25, 0.1)  # how much of the boost each of the lowest five equalizer bands gets
+DEFAULTS = {"volume": 60, "bass": 0, "announce": True, "dj": None}
 URL = re.compile(r"https?://\S+")
 
 
@@ -43,13 +47,14 @@ def clock(ms):
 class GuildMusic:
     """What Risk remembers about music in one server."""
 
-    def __init__(self):
+    def __init__(self, volume=60, bass=0):
+        self.bass = bass  # 0 to 100 percent
         self.queue = []  # tracks waiting, in order
         self.current = None
         self.loop = "off"
         self.channel_id = None  # where "now playing" messages go
         self.idle_task = None
-        self.volume = 60
+        self.volume = volume
 
 
 class Music(commands.Cog, name="Music"):
@@ -57,6 +62,8 @@ class Music(commands.Cog, name="Music"):
 
     def __init__(self, bot):
         self.bot = bot
+        self.store = JsonStore("music")
+        self.store.data.setdefault("settings", {})
         self.guilds = {}
         self.node_task = None
         self.node = None
@@ -115,8 +122,32 @@ class Music(commands.Cog, name="Music"):
             raise error
 
     # ------------------------------------------------------------------ helpers
+    def settings_for(self, guild_id):
+        """This server's saved music settings (set in the dashboard), with defaults filled in."""
+        return {**DEFAULTS, **self.store.data["settings"].get(str(guild_id), {})}
+
     def state(self, guild_id):
-        return self.guilds.setdefault(guild_id, GuildMusic())
+        if guild_id not in self.guilds:
+            saved = self.settings_for(guild_id)
+            self.guilds[guild_id] = GuildMusic(saved["volume"], saved["bass"])
+        return self.guilds[guild_id]
+
+    def check_dj(self, ctx):
+        """If the server picked a DJ role, only people with it (or Manage Server) control the music."""
+        dj = self.settings_for(ctx.guild.id)["dj"]
+        if not dj or ctx.author.guild_permissions.manage_guild:
+            return
+        if not any(r.id == dj for r in ctx.author.roles):
+            role = ctx.guild.get_role(dj)
+            raise ModError(f"You need the {role.name if role else 'DJ'} role to control the music. Anyone can still add songs with `{ctx.clean_prefix}play`.")
+
+    async def apply_bass(self, player, percent):
+        """Sets the bass boost by moving the lowest equalizer bands. 0 removes it."""
+        if player.filters.has_filter(filter_tag="bass"):
+            await player.remove_filter("bass")
+        if percent > 0:
+            levels = [(band, round(percent / 100 * shape, 3)) for band, shape in enumerate(BASS_SHAPE)]
+            await player.add_filter(pomice.Equalizer(tag="bass", levels=levels))
 
     def ready(self):
         if self.problem:
@@ -136,6 +167,7 @@ class Music(commands.Cog, name="Music"):
             raise ModError("I'm not playing anything. Start with `" + ctx.clean_prefix + "play <song>`.")
         if ctx.author.voice is None or ctx.author.voice.channel != player.channel:
             raise ModError(f"Join {player.channel.mention} to control the music.")
+        self.check_dj(ctx)
         return player
 
     async def join(self, ctx):
@@ -152,6 +184,8 @@ class Music(commands.Cog, name="Music"):
             return player
         if ctx.guild.voice_client is not None:  # some other voice client is stuck
             await ctx.guild.voice_client.disconnect(force=True)
+        saved = self.settings_for(ctx.guild.id)
+        self.state(ctx.guild.id).volume, self.state(ctx.guild.id).bass = saved["volume"], saved["bass"]
         player = await voice.channel.connect(cls=pomice.Player, self_deaf=True)
         try:
             await player.set_volume(self.state(ctx.guild.id).volume)
@@ -166,6 +200,11 @@ class Music(commands.Cog, name="Music"):
                 await ctx.guild.voice_client.disconnect(force=True)
             player = await voice.channel.connect(cls=pomice.Player, self_deaf=True)
             await player.set_volume(self.state(ctx.guild.id).volume)
+        if self.state(ctx.guild.id).bass:
+            try:
+                await self.apply_bass(player, self.state(ctx.guild.id).bass)
+            except Exception as error:
+                print(f"[music] couldn't apply the default bass ({type(error).__name__})")
         return player
 
     def cancel_idle(self, state):
@@ -232,7 +271,7 @@ class Music(commands.Cog, name="Music"):
             state.current = None
             await self.notify(state, f"I couldn't play **{track.title[:80]}**, skipping it.")
             return await self.start_next(player)
-        if announce:
+        if announce and self.settings_for(guild.id)["announce"]:
             channel = self.bot.get_channel(state.channel_id or 0)
             if channel is not None:
                 try:
@@ -494,6 +533,31 @@ class Music(commands.Cog, name="Music"):
         count = len(state.queue)
         state.queue.clear()
         await ctx.reply(f"Cleared {count} song{'s' if count != 1 else ''} from the queue.", mention_author=False)
+
+    @commands.command(name="bass", aliases=["bassboost"])
+    @commands.guild_only()
+    async def bass(self, ctx, level: str = None):
+        """Changes the bass boost. Use off, low, medium, high, extreme or a number from 0 to 100. Usage: !bass high | !bass 40 | !bass off (no level shows the current one)"""
+        self.ready()
+        state = self.state(ctx.guild.id)
+        if level is None:
+            label = next((n for n, v in BASS_PRESETS.items() if v == state.bass), None)
+            await ctx.reply(f"Bass boost is **{state.bass}%**" + (f" ({label})" if label else "") + f". Change it with `{ctx.clean_prefix}bass <off|low|medium|high|extreme|0-100>`.", mention_author=False)
+            return
+        player = self.need_player(ctx)
+        word = level.lower().rstrip("%")
+        if word in BASS_PRESETS:
+            percent = BASS_PRESETS[word]
+        elif word.isdigit() and 0 <= int(word) <= 100:
+            percent = int(word)
+        else:
+            raise ModError("Use `off`, `low`, `medium`, `high`, `extreme` or a number from 0 to 100.")
+        try:
+            await self.apply_bass(player, percent)
+        except (pomice.FilterInvalidArgument, pomice.FilterTagInvalid, pomice.FilterTagAlreadyInUse):
+            raise ModError("I couldn't change the bass just now. Try again.")
+        state.bass = percent
+        await ctx.reply("Bass boost is off." if percent == 0 else f"Bass boost set to **{percent}%**." + (" That's a lot, so it can sound distorted on loud songs." if percent >= 90 else ""), mention_author=False)
 
     @commands.command(name="seek")
     @commands.guild_only()

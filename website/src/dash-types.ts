@@ -215,6 +215,15 @@ export interface Announcement {
   on: boolean;
 }
 
+export interface MusicSettings {
+  volume: number;
+  bass: number;
+  announce: boolean;
+  dj: string | null;
+  ready: boolean;
+  problem: string | null;
+}
+
 export interface AnnouncementsSettings {
   items: Announcement[];
   locked?: boolean;
@@ -259,6 +268,7 @@ export interface AllSettings {
   responders: RespondersSettings;
   customcmds: CustomCommandsSettings;
   announcements: AnnouncementsSettings;
+  music: MusicSettings;
   vip: VipSettings;
   general: GeneralSettings;
   welcome: WelcomeSettings;

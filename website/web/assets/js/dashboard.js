@@ -1,6 +1,6 @@
 import { ApiFailure, dashApi } from "./api.js";
 import { channelChoices, channelSelect, group, multiChannels, multiRoles, numberInput, roleSelect, selectInput, tagEditor, textArea, textInput, toggle, uid, vipBadge, } from "./dash-ui.js";
-import { announcements, commands, customcmds, overview, responders, vipSection } from "./dash-extra.js";
+import { announcements, commands, customcmds, music, overview, responders, vipSection } from "./dash-extra.js";
 import { profileCard } from "./dash-profile.js";
 import { h, mount } from "./dom.js";
 import { toast } from "./ui.js";
@@ -16,6 +16,7 @@ const SECTION_META = [
     { id: "responders", label: "Auto-replies", blurb: "Have Risk answer messages that match a trigger." },
     { id: "customcmds", label: "Custom commands", blurb: "Your own commands: replies, roles, channels, moderation and more.", vip: true },
     { id: "announcements", label: "Announcements", blurb: "Messages Risk repeats on a timer.", vip: true },
+    { id: "music", label: "Music", blurb: "Defaults for the !play music player: volume, bass and who can control it." },
     { id: "vip", label: "VIP", blurb: "Your plan and the extras VIP unlocks.", vip: true },
 ];
 const clone = (value) => JSON.parse(JSON.stringify(value));
@@ -209,6 +210,7 @@ const RENDERERS = (vip) => ({
     overview, general, welcome, logs, levels, automod, community, commands, responders,
     customcmds: customcmds(vip ?? null),
     announcements: announcements(vip ?? null),
+    music,
     vip: vipSection(),
 });
 // Settings editor for one server

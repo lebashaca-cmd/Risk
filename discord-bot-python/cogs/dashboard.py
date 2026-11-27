@@ -43,7 +43,7 @@ NEVER_MATCHES = "​​ignored​​"
 # Server-wide basic rules for commands. Members with Manage Server ignore all of them.
 BASICS = {"blocked_channels": [], "only_channels": [], "blocked_roles": [], "delete_invocations": False, "cooldown": 0}
 BASICS_EXEMPT = {"help", "dashboard"}
-SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "customcmds", "announcements", "vip")
+SECTIONS = ("general", "welcome", "logs", "levels", "automod", "community", "commands", "responders", "customcmds", "announcements", "music", "vip")
 READ_ONLY = ("overview",)
 MAX_BODY = 1_000_000
 MAX_PROFILE_BODY = 7_500_000
@@ -63,6 +63,7 @@ REQUIREMENTS = {
     "commands": [],
     "responders": [],
     "customcmds": [("VIP", "vip.py", ["has"]), ("VIPPlus", "vip_plus.py", ["custom_cap", "custom_name_error", "cc_item", "cc_problem", "store.save", "store.data"])],
+    "music": [("Music", "music.py", ["store.save", "store.data", "settings_for"])],
     "overview": [],
     "announcements": [("VIP", "vip.py", ["schedules", "is_vip", "limit", "store.save"])],
     "vip": [("VIP", "vip.py", ["info", "limit", "cfg", "store.save"])],
@@ -802,6 +803,24 @@ class Dashboard(commands.Cog):
             plus.store.data["customcmds"].pop(str(guild.id), None)
         plus.store.save()
 
+    # Music: defaults for the !play player
+    def read_music(self, guild):
+        cog = self.bot.get_cog("Music")
+        saved = cog.settings_for(guild.id)
+        return {"volume": saved["volume"], "bass": saved["bass"], "announce": bool(saved["announce"]), "dj": str(saved["dj"]) if saved["dj"] else None,
+                "ready": cog.problem is None and cog.node is not None, "problem": cog.problem}
+
+    def write_music(self, guild, body):
+        cog = self.bot.get_cog("Music")
+        current = cog.settings_for(guild.id)
+        merged = {**self.read_music(guild), **{k: v for k, v in body.items() if k in ("volume", "bass", "announce", "dj")}}
+        entry = {"volume": as_int(merged["volume"], "Default volume", 1, 150), "bass": as_int(merged["bass"], "Default bass", 0, 100),
+                 "announce": as_bool(merged["announce"], "Now-playing messages"), "dj": pick_role(guild, merged["dj"], "DJ role")}
+        if entry == {k: current[k] for k in entry} and str(guild.id) not in cog.store.data["settings"]:
+            return
+        cog.store.data["settings"][str(guild.id)] = entry
+        cog.store.save()
+
     # Announcements (VIP): messages Risk repeats on a timer
     def read_announcements(self, guild):
         cog = self.bot.get_cog("VIP")
@@ -1237,6 +1256,8 @@ class Dashboard(commands.Cog):
             return [self.store.data]
         if section == "customcmds":
             return [cog("VIPPlus").store.data]
+        if section == "music":
+            return [cog("Music").store.data]
         if section in ("announcements", "vip"):
             return [cog("VIP").store.data, self.store.data]
         if section == "welcome":
