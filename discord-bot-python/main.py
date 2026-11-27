@@ -1,12 +1,19 @@
+import asyncio
 import discord
 import os
 import math
+import time
 import traceback
 from aiohttp import web
 from discord.ext import commands
 from dotenv import load_dotenv
 
 from utils.helpers import Silent, explain_error
+
+try:
+    import pomice
+except ImportError:  # the bot still starts without the music library
+    pomice = None
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 COGS_DIR = os.path.join(BASE_DIR, 'cogs')
@@ -85,8 +92,30 @@ async def start_status_server():
     print(f'Status page listening on 0.0.0.0:{STATUS_PORT}')
 
 
+_last_node_warning = 0.0
+
+
+def quiet_node_errors(loop, context):
+    """Pomice retries a dropped Lavalink node in a background task that nothing awaits,
+    so every failed attempt ends in a 'Task exception was never retrieved' traceback.
+    Report those once a minute instead of letting them flood the console."""
+    global _last_node_warning
+    error = context.get("exception")
+    if pomice is not None and isinstance(
+        error, (pomice.NodeConnectionFailure, pomice.NodeRestException, pomice.NoNodesAvailable)
+    ):
+        now = time.monotonic()
+        if now - _last_node_warning > 60:
+            _last_node_warning = now
+            print(f"[lavalink] node dropped ({error}) - pomice retries it in the background")
+        return
+    loop.default_exception_handler(context)
+
+
 @bot.event
 async def setup_hook():
+    # the node retry tasks have no awaiting caller, so catch them here
+    asyncio.get_running_loop().set_exception_handler(quiet_node_errors)
     await start_status_server()
 
 
