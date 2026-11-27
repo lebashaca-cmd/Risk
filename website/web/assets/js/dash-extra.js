@@ -275,6 +275,15 @@ export const customcmds = (vip) => (draft, meta, changed) => {
         return [upsell(vip, "Custom commands are included with VIP White, VIP Supreme and Lifetime.")];
     return [group("Custom commands", "Commands you make up. Each one runs steps: reply, send an embed, give a role, make a channel or role, moderate, save values and more. Use {args}, {arg1} and {target} to read what the person typed. They can also be managed in chat with !customcmd.", list, count, add)];
 };
+// Music: defaults for the player
+export const music = (draft, meta, changed) => {
+    const roles = [{ value: "", label: "Anyone can control the music" }, ...meta.roles.map((r) => ({ value: r.id, label: `@${r.name}` }))];
+    const status = h("p", { class: "dash-hint", role: "status" }, draft.ready ? "The music server is connected." : draft.problem ?? "The music server isn't connected yet.");
+    return [
+        group("Sound", "Where the player starts each time Risk joins a voice channel. Anyone in the channel can still change it with !volume and !bass while music plays.", status, numberInput("Default volume", draft.volume, (v) => { draft.volume = v; changed(); }, 1, 150, 1, "1 to 150. Above 100 can sound distorted."), numberInput("Default bass boost", draft.bass, (v) => { draft.bass = v; changed(); }, 0, 100, 5, "0 is off. 25 is low, 50 medium, 75 high and 100 extreme.")),
+        group("Control", "Anyone can add songs with !play. This decides who can skip, stop, pause, change the volume and bass, loop and clear the queue.", selectInput("DJ role", roles, draft.dj ?? "", (v) => { draft.dj = v === "" ? null : v; changed(); }, "People with Manage Server can always control the music."), toggle("Send a message when a new song starts", "Posts the song in the channel where !play was used.", draft.announce, (v) => { draft.announce = v; changed(); })),
+    ];
+};
 // Announcements (VIP)
 export const announcements = (vip) => (draft, meta, changed) => {
     const limit = meta.limits["schedules"] ?? 0;

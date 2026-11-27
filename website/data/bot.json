@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T03:37:34+00:00",
+  "generatedAt": "2026-11-27T07:25:49+00:00",
   "prefixes": [
     "!",
     "?",
@@ -5707,6 +5707,16 @@
         "<word>"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "bass",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Changes the bass boost. Use off, low, medium, high, extreme or a number from 0 to 100.",
+      "examples": [
+        "high | !bass 40 | !bass off (no level shows the current one)"
+      ],
+      "permission": null
     },
     {
       "name": "customcmd",
