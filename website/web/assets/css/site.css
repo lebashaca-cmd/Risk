@@ -925,3 +925,23 @@ a.dash-server:hover, a.dash-server:focus-visible { border-color: var(--edge-stro
 .cc-palette-item { font: inherit; font-size: 0.9rem; padding: 0.35rem 0.7rem; border-radius: 999px; border: 1px solid var(--edge); background: transparent; color: inherit; cursor: pointer; }
 .cc-palette-item:hover, .cc-palette-item:focus-visible { border-color: currentColor; }
 @media (max-width: 40rem) { .cc-step-controls { margin-inline-start: 0; inline-size: 100%; } }
+
+/* Music equalizer */
+.eq-presets { display: flex; flex-wrap: wrap; gap: .5rem; margin-block: .75rem 1rem; }
+.eq-stage { position: relative; height: 15rem; padding: .75rem .5rem; border: 1px solid var(--line, rgba(255,255,255,.12)); border-radius: 12px; background: rgba(255,255,255,.03); overflow: hidden; }
+.eq-bars { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(15, 1fr); gap: 2px; height: 100%; }
+.eq-band { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; justify-items: center; min-width: 0; min-height: 0; }
+.eq-num, .eq-hz { height: 1.1rem; line-height: 1.1rem; font-size: .68rem; color: var(--muted, #9aa0a6); font-variant-numeric: tabular-nums; }
+.eq-track { position: relative; width: 100%; min-height: 0; display: flex; justify-content: center; }
+.eq-track::before { content: ""; position: absolute; top: 0; bottom: 0; width: 6px; border-radius: 3px; background: rgba(255,255,255,.08); }
+.eq-fill { position: absolute; width: 6px; border-radius: 3px; background: var(--accent, #7c9cff); transition: height .08s, bottom .08s; }
+.eq-fill.eq-cut { background: #e0a458; }
+.eq-input { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; margin: 0; background: transparent; writing-mode: vertical-lr; direction: rtl; -webkit-appearance: slider-vertical; appearance: slider-vertical; cursor: pointer; opacity: .01; }
+.eq-input:focus-visible { opacity: 1; outline: 2px solid var(--accent, #7c9cff); }
+.eq-plot { position: absolute; inset: 1.85rem .5rem; pointer-events: none; }
+.eq-zero { position: absolute; left: 0; right: 0; border-top: 1px dashed rgba(255,255,255,.18); }
+.eq-curve { position: absolute; inset: 0; width: 100%; height: 100%; }
+.eq-curve polyline { fill: none; stroke: var(--accent, #7c9cff); stroke-width: 1.5; vector-effect: non-scaling-stroke; opacity: .6; }
+.fx-row { display: grid; grid-template-columns: 7rem 1fr 4rem; align-items: center; gap: .75rem; margin-block: .5rem; }
+.fx-value { text-align: right; font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .eq-stage { height: 13rem; } .eq-hz { font-size: .55rem; } .fx-row { grid-template-columns: 5rem 1fr 3.5rem; } }

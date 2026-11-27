@@ -805,21 +805,33 @@ class Dashboard(commands.Cog):
 
     # Music: defaults for the !play player
     def read_music(self, guild):
+        from cogs.music import BANDS, PRESETS, clean_eq
         cog = self.bot.get_cog("Music")
         saved = cog.settings_for(guild.id)
         return {"volume": saved["volume"], "bass": saved["bass"], "announce": bool(saved["announce"]), "dj": str(saved["dj"]) if saved["dj"] else None,
+                "eq": clean_eq(saved["eq"]) or [0.0] * 15, "speed": saved["speed"], "pitch": saved["pitch"],
+                "rotation": bool(saved["rotation"]), "karaoke": bool(saved["karaoke"]),
+                "bands": list(BANDS), "presets": PRESETS,
                 "ready": cog.problem is None and cog.node is not None, "problem": cog.problem}
 
     def write_music(self, guild, body):
+        from cogs.music import clean_eq
         cog = self.bot.get_cog("Music")
         current = cog.settings_for(guild.id)
-        merged = {**self.read_music(guild), **{k: v for k, v in body.items() if k in ("volume", "bass", "announce", "dj")}}
+        keys = ("volume", "bass", "announce", "dj", "eq", "speed", "pitch", "rotation", "karaoke")
+        merged = {**self.read_music(guild), **{k: v for k, v in body.items() if k in keys}}
+        eq = clean_eq(merged["eq"])
+        if eq is None:
+            raise ApiError(400, "The equalizer needs 15 band values between -0.25 and 1.")
         entry = {"volume": as_int(merged["volume"], "Default volume", 1, 150), "bass": as_int(merged["bass"], "Default bass", 0, 100),
-                 "announce": as_bool(merged["announce"], "Now-playing messages"), "dj": pick_role(guild, merged["dj"], "DJ role")}
+                 "announce": as_bool(merged["announce"], "Now-playing messages"), "dj": pick_role(guild, merged["dj"], "DJ role"),
+                 "eq": eq, "speed": round(as_float(merged["speed"], "Speed", 0.5, 2), 2), "pitch": round(as_float(merged["pitch"], "Pitch", 0.5, 2), 2),
+                 "rotation": as_bool(merged["rotation"], "8D audio"), "karaoke": as_bool(merged["karaoke"], "Karaoke")}
         if entry == {k: current[k] for k in entry} and str(guild.id) not in cog.store.data["settings"]:
             return
         cog.store.data["settings"][str(guild.id)] = entry
         cog.store.save()
+        self.bot.loop.create_task(cog.apply_to_guild(guild))  # change a song that's already playing
 
     # Announcements (VIP): messages Risk repeats on a timer
     def read_announcements(self, guild):
