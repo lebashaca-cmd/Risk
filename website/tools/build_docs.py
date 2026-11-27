@@ -36,8 +36,9 @@ NAV = [
     ("VIP", [("vip", "VIP plans"), ("vip-commands", "VIP commands")]),
     ("Reference", [("commands", "All commands"), ("permissions", "Permissions"), ("faq", "Troubleshooting")]),
 ]
-CATEGORY_ORDER = ["Info", "Moderation", "Utility", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "Sticky", "Lookups", "AI", "VIP"]
+CATEGORY_ORDER = ["Info", "Moderation", "Utility", "Fun", "Economy", "Levels", "Community", "Tickets", "Server logs", "Welcome", "Sticky", "Lookups", "AI", "Music", "VIP"]
 CATEGORY_BLURB = {
+    "Music": "Play music in a voice channel from YouTube, SoundCloud, Spotify and more: play, queue, skip, loop, volume and seek. The bot owner needs to run a Lavalink server.",
     "Info": "Status, help and links.", "Moderation": "Keep the server safe: bans, timeouts, locks, auto-mod and bulk tools.",
     "Utility": "Handy tools: lookups, converters, reminders, server and user info.", "Fun": "Games, jokes and reactions.",
     "Economy": "Coins, jobs, shops and gambling.", "Levels": "XP, ranks, leaderboards and level rewards.",

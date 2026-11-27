@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-23T01:05:07+00:00",
+  "generatedAt": "2026-11-27T03:37:34+00:00",
   "prefixes": [
     "!",
     "?",
@@ -20,10 +20,8 @@
       "name": "cogstatus",
       "kind": "prefix",
       "category": "Info",
-      "description": "Owner only. Shows which parts of the bot loaded and which failed.",
-      "examples": [
-        ""
-      ],
+      "description": "",
+      "examples": [],
       "permission": null
     },
     {
@@ -5902,6 +5900,16 @@
       "permission": "Manage Server"
     },
     {
+      "name": "join",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Makes Risk join your voice channel.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "joingate",
       "kind": "prefix",
       "category": "VIP",
@@ -5920,6 +5928,16 @@
         "[reason]. Undo with !unlockall"
       ],
       "permission": "Administrator"
+    },
+    {
+      "name": "loop",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Repeats the current song or the whole queue.",
+      "examples": [
+        "track | !loop queue | !loop off (no mode cycles through them)"
+      ],
+      "permission": null
     },
     {
       "name": "massrole",
@@ -6012,6 +6030,26 @@
       "permission": "Manage Server"
     },
     {
+      "name": "nowplaying",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Shows the song that is playing, with a progress bar.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "pause",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Pauses the music.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "permaudit",
       "kind": "prefix",
       "category": "VIP",
@@ -6020,6 +6058,56 @@
         ""
       ],
       "permission": "Administrator"
+    },
+    {
+      "name": "play",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Plays a song or adds it to the queue. Takes a name or a YouTube, SoundCloud or Spotify link.",
+      "examples": [
+        "never gonna give you up | !play https://youtu.be/..."
+      ],
+      "permission": null
+    },
+    {
+      "name": "queue",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Shows what is playing and what is coming up.",
+      "examples": [
+        "| !queue 2"
+      ],
+      "permission": null
+    },
+    {
+      "name": "queueclear",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Clears the queue but keeps the current song playing.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "remove",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Removes a song from the queue by its number in `!queue`.",
+      "examples": [
+        "3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "resume",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Resumes paused music.",
+      "examples": [
+        ""
+      ],
+      "permission": null
     },
     {
       "name": "rolereport",
@@ -6052,6 +6140,16 @@
       "permission": "Manage Server"
     },
     {
+      "name": "seek",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Jumps to a time in the current song.",
+      "examples": [
+        "1:30 | !seek 90"
+      ],
+      "permission": null
+    },
+    {
       "name": "serverbackup",
       "kind": "prefix",
       "category": "VIP",
@@ -6076,6 +6174,26 @@
       "kind": "prefix",
       "category": "VIP",
       "description": "VIP. Shows a detailed server report.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "shufflequeue",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Shuffles the songs waiting in the queue.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
+      "name": "skip",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Skips the current song.",
       "examples": [
         ""
       ],
@@ -6110,6 +6228,16 @@
         "on | off | clear | status"
       ],
       "permission": "Manage Roles"
+    },
+    {
+      "name": "stop",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Stops the music, clears the queue and leaves the voice channel.",
+      "examples": [
+        ""
+      ],
+      "permission": null
     },
     {
       "name": "topmessages",
@@ -6358,6 +6486,16 @@
       "description": "Owner only. Changes which plan a VIP server is on.",
       "examples": [
         "<server id> <basic|lifetime|white|supreme>"
+      ],
+      "permission": null
+    },
+    {
+      "name": "volume",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Shows or sets the volume from 1 to 150.",
+      "examples": [
+        "| !volume 80"
       ],
       "permission": null
     },
