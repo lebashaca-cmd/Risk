@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music commands · Risk docs</title>
+<meta name="description" content="Play music in a voice channel from YouTube, SoundCloud, Spotify and more: play, queue, skip, loop, volume and seek. The bot owner needs to run a Lavalink server.">
+<meta property="og:site_name" content="Risk docs">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Music commands · Risk docs">
+<meta property="og:description" content="Play music in a voice channel from YouTube, SoundCloud, Spotify and more: play, queue, skip, loop, volume and seek. The bot owner needs to run a Lavalink server.">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#131314">
+<link rel="icon" href="/favicon.png" type="image/png">
+<link rel="apple-touch-icon" href="/favicon.png">
+<link rel="stylesheet" href="docs.css">
+<script src="docs.js" defer></script>
+<script type="module" src="/assets/js/consent.js"></script>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the page</a>
+<header class="top">
+  <a class="brand" href="./">Risk <span>docs</span></a>
+  <div class="search" role="search">
+    <label class="sr" for="q">Search the docs</label>
+    <input id="q" type="search" placeholder="Search commands, guides and variables" autocomplete="off" data-search-input>
+    <ul class="results" data-search-results hidden></ul>
+  </div>
+  <button class="menu-toggle" type="button" data-menu aria-expanded="false" aria-controls="side">Menu</button>
+  <a class="back" href="/" data-home>Back to Risk</a>
+</header>
+<div class="shell">
+  <aside class="side" id="side" data-side><div class="nav-group"><p class="nav-title">Start here</p><ul><li><a href="./">Risk documentation</a></li><li><a href="getting-started">Getting started</a></li><li><a href="dashboard">The dashboard</a></li></ul></div><div class="nav-group"><p class="nav-title">Features</p><ul><li><a href="moderation">Moderation and auto-mod</a></li><li><a href="levels">Levels and XP</a></li><li><a href="economy">Economy and games</a></li><li><a href="tickets">Tickets</a></li><li><a href="logs">Server logs</a></li><li><a href="community">Community tools</a></li><li><a href="welcome">Welcome and leave</a></li><li><a href="streams">Stream alerts</a></li><li><a href="utility">Utility, fun and lookups</a></li></ul></div><div class="nav-group"><p class="nav-title">Customising</p><ul><li><a href="messages">Message templates</a></li><li><a href="variables">Variables</a></li><li><a href="command-rules">Command rules</a></li></ul></div><div class="nav-group"><p class="nav-title">VIP</p><ul><li><a href="vip">VIP plans</a></li><li><a href="vip-commands">VIP commands</a></li></ul></div><div class="nav-group"><p class="nav-title">Reference</p><ul><li><a href="commands">All commands</a></li><li><a href="permissions">Permissions</a></li><li><a href="faq">Troubleshooting</a></li></ul></div><div class="nav-group"><p class="nav-title">Command reference</p><ul><li><a href="commands-info">Info</a></li><li><a href="commands-moderation">Moderation</a></li><li><a href="commands-utility">Utility</a></li><li><a href="commands-fun">Fun</a></li><li><a href="commands-economy">Economy</a></li><li><a href="commands-levels">Levels</a></li><li><a href="commands-community">Community</a></li><li><a href="commands-tickets">Tickets</a></li><li><a href="commands-server-logs">Server logs</a></li><li><a href="commands-welcome">Welcome</a></li><li><a href="commands-lookups">Lookups</a></li><li><a href="commands-ai">AI</a></li><li><a href="commands-music" aria-current="page">Music</a></li><li><a href="commands-vip">VIP</a></li></ul></div></aside>
+  <main id="content" tabindex="-1">
+    <article>
+      <h1>Music commands</h1>
+      <p>Play music in a voice channel from YouTube, SoundCloud, Spotify and more: play, queue, skip, loop, volume and seek. The bot owner needs to run a Lavalink server. Anyone can use a command unless it says it needs a permission. If your server changed the prefix, use that instead of <code>!</code>.</p><p><label class="filter">Filter these commands <input type="search" data-filter placeholder="Type a command or a word" autocomplete="off"></label></p><div data-filter-list><div class="cmd" id="cmd-join" data-search="join makes risk join your voice channel."><h3><code>!join</code><a class="anchor" href="#cmd-join" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Makes Risk join your voice channel.</p></div>
+<div class="cmd" id="cmd-loop" data-search="loop repeats the current song or the whole queue."><h3><code>!loop</code><a class="anchor" href="#cmd-loop" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Repeats the current song or the whole queue.</p><p class="usage">Try it: <code>!loop track | !loop queue | !loop off (no mode cycles through them)</code></p></div>
+<div class="cmd" id="cmd-nowplaying" data-search="nowplaying shows the song that is playing, with a progress bar."><h3><code>!nowplaying</code><a class="anchor" href="#cmd-nowplaying" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Shows the song that is playing, with a progress bar.</p></div>
+<div class="cmd" id="cmd-pause" data-search="pause pauses the music."><h3><code>!pause</code><a class="anchor" href="#cmd-pause" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Pauses the music.</p></div>
+<div class="cmd" id="cmd-play" data-search="play plays a song or adds it to the queue. takes a name or a youtube, soundcloud or spotify link."><h3><code>!play</code><a class="anchor" href="#cmd-play" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Plays a song or adds it to the queue. Takes a name or a YouTube, SoundCloud or Spotify link.</p><p class="usage">Try it: <code>!play never gonna give you up | !play https://youtu.be/...</code></p></div>
+<div class="cmd" id="cmd-queue" data-search="queue shows what is playing and what is coming up."><h3><code>!queue</code><a class="anchor" href="#cmd-queue" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Shows what is playing and what is coming up.</p><p class="usage">Try it: <code>!queue | !queue 2</code></p></div>
+<div class="cmd" id="cmd-queueclear" data-search="queueclear clears the queue but keeps the current song playing."><h3><code>!queueclear</code><a class="anchor" href="#cmd-queueclear" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Clears the queue but keeps the current song playing.</p></div>
+<div class="cmd" id="cmd-remove" data-search="remove removes a song from the queue by its number in `!queue`."><h3><code>!remove</code><a class="anchor" href="#cmd-remove" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Removes a song from the queue by its number in <code>!queue</code>.</p><p class="usage">Try it: <code>!remove 3</code></p></div>
+<div class="cmd" id="cmd-resume" data-search="resume resumes paused music."><h3><code>!resume</code><a class="anchor" href="#cmd-resume" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Resumes paused music.</p></div>
+<div class="cmd" id="cmd-seek" data-search="seek jumps to a time in the current song."><h3><code>!seek</code><a class="anchor" href="#cmd-seek" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Jumps to a time in the current song.</p><p class="usage">Try it: <code>!seek 1:30 | !seek 90</code></p></div>
+<div class="cmd" id="cmd-shufflequeue" data-search="shufflequeue shuffles the songs waiting in the queue."><h3><code>!shufflequeue</code><a class="anchor" href="#cmd-shufflequeue" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Shuffles the songs waiting in the queue.</p></div>
+<div class="cmd" id="cmd-skip" data-search="skip skips the current song."><h3><code>!skip</code><a class="anchor" href="#cmd-skip" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Skips the current song.</p></div>
+<div class="cmd" id="cmd-stop" data-search="stop stops the music, clears the queue and leaves the voice channel."><h3><code>!stop</code><a class="anchor" href="#cmd-stop" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Stops the music, clears the queue and leaves the voice channel.</p></div>
+<div class="cmd" id="cmd-volume" data-search="volume shows or sets the volume from 1 to 150."><h3><code>!volume</code><a class="anchor" href="#cmd-volume" aria-label="Link to this command">#</a></h3><p class="meta"><span class="tag tag-quiet">Anyone can use it</span></p><p>Shows or sets the volume from 1 to 150.</p><p class="usage">Try it: <code>!volume | !volume 80</code></p></div></div><p class="empty" data-filter-empty hidden>No command matches that.</p>
+    </article>
+    <nav class="pager" aria-label="Previous and next page"><a href="commands-ai"><span>Previous</span>AI commands</a><a class="next" href="commands-vip"><span>Next</span>VIP commands</a></nav>
+  </main>
+  
+</div>
+<footer class="foot">
+  <p>Risk documentation. Spotted something wrong or missing? Tell us in the support server.</p>
+  <p>&copy; 2026 Risk. <a href="/privacy" data-main>Privacy</a> &middot; <a href="/terms" data-main>Terms</a> &middot; <a href="/accessibility" data-main>Accessibility</a> &middot; <a href="/data-deletion" data-main>Delete my data</a> &middot; <button type="button" data-consent-open>Cookie settings</button></p>
+</footer>
+</body>
+</html>

@@ -14,6 +14,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 CATEGORY_BY_FILE = {
+    "music": "Music",
     "main": "Info",
     "commands_list": "Info",
     "uptime": "Info",
