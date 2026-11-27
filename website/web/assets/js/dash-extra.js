@@ -275,13 +275,94 @@ export const customcmds = (vip) => (draft, meta, changed) => {
         return [upsell(vip, "Custom commands are included with VIP White, VIP Supreme and Lifetime.")];
     return [group("Custom commands", "Commands you make up. Each one runs steps: reply, send an embed, give a role, make a channel or role, moderate, save values and more. Use {args}, {arg1} and {target} to read what the person typed. They can also be managed in chat with !customcmd.", list, count, add)];
 };
-// Music: defaults for the player
+// Music: equalizer, effects and player defaults
+const EQ_MIN = -0.25;
+const EQ_MAX = 0.5; // the slider stops here; Lavalink allows up to 1 but past 0.5 it distorts badly
+const SVG_NS = "http://www.w3.org/2000/svg";
+function signed(gain) {
+    const pct = Math.round(gain * 100);
+    return pct > 0 ? `+${pct}` : String(pct);
+}
+function slider(label, value, min, max, step, show, onChange) {
+    const input = h("input", { type: "range", class: "fx-range", min, max, step, "aria-label": label });
+    input.value = String(value);
+    const out = h("output", { class: "fx-value" }, show(value));
+    input.addEventListener("input", () => {
+        const v = Number(input.value);
+        out.textContent = show(v);
+        onChange(v);
+    });
+    return h("div", { class: "fx-row" }, h("span", { class: "fx-label" }, label), input, out);
+}
 export const music = (draft, meta, changed) => {
     const roles = [{ value: "", label: "Anyone can control the music" }, ...meta.roles.map((r) => ({ value: r.id, label: `@${r.name}` }))];
     const status = h("p", { class: "dash-hint", role: "status" }, draft.ready ? "The music server is connected." : draft.problem ?? "The music server isn't connected yet.");
+    // Equalizer: one vertical slider per band, with the bars and the curve redrawn as you drag
+    const stage = h("div", { class: "eq-stage" });
+    const curve = document.createElementNS(SVG_NS, "svg");
+    curve.setAttribute("class", "eq-curve");
+    curve.setAttribute("viewBox", "0 0 150 100");
+    curve.setAttribute("preserveAspectRatio", "none");
+    curve.setAttribute("aria-hidden", "true");
+    const line = document.createElementNS(SVG_NS, "polyline");
+    curve.appendChild(line);
+    const bars = h("div", { class: "eq-bars" });
+    const fills = [];
+    const values = [];
+    const total = EQ_MAX - EQ_MIN;
+    const zero = (0 - EQ_MIN) / total; // where "unchanged" sits, from the bottom
+    const place = (i) => {
+        const g = draft.eq[i] ?? 0;
+        const at = (g - EQ_MIN) / total;
+        const fill = fills[i];
+        fill.style.bottom = `${Math.min(at, zero) * 100}%`;
+        fill.style.height = `${Math.abs(at - zero) * 100}%`;
+        fill.classList.toggle("eq-cut", g < 0);
+        values[i].textContent = signed(g);
+    };
+    const drawCurve = () => {
+        line.setAttribute("points", draft.eq.map((g, i) => `${(i + 0.5) * 10},${100 - ((g - EQ_MIN) / total) * 100}`).join(" "));
+    };
+    const redraw = () => {
+        draft.eq.forEach((_, i) => {
+            place(i);
+            const input = bars.querySelectorAll(".eq-input")[i];
+            if (input)
+                input.value = String(draft.eq[i]);
+        });
+        drawCurve();
+    };
+    draft.eq.forEach((gain, i) => {
+        const input = h("input", { type: "range", class: "eq-input", min: EQ_MIN, max: EQ_MAX, step: 0.01, orient: "vertical", "aria-label": `${draft.bands[i]} Hz` });
+        input.value = String(gain);
+        input.addEventListener("input", () => {
+            draft.eq[i] = Number(input.value);
+            place(i);
+            drawCurve();
+            changed();
+        });
+        const fill = h("span", { class: "eq-fill" });
+        const value = h("span", { class: "eq-num" });
+        fills.push(fill);
+        values.push(value);
+        bars.appendChild(h("div", { class: "eq-band" }, value, h("div", { class: "eq-track" }, fill, input), h("span", { class: "eq-hz" }, draft.bands[i] ?? "")));
+    });
+    stage.append(h("div", { class: "eq-plot", "aria-hidden": "true" }, h("span", { class: "eq-zero", style: `bottom:${zero * 100}%` }), curve), bars);
+    redraw();
+    const chips = h("div", { class: "eq-presets", role: "group", "aria-label": "Equalizer presets" });
+    for (const [name, levels] of Object.entries(draft.presets)) {
+        const chip = h("button", { type: "button", class: "btn btn-quiet btn-small" }, name.charAt(0).toUpperCase() + name.slice(1));
+        chip.addEventListener("click", () => {
+            draft.eq = [...levels];
+            redraw();
+            changed();
+        });
+        chips.appendChild(chip);
+    }
     return [
-        group("Sound", "Where the player starts each time Risk joins a voice channel. Anyone in the channel can still change it with !volume and !bass while music plays.", status, numberInput("Default volume", draft.volume, (v) => { draft.volume = v; changed(); }, 1, 150, 1, "1 to 150. Above 100 can sound distorted."), numberInput("Default bass boost", draft.bass, (v) => { draft.bass = v; changed(); }, 0, 100, 5, "0 is off. 25 is low, 50 medium, 75 high and 100 extreme.")),
-        group("Control", "Anyone can add songs with !play. This decides who can skip, stop, pause, change the volume and bass, loop and clear the queue.", selectInput("DJ role", roles, draft.dj ?? "", (v) => { draft.dj = v === "" ? null : v; changed(); }, "People with Manage Server can always control the music."), toggle("Send a message when a new song starts", "Posts the song in the channel where !play was used.", draft.announce, (v) => { draft.announce = v; changed(); })),
+        group("Equalizer", "Drag a band up to boost it or down to cut it. Low bands are bass, middle bands are voices, high bands are treble. The bars and curve show the shape you set, not the live song. Anything you save applies right away to music that's already playing.", status, chips, stage),
+        group("Bass and effects", "Bass adds extra boost to the lowest bands on top of the equalizer.", slider("Bass boost", draft.bass, 0, 100, 5, (v) => `${v}%`, (v) => { draft.bass = v; changed(); }), slider("Speed", draft.speed, 0.5, 2, 0.05, (v) => `${v.toFixed(2)}x`, (v) => { draft.speed = v; changed(); }), slider("Pitch", draft.pitch, 0.5, 2, 0.05, (v) => `${v.toFixed(2)}x`, (v) => { draft.pitch = v; changed(); }), toggle("8D audio", "The sound slowly circles your head. Best in headphones.", draft.rotation, (v) => { draft.rotation = v; changed(); }), toggle("Karaoke", "Tries to remove the singer's voice.", draft.karaoke, (v) => { draft.karaoke = v; changed(); })),
+        group("Player", "Where the player starts each time Risk joins a voice channel. Anyone in the channel can still change these with chat commands while music plays.", numberInput("Default volume", draft.volume, (v) => { draft.volume = v; changed(); }, 1, 150, 1, "1 to 150. Above 100 can sound distorted."), selectInput("DJ role", roles, draft.dj ?? "", (v) => { draft.dj = v === "" ? null : v; changed(); }, "People with Manage Server can always control the music."), toggle("Send a message when a new song starts", "Posts the song in the channel where !play was used.", draft.announce, (v) => { draft.announce = v; changed(); })),
     ];
 };
 // Announcements (VIP)

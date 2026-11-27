@@ -220,6 +220,13 @@ export interface MusicSettings {
   bass: number;
   announce: boolean;
   dj: string | null;
+  eq: number[];
+  speed: number;
+  pitch: number;
+  rotation: boolean;
+  karaoke: boolean;
+  bands: string[];
+  presets: Record<string, number[]>;
   ready: boolean;
   problem: string | null;
 }

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-27T07:25:49+00:00",
+  "generatedAt": "2026-11-27T21:02:28+00:00",
   "prefixes": [
     "!",
     "?",
@@ -5629,6 +5629,16 @@
       "permission": null
     },
     {
+      "name": "8d",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Toggles 8D audio, where the sound circles your head. Use headphones.",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "autodelete",
       "kind": "prefix",
       "category": "VIP",
@@ -5830,6 +5840,16 @@
       "permission": "Manage Messages"
     },
     {
+      "name": "equalizer",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Applies an equalizer preset. Presets: flat, bass boost, treble boost, vocal, rock, pop, electronic, classical, loudness.",
+      "examples": [
+        "rock | !equalizer reset (the dashboard has sliders for every band)"
+      ],
+      "permission": null
+    },
+    {
       "name": "exportmembers",
       "kind": "prefix",
       "category": "VIP",
@@ -5928,6 +5948,16 @@
         "7 | !joingate 7 warn | off | status"
       ],
       "permission": "Manage Server"
+    },
+    {
+      "name": "karaoke",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Toggles karaoke mode, which tries to remove the singer's voice.",
+      "examples": [
+        ""
+      ],
+      "permission": null
     },
     {
       "name": "lockall",
@@ -6040,6 +6070,16 @@
       "permission": "Manage Server"
     },
     {
+      "name": "nightcore",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Toggles nightcore (faster and higher).",
+      "examples": [
+        ""
+      ],
+      "permission": null
+    },
+    {
       "name": "nowplaying",
       "kind": "prefix",
       "category": "Music",
@@ -6068,6 +6108,16 @@
         ""
       ],
       "permission": "Administrator"
+    },
+    {
+      "name": "pitch",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Changes pitch from 0.5 to 2 (1 is normal).",
+      "examples": [
+        "1.2"
+      ],
+      "permission": null
     },
     {
       "name": "play",
@@ -6106,6 +6156,16 @@
       "description": "Removes a song from the queue by its number in `!queue`.",
       "examples": [
         "3"
+      ],
+      "permission": null
+    },
+    {
+      "name": "resetfx",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Clears the equalizer, bass, speed, pitch, 8D and karaoke.",
+      "examples": [
+        ""
       ],
       "permission": null
     },
@@ -6218,6 +6278,16 @@
         "<seconds> (0 turns it off)"
       ],
       "permission": "Manage Channels"
+    },
+    {
+      "name": "speed",
+      "kind": "prefix",
+      "category": "Music",
+      "description": "Changes playback speed from 0.5 to 2 (1 is normal).",
+      "examples": [
+        "1.25"
+      ],
+      "permission": null
     },
     {
       "name": "stafflist",
