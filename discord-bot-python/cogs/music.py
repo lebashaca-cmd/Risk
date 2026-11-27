@@ -259,6 +259,11 @@ class Music(commands.Cog, name="Music"):
         state = self.state(guild.id)
         if not state.queue:
             state.current = None
+            if player.is_playing:  # skipped the last song: nothing follows it, so actually stop it
+                try:
+                    await player.stop()
+                except Exception as error:
+                    print(f"[music] couldn't stop the player ({type(error).__name__})")
             self.schedule_idle(guild, player)
             return
         track = state.queue.pop(0)
